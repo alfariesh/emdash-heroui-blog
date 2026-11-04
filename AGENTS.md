@@ -24,6 +24,8 @@ pnpm test             # unit tests in every workspace that has them
 pnpm --filter @blog/web <script>   # run any script in one workspace
 ```
 
+CI (`.github/workflows/ci.yml`) runs `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build` and the mobile `export` on every push and on pull requests from forks. Keep it green: it is the same list a change must pass locally.
+
 ## Rules
 
 - **Content flows one way: EmDash (in `apps/web`) → web pages and mobile app.** The EmDash REST API (`/_emdash/api/content/...`) requires authentication, and an API token must never ship inside a mobile app. The mobile app reads published content from the public, read-only JSON API at `/api/v1/*` served by `apps/web` (`apps/web/src/pages/api/v1/`), never from the EmDash admin API.
