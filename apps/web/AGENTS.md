@@ -1,14 +1,18 @@
-This is the web app of the monorepo (`apps/web`): an EmDash site -- a CMS built on Astro with a full admin UI. It is also the content source for the mobile app. See the root `AGENTS.md` for the workspace layout.
+This is the web app of the monorepo (`apps/web`): an EmDash site -- a CMS built on Astro with a full admin UI -- running on **Cloudflare Workers** with **D1** (database) and **R2** (media). It is also the content source for the mobile app. See the root `AGENTS.md` for the workspace layout.
 
 ## Commands
 
 ```bash
-pnpm dev              # Start the Astro dev server (run here, or `pnpm dev` from the repo root)
+pnpm dev              # Astro dev server in workerd with local D1/R2 (state in .wrangler/)
 pnpm typecheck        # astro check (needs TypeScript 6; astro check does not support TS 7)
+pnpm run deploy       # astro build && wrangler deploy (use `run`: `pnpm deploy` is a pnpm built-in)
+pnpm run cf-typegen   # regenerate worker-configuration.d.ts after editing wrangler.jsonc
 npx emdash types      # Regenerate TypeScript types from a running site
 ```
 
-`.env` (EMDASH_ENCRYPTION_KEY), `data.db*`, `uploads/` and `.emdash/` live in this folder because Astro and EmDash resolve them from the app root. Never commit `.env`.
+Local dev reads `.env` (never committed): `EMDASH_ENCRYPTION_KEY`, and `EMDASH_SITE_URL=` **empty**, which overrides the production value in `wrangler.jsonc` `vars` so passkeys stay on localhost. Local D1/R2 data lives in `.wrangler/state`. `data.db*` and `uploads/`, if present, are leftovers from the earlier Node/SQLite setup and are no longer used.
+
+Production secrets: `pnpm exec wrangler secret put EMDASH_ENCRYPTION_KEY` (generate with `npx emdash secrets generate`, back it up). Never put secrets in `wrangler.jsonc` or read them via `import.meta.env`.
 
 The admin UI is at `http://localhost:4321/_emdash/admin`.
 
@@ -16,7 +20,10 @@ The admin UI is at `http://localhost:4321/_emdash/admin`.
 
 | File                     | Purpose                                                                            |
 | ------------------------ | ---------------------------------------------------------------------------------- |
-| `astro.config.mjs`       | Astro config with `emdash()` integration, database, and storage                    |
+| `astro.config.mjs`       | Astro config: Cloudflare adapter, `emdash()` with `d1()` + `r2()`                  |
+| `wrangler.jsonc`         | Worker name, D1/R2/Images bindings, `EMDASH_SITE_URL`, custom domain, cron         |
+| `src/worker.ts`          | Worker entry: Astro handler + `scheduled()` for scheduled publishing (keep it)     |
+| `worker-configuration.d.ts` | Generated binding types (`pnpm run cf-typegen`)                                 |
 | `src/live.config.ts`     | EmDash loader registration (boilerplate -- don't modify)                           |
 | `seed/seed.json`         | Schema definition + demo content (collections, fields, taxonomies, menus, widgets) |
 | `emdash-env.d.ts`        | Generated types for collections (auto-regenerated on dev server start)             |
@@ -101,7 +108,7 @@ Rules (enforced in `src/lib/public-api.ts`; types come from `@blog/shared`):
 - **Envelope:** `{ ok: true, data }`, lists `{ ok: true, data, nextCursor }`, errors `{ ok: false, error: { status, code, message } }` with Indonesian messages. Bad `limit`/`cursor` → 400 (the live loader re-wraps `InvalidCursorError`, so it is matched by message too).
 - **Absolute URLs** for images, avatars, logo, menu items and root-relative links inside Portable Text, built from `context.url.origin`. Portable Text image blocks are rewritten to `{ _type: "image", url, alt, caption, width, height }`.
 - **Headers:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` on success, `no-store` on errors, `Access-Control-Allow-Origin: *`.
-- **Public origin:** every absolute URL goes through `publicOrigin()` (`src/lib/site-url.ts`): Astro's `site` when set, else the request origin. `astro.config.mjs` sets `site` from `EMDASH_SITE_URL` (production: `https://blog.example.com`), the same variable EmDash uses for passkeys/CSRF/email links. Set it in both the build and the runtime environment. Keep it unset locally so dev passkeys stay on localhost and `10.0.2.2` / LAN IPs keep working.
+- **Public origin:** every absolute URL goes through `publicOrigin()` (`src/lib/site-url.ts`): Astro's `site` when set (only if `EMDASH_SITE_URL` is exported in the *build* environment), else the request origin, which on Workers is already the public host. EmDash itself reads `EMDASH_SITE_URL` at runtime from `wrangler.jsonc` `vars` for passkeys, CSRF and email links; it must be set before the production setup wizard runs, and setup must be done on that domain. Locally it is overridden to empty via `.env`, so `10.0.2.2` / LAN IPs keep working.
 
 ## Shared code
 

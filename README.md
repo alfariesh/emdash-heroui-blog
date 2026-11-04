@@ -5,7 +5,7 @@ Monorepo blog dengan konten dari [EmDash](https://emdashcms.com) dan tampilan [H
 ```
 .
 ├── apps/
-│   ├── web/          Situs Astro + EmDash + HeroUI (juga panel admin CMS)
+│   ├── web/          Situs Astro + EmDash + HeroUI di Cloudflare Workers (D1 + R2), juga panel admin CMS
 │   └── mobile/       (rencana) Aplikasi React Native + HeroUI Native
 ├── packages/
 │   └── shared/       Kode bersama web & mobile: format tanggal, waktu baca, identitas situs,
@@ -24,11 +24,19 @@ pnpm dev:stop     # hentikan dev server
 pnpm typecheck    # cek tipe semua paket
 ```
 
-Butuh Node.js 22.23.4+ dan pnpm 11.
+Butuh Node.js 22.23.4+ dan pnpm 11. Salin `apps/web/.env.example` ke `apps/web/.env` dan isi `EMDASH_ENCRYPTION_KEY` (`npx emdash secrets generate`). Dev lokal berjalan di workerd dengan D1/R2 lokal; buka `/_emdash/admin` untuk setup pertama.
+
+## Deploy ke Cloudflare
+
+1. Sesuaikan `apps/web/wrangler.jsonc`: `name`, nama D1/R2, `routes` (domain Anda, zonanya harus aktif di Cloudflare) dan `vars.EMDASH_SITE_URL`.
+2. `pnpm --filter @blog/web exec wrangler login`
+3. `pnpm deploy:web` — deploy pertama membuat database D1, bucket R2 dan record DNS custom domain.
+4. `pnpm --filter @blog/web exec wrangler secret put EMDASH_ENCRYPTION_KEY` — pakai kunci baru dari `npx emdash secrets generate` dan simpan cadangannya.
+5. **Segera** buka `https://domain-anda/_emdash/admin` dan selesaikan setup: pengunjung pertama yang menyelesaikan wizard menjadi admin. Passkey terikat ke domain, jadi setup harus dilakukan di domain produksi.
 
 ## Catatan
 
-- Database lokal (`apps/web/data.db`), media (`apps/web/uploads/`) dan kunci enkripsi (`apps/web/.env`) tidak ikut di-commit. Cadangkan `.env` sebelum deploy.
+- `apps/web/.env`, data lokal (`.wrangler/`) dan build tidak ikut di-commit. Di produksi kunci enkripsi disimpan sebagai secret Worker.
 - Aplikasi mobile mengambil konten lewat API publik baca-saja `/api/v1/*` dari `apps/web`, bukan dari API admin EmDash (yang wajib login). Daftar endpoint ada di `apps/web/README.md`.
 
 ## API publik

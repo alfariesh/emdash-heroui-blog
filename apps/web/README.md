@@ -1,6 +1,6 @@
 # @blog/web
 
-Situs blog Astro + [EmDash](https://emdashcms.com) dengan tampilan HeroUI v3 (Tailwind CSS v4). Berjalan di Node.js dengan SQLite dan penyimpanan media lokal.
+Situs blog Astro + [EmDash](https://emdashcms.com) dengan tampilan HeroUI v3 (Tailwind CSS v4). Berjalan di Cloudflare Workers dengan D1 (database) dan R2 (media). Panduan deploy ada di README root.
 
 ```bash
 pnpm dev        # dari folder ini atau dari root repo
@@ -36,7 +36,7 @@ Format: sukses `{ "ok": true, "data": … }` (daftar juga punya `"nextCursor"`),
 curl http://localhost:4321/api/v1/posts?limit=2
 ```
 
-Dari emulator Android pakai `http://10.0.2.2:4321`; dari HP fisik pakai IP LAN Mac dan jalankan web agar mendengar di jaringan: `pnpm dev:stop` lalu `pnpm --filter @blog/web dev --host`. Di produksi, set `EMDASH_SITE_URL=https://blog.example.com` saat build dan saat server berjalan; semua URL (API, canonical, RSS) akan memakai domain itu.
+Dari emulator Android pakai `http://10.0.2.2:4321`; dari HP fisik pakai IP LAN Mac dan jalankan web agar mendengar di jaringan: `pnpm dev:stop` lalu `pnpm --filter @blog/web dev --host`. Di produksi, `EMDASH_SITE_URL` diatur di `vars` pada `wrangler.jsonc`; di Workers URL request sudah memakai domain publik, jadi URL di API, canonical dan RSS otomatis benar.
 
 ## Struktur `src/`
 

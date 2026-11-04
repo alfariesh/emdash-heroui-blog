@@ -11,6 +11,8 @@ dist
 .env
 .env.*
 !.env.example
+.dev.vars
+.dev.vars.*
 
 # EmDash local data (apps/web)
 apps/web/data.db

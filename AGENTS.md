@@ -4,7 +4,7 @@ This repository is a pnpm monorepo for a blog with a web app and a mobile app, b
 
 | Path              | Package        | What it is                                                                                     |
 | ----------------- | -------------- | ---------------------------------------------------------------------------------------------- |
-| `apps/web`        | `@blog/web`    | Astro + EmDash site with HeroUI v3 (`@heroui/react`). Also hosts the CMS admin and owns the database. See `apps/web/AGENTS.md`. |
+| `apps/web`        | `@blog/web`    | Astro + EmDash site with HeroUI v3 (`@heroui/react`) on Cloudflare Workers (D1 + R2). Also hosts the CMS admin and owns the database. See `apps/web/AGENTS.md`. |
 | `apps/mobile`     | `@blog/mobile` | Planned: React Native (Expo) app with HeroUI Native. Not created yet.                          |
 | `packages/shared` | `@blog/shared` | Framework-agnostic TypeScript used by both apps: dates, reading time, site identity, and the public API contract + client (`src/api/`). |
 
@@ -17,6 +17,7 @@ pnpm install          # install every workspace
 pnpm dev              # start the web app (http://localhost:4321, admin at /_emdash/admin)
 pnpm dev:stop         # stop the web dev server (Astro 7 runs it in the background)
 pnpm build            # build the web app
+pnpm deploy:web       # build + wrangler deploy to Cloudflare (needs `wrangler login`)
 pnpm typecheck        # type-check every workspace
 pnpm --filter @blog/web <script>   # run any script in one workspace
 ```
@@ -31,4 +32,5 @@ pnpm --filter @blog/web <script>   # run any script in one workspace
 - HeroUI: the web uses `@heroui/react` v3 (Tailwind v4). The mobile app should use HeroUI Native. The packages are different, so share design decisions (accent colour, radius, Indonesian copy), not component code.
 - Icons: Hugeicons free set everywhere (`@hugeicons/core-free-icons` data; `@hugeicons/react` on web, `@hugeicons/react-native` on mobile). Category icon keys live in `packages/shared/src/category-icons.ts`; each app maps keys to icon objects. Don't import `@hugeicons/core-free-icons` into `packages/shared`: its root index pulls ~12k modules, which Metro would bundle.
 - Visitor-facing text is Indonesian (`id-ID`); code, comments and agent docs are English.
-- Secrets: `apps/web/.env` holds `EMDASH_ENCRYPTION_KEY`. Never commit it, and back it up before deploying.
+- Secrets: locally `apps/web/.env` holds `EMDASH_ENCRYPTION_KEY`; in production it is a Worker secret (`wrangler secret put`). Never commit either, and back up the production key.
+- Open source: deployment-specific values (Worker/D1/R2 names, custom domain, `EMDASH_SITE_URL`) live only in `apps/web/wrangler.jsonc`; keep docs and code domain-neutral (`blog.example.com`).

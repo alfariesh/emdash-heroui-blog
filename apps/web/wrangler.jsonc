@@ -1,0 +1,52 @@
+// Cloudflare Workers deployment for the web app.
+// Forking this project? Change `name`, the D1/R2 names, `routes` and
+// EMDASH_SITE_URL to your own. On the first `pnpm run deploy` Wrangler creates
+// the D1 database and R2 bucket if they don't exist yet.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "emdash-blog",
+	"main": "./src/worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "emdash-blog",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "emdash-blog-media",
+		},
+	],
+	// EmDash resizes R2 images in the Worker through this binding.
+	"images": {
+		"binding": "IMAGES",
+	},
+
+	// Public origin. EmDash binds passkeys to it, so it must be set BEFORE the
+	// production setup wizard runs, and setup must be done on this domain.
+	// Secrets (EMDASH_ENCRYPTION_KEY) go in `wrangler secret put`, never here.
+	"vars": {
+		"EMDASH_SITE_URL": "https://emdash.alfariesh.ai.id",
+	},
+	// The zone must be active on Cloudflare in the same account; Wrangler
+	// creates the DNS record for the custom domain.
+	"routes": [
+		{
+			"pattern": "emdash.alfariesh.ai.id",
+			"custom_domain": true,
+		},
+	],
+
+	// Scheduled publishing + maintenance (handled by `scheduled` in src/worker.ts).
+	"triggers": {
+		"crons": ["* * * * *"],
+	},
+
+	"observability": {
+		"enabled": true,
+	},
+}

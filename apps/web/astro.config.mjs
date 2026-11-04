@@ -1,23 +1,23 @@
-import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 import react from "@astrojs/react";
+import { d1, r2 } from "@emdash-cms/cloudflare";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
-import emdash, { local } from "emdash/astro";
-import { sqlite } from "emdash/db";
+import emdash from "emdash/astro";
 
-// Public origin, e.g. https://blog.example.com. Set EMDASH_SITE_URL where
-// the site is built AND where it runs; EmDash reads the same variable for
-// passkeys, CSRF and email links. Leave it unset for local dev so passkeys
-// stay bound to localhost and the API follows the request origin
-// (LAN / Android emulator testing). See src/lib/site-url.ts.
+// Optional canonical origin for URLs built at render time (canonical/OG, RSS,
+// /api/v1). On Cloudflare the request URL is already the public one, so this
+// is only needed to force a single host. EmDash itself reads EMDASH_SITE_URL
+// at runtime from `vars` in wrangler.jsonc (passkeys, CSRF, email links).
+// Keep it unset for local dev so passkeys stay on localhost and LAN /
+// Android-emulator testing works. See src/lib/site-url.ts.
 const siteUrl = process.env.EMDASH_SITE_URL || process.env.SITE_URL || undefined;
 
 export default defineConfig({
 	site: siteUrl,
 	output: "server",
-	adapter: node({
-		mode: "standalone",
-	}),
+	// Cloudflare Workers; D1 (database) and R2 (media) bindings are declared in wrangler.jsonc.
+	adapter: cloudflare(),
 	image: {
 		layout: "constrained",
 		responsiveStyles: true,
@@ -25,11 +25,8 @@ export default defineConfig({
 	integrations: [
 		react(),
 		emdash({
-			database: sqlite({ url: "file:./data.db" }),
-			storage: local({
-				directory: "./uploads",
-				baseUrl: "/_emdash/api/media/file",
-			}),
+			database: d1({ binding: "DB", session: "auto", coalesce: true }),
+			storage: r2({ binding: "MEDIA" }),
 		}),
 	],
 	vite: {
