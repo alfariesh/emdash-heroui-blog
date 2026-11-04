@@ -34,10 +34,12 @@
 		// Open /posts/… links in the mobile app (src/lib/app-links.ts). Empty =
 		// the verification file is not served. iOS: "<Team ID>.<bundle id>";
 		// Android: the package plus the SHA-256 signing-cert fingerprints.
-		// Several values are comma-separated.
+		// Several values are comma-separated. IOS_STORE_ID (numeric App Store
+		// ID) adds Safari's Smart App Banner once the app is in the App Store.
 		"APP_LINKS_IOS_APP_IDS": "",
 		"APP_LINKS_ANDROID_PACKAGE": "",
 		"APP_LINKS_ANDROID_SHA256": "",
+		"APP_LINKS_IOS_STORE_ID": "",
 	},
 	// The zone must be active on Cloudflare in the same account; Wrangler
 	// creates the DNS record for the custom domain.

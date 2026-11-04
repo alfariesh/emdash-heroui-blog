@@ -48,6 +48,7 @@ Agar tautan `https://domain-anda/posts/…` (juga `/pages/…`, `/category/…`,
 | `APP_LINKS_IOS_APP_IDS` | `<Team ID>.<bundle id>`, mis. `ABCDE12345.com.example.blog` (boleh beberapa, pisahkan dengan koma) |
 | `APP_LINKS_ANDROID_PACKAGE` | Package Android (= `APP_ID` aplikasi), mis. `com.example.blog` |
 | `APP_LINKS_ANDROID_SHA256` | Sidik jari SHA-256 sertifikat penanda tangan, `AB:CD:…` (boleh beberapa, pisahkan dengan koma) |
+| `APP_LINKS_IOS_STORE_ID` | ID numerik App Store (App Store Connect → App Information → Apple ID). Menampilkan Smart App Banner Safari di semua halaman; tombol "Buka" membuka halaman yang sama di aplikasi |
 
 Setelah `pnpm run deploy`, periksa `https://domain-anda/.well-known/apple-app-site-association` dan `/.well-known/assetlinks.json`: harus 200 dengan JSON. Langkah di sisi aplikasi ada di `apps/mobile/README.md`.
 

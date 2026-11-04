@@ -11,6 +11,8 @@
  *   APP_LINKS_ANDROID_PACKAGE  Android package (the app's APP_ID), e.g. com.example.blog.
  *   APP_LINKS_ANDROID_SHA256   SHA-256 fingerprints of the signing certificates, comma-separated
  *                              (Play App Signing key, plus the upload/EAS key for sideloaded builds).
+ *   APP_LINKS_IOS_STORE_ID     Numeric App Store ID (App Store Connect → App Information → Apple ID):
+ *                              turns on Safari's Smart App Banner on every page (Base.astro).
  *
  * An empty value turns the matching file off (404), so a fork without an app
  * serves nothing. The paths come from APP_LINK_PATH_PREFIXES in @blog/shared,
@@ -20,6 +22,7 @@ import { APP_LINK_PATH_PREFIXES } from "@blog/shared";
 import { env } from "cloudflare:workers";
 
 const IOS_APP_ID = /^[A-Z0-9]{10}\.[A-Za-z0-9.-]+$/;
+const APP_STORE_ID = /^\d+$/;
 const ANDROID_PACKAGE = /^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/;
 const SHA256_HEX = /^[0-9A-F]{64}$/;
 const LIST_SEPARATOR = /[\s,]+/;
@@ -99,6 +102,22 @@ export function assetLinks(): object[] | null {
 			},
 		},
 	];
+}
+
+/**
+ * Content of the `apple-itunes-app` meta tag (Safari's Smart App Banner), or
+ * null when APP_LINKS_IOS_STORE_ID is unset. `app-argument` is the page's
+ * public URL: the app routes it like a verified link, so "Buka" lands on the
+ * same post. Pass the URL without its query, so preview tokens never leak.
+ */
+export function smartAppBanner(pageUrl: string): string | null {
+	const storeId = variable("APP_LINKS_IOS_STORE_ID");
+	if (!storeId) return null;
+	if (!APP_STORE_ID.test(storeId)) {
+		console.warn(`[app-links] APP_LINKS_IOS_STORE_ID: ignoring invalid value "${storeId}"`);
+		return null;
+	}
+	return `app-id=${storeId}, app-argument=${pageUrl}`;
 }
 
 /**

@@ -59,6 +59,7 @@ Bila `EXPO_PUBLIC_API_URL` memakai https, build menyertakan Universal Links (iOS
    - `APP_LINKS_ANDROID_SHA256` = sidik jari SHA-256 sertifikat penanda tangan, dipisah koma: kunci *App signing* dari halaman Play app signing di Play Console untuk build dari Play Store, dan kunci dari `eas credentials -p android` untuk APK internal.
 2. Pastikan `https://domain/.well-known/apple-app-site-association` dan `/.well-known/assetlinks.json` menjawab 200 dengan JSON.
 3. Build ulang (`eas build`): entitlement dan intent filter masuk ke build native, jadi pembaruan OTA saja tidak cukup.
+4. Setelah aplikasi terbit di App Store, isi juga `APP_LINKS_IOS_STORE_ID` (ID numerik dari App Store Connect): Safari di iPhone lalu menampilkan banner "Buka di aplikasi" di situs.
 
 Cek di Android: `adb shell pm get-app-links <APP_ID>` harus `verified`. Di iOS, uji dengan mengetuk tautan dari Notes atau Messages (mengetik URL di Safari tidak membuka aplikasi); Apple mengambil file lewat CDN-nya, jadi perubahan bisa butuh waktu. Associated Domains butuh akun Apple Developer Program (berbayar); tim personal gratis tidak bisa menandatangani build dengan entitlement ini.
 
