@@ -3,17 +3,7 @@ import { Avatar } from "heroui-native/avatar";
 import { Typography } from "heroui-native/text";
 import { cn } from "heroui-native/utils";
 import { View } from "react-native";
-
-const WHITESPACE = /\s+/;
-
-function initials(name: string): string {
-	return name
-		.split(WHITESPACE)
-		.filter(Boolean)
-		.slice(0, 2)
-		.map((word) => [...word][0]?.toUpperCase() ?? "")
-		.join("");
-}
+import { initials } from "@/lib/text";
 
 interface BylineProps {
 	bylines: ApiByline[];

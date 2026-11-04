@@ -5,6 +5,7 @@ import {
 	type ApiPage,
 	type ApiPageEntry,
 	type ApiPost,
+	type ApiPostComments,
 	type ApiPostSummary,
 	type ApiSearchResult,
 	type ApiSite,
@@ -53,6 +54,7 @@ export interface BlogClient {
 	getSite(options?: RequestOptions): Promise<ApiSite>;
 	getPosts(query?: PostListQuery, options?: RequestOptions): Promise<ApiPage<ApiPostSummary>>;
 	getPost(slug: string, options?: RequestOptions): Promise<ApiPost>;
+	getPostComments(slug: string, options?: RequestOptions): Promise<ApiPostComments>;
 	getPage(slug: string, options?: RequestOptions): Promise<ApiPageEntry>;
 	getCategories(options?: RequestOptions): Promise<ApiTerm[]>;
 	getTags(options?: RequestOptions): Promise<ApiTerm[]>;
@@ -139,6 +141,8 @@ export function createBlogClient(baseUrl: string): BlogClient {
 				options,
 			),
 		getPost: (slug, options) => data<ApiPost>(`/posts/${encodeURIComponent(slug)}`, options),
+		getPostComments: (slug, options) =>
+			data<ApiPostComments>(`/posts/${encodeURIComponent(slug)}/comments`, options),
 		getPage: (slug, options) => data<ApiPageEntry>(`/pages/${encodeURIComponent(slug)}`, options),
 		getCategories: (options) => data<ApiTerm[]>("/categories", options),
 		getTags: (options) => data<ApiTerm[]>("/tags", options),

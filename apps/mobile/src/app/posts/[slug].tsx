@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArticleTopBar, TOP_BAR_HEIGHT } from "@/components/post/article-top-bar";
 import { Byline } from "@/components/post/byline";
 import { PostCard } from "@/components/post/post-card";
+import { PostComments } from "@/components/post/post-comments";
 import { PostMeta } from "@/components/post/post-meta";
 import { TermChips } from "@/components/post/term-chips";
 import { PortableText } from "@/components/portable-text/portable-text";
@@ -88,6 +89,7 @@ function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) 
 	const barHeight = top + TOP_BAR_HEIGHT;
 	const solidAt = hasHero ? heroHeight - barHeight - 24 : 8;
 	const webUrl = postWebUrl(post.slug);
+	const bodyFailed = contentError !== null && post.content.length === 0;
 
 	// Share of the article read, for the progress line in the top bar (UI thread).
 	const progress = useDerivedValue(() => {
@@ -133,7 +135,7 @@ function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) 
 					<Separator />
 					{contentLoading ? (
 						<BodySkeleton />
-					) : contentError && post.content.length === 0 ? (
+					) : bodyFailed ? (
 						<ErrorView error={contentError} onRetry={onRetry} className="py-8" />
 					) : (
 						<PortableText value={post.content} webUrl={webUrl} />
@@ -142,6 +144,9 @@ function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) 
 						<TermChips categories={[]} tags={post.tags} max={post.tags.length} interactive size="md" className="pt-4" />
 					) : null}
 				</View>
+
+				{/* After the body has loaded, so the comments request never competes with it. */}
+				{contentLoading || bodyFailed ? null : <PostComments slug={post.slug} webUrl={webUrl} className="mx-4 mt-12" />}
 
 				<RelatedPosts post={post} />
 			</Animated.ScrollView>

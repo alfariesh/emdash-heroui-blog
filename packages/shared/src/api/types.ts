@@ -209,6 +209,34 @@ export interface ApiSearchResult {
 	snippet: string | null;
 }
 
+/** An approved comment on a post. */
+export interface ApiComment {
+	id: string;
+	/** Name the commenter entered. */
+	authorName: string;
+	/** Written by someone with an account on the site (the web marks it "Penulis"). */
+	isMember: boolean;
+	/** Plain text as submitted: may contain line breaks and bare URLs, never HTML. */
+	body: string;
+	/** ISO 8601. */
+	createdAt: string;
+	/**
+	 * Replies, oldest first. Replies are one level deep (a reply to a reply is
+	 * attached to the top-level comment), so this is always empty on a reply.
+	 */
+	replies: ApiComment[];
+}
+
+/** GET /api/v1/posts/[slug]/comments */
+export interface ApiPostComments {
+	/** False when the site has turned comments off; `comments` is then empty. */
+	enabled: boolean;
+	/** Approved comments, replies included. */
+	total: number;
+	/** Top-level comments, oldest first, each with its replies. At most 500 comments in all. */
+	comments: ApiComment[];
+}
+
 // ── Query parameters ────────────────────────────────────────────────────────
 
 export interface PostListQuery {

@@ -25,6 +25,7 @@ The admin UI is at `http://localhost:4321/_emdash/admin`.
 | `src/worker.ts`          | Worker entry: Astro handler + `scheduled()` for scheduled publishing (keep it)     |
 | `worker-configuration.d.ts` | Generated binding types (`pnpm run cf-typegen`)                                 |
 | `src/live.config.ts`     | EmDash loader registration (boilerplate -- don't modify)                           |
+| `src/lib/app-links.ts`   | Builds `/.well-known/apple-app-site-association` and `assetlinks.json` from the `APP_LINKS_*` vars |
 | `seed/seed.json`         | Schema definition + demo content (collections, fields, taxonomies, menus, widgets) |
 | `emdash-env.d.ts`        | Generated types for collections (auto-regenerated on dev server start)             |
 | `src/layouts/Base.astro` | Base layout with EmDash wiring (menus, search, page contributions)                 |
@@ -97,6 +98,7 @@ Read-only endpoints for the mobile app and other clients. The EmDash admin API (
 | `GET /api/v1/site` | `ApiSite`: title, tagline, logo, locale, origin, `primary` menu items |
 | `GET /api/v1/posts?cursor=&limit=&category=&tag=` | `ApiPage<ApiPostSummary>`, newest first; `limit` 1–50 (default 10); unknown category/tag → 404 |
 | `GET /api/v1/posts/[slug]` | `ApiPost` (summary + `updatedAt` + Portable Text `content`) |
+| `GET /api/v1/posts/[slug]/comments` | `ApiPostComments`: approved comments, threaded (`getComments`), `enabled: false` when comments are off; 404 for drafts |
 | `GET /api/v1/pages/[slug]` | `ApiPageEntry` |
 | `GET /api/v1/categories`, `GET /api/v1/tags` | `ApiTerm[]` with published-post `count` |
 | `GET /api/v1/search?q=&cursor=&limit=` | `ApiPage<ApiSearchResult>` over posts and pages |
@@ -125,4 +127,8 @@ Framework-agnostic helpers live in `packages/shared` (`@blog/shared`) so the mob
 - Don't hard-code colours (`bg-blue-500`); use HeroUI semantic tokens and variants.
 - Don't stack extra shadows on cards (`.card` already has `shadow-surface`).
 - Don't add `getStaticPaths()`; all CMS pages are server-rendered.
-- Comments are enabled on posts and rendered on the post detail page. Configure moderation before publishing the site, or remove `commentsEnabled` and the comments UI together.
+- Comments are enabled on posts and rendered on the post detail page (section `id="komentar"`, which the mobile app links to for writing). Configure moderation before publishing the site, or remove `commentsEnabled` and the comments UI together. The app reads comments through `/api/v1/posts/[slug]/comments`, never through `/_emdash/api/comments/…`.
+
+## Verified app links (`/.well-known/`)
+
+`src/pages/.well-known/apple-app-site-association.ts` and `assetlinks.json.ts` let `https://<domain>/posts/…` (and `/pages/…`, `/category/…`, `/tag/…`, see `APP_LINK_PATH_PREFIXES` in `@blog/shared`) open the mobile app. They read Worker vars through `cloudflare:workers` `env`: `APP_LINKS_IOS_APP_IDS` (`<Team ID>.<bundle id>`, comma-separated), `APP_LINKS_ANDROID_PACKAGE` and `APP_LINKS_ANDROID_SHA256` (signing-cert fingerprints, comma-separated). Empty vars → plain 404, invalid entries are dropped with a warning. Both files must answer 200 with `application/json` and no redirect, so keep them out of any redirect, auth or bot-challenge rule on the domain.

@@ -31,6 +31,13 @@
 	// Secrets (EMDASH_ENCRYPTION_KEY) go in `wrangler secret put`, never here.
 	"vars": {
 		"EMDASH_SITE_URL": "https://emdash.alfariesh.ai.id",
+		// Open /posts/… links in the mobile app (src/lib/app-links.ts). Empty =
+		// the verification file is not served. iOS: "<Team ID>.<bundle id>";
+		// Android: the package plus the SHA-256 signing-cert fingerprints.
+		// Several values are comma-separated.
+		"APP_LINKS_IOS_APP_IDS": "",
+		"APP_LINKS_ANDROID_PACKAGE": "",
+		"APP_LINKS_ANDROID_SHA256": "",
 	},
 	// The zone must be active on Cloudflare in the same account; Wrangler
 	// creates the DNS record for the custom domain.

@@ -24,4 +24,5 @@ export {
 	isCategoryIconKey,
 	type CategoryIconKey,
 } from "./category-icons";
+export { APP_LINK_PATH_PREFIXES } from "./app-links";
 export * from "./api";

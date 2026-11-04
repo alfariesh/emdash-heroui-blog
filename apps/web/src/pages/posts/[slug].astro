@@ -216,8 +216,10 @@ const commentListLabels = {
 						)
 					}
 
+					{/* id="komentar": the mobile app links here so readers can write a comment. */}
 					<section
-						class={cn(card.base(), "post-comments mt-12 gap-4 p-6 sm:p-8")}
+						id="komentar"
+						class={cn(card.base(), "post-comments mt-12 scroll-mt-24 gap-4 p-6 sm:p-8")}
 						aria-labelledby="comments-title"
 					>
 						<h2 id="comments-title" class="text-xl font-semibold tracking-tight">

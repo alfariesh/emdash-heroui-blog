@@ -8,7 +8,11 @@ import * as WebBrowser from "expo-web-browser";
 import { Linking } from "react-native";
 import { API_URL } from "./config";
 
-/** Web paths the app can show natively, mirroring apps/web/src/pages. */
+/**
+ * Web paths the app can show natively, mirroring apps/web/src/pages. The
+ * slug routes match APP_LINK_PATH_PREFIXES (@blog/shared), the paths that
+ * open the app from outside; keep the two in step.
+ */
 const ROUTES: ReadonlyArray<[RegExp, (slug: string) => Href]> = [
 	[/^\/posts\/([^/]+)\/?$/, (slug) => ({ pathname: "/posts/[slug]", params: { slug } })],
 	[/^\/pages\/([^/]+)\/?$/, (slug) => ({ pathname: "/pages/[slug]", params: { slug } })],

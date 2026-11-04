@@ -7,6 +7,7 @@
  */
 import type {
 	ApiByline,
+	ApiComment,
 	ApiError,
 	ApiErrorCode,
 	ApiImage,
@@ -18,7 +19,13 @@ import type {
 } from "@blog/shared";
 import { DEFAULT_PAGE_SIZE, getCategoryIcon, getReadingTime, MAX_PAGE_SIZE } from "@blog/shared";
 import type { APIContext } from "astro";
-import type { ContentBylineCredit, ContentEntry, PortableTextBlock, TaxonomyTerm } from "emdash";
+import type {
+	ContentBylineCredit,
+	ContentEntry,
+	GetCommentsResult,
+	PortableTextBlock,
+	TaxonomyTerm,
+} from "emdash";
 import { InvalidCursorError } from "emdash";
 import { publicOrigin } from "./site-url";
 
@@ -288,5 +295,25 @@ export function toApiPostSummary(
 		bylines: toApiBylines(context, post.data.bylines),
 		categories: toTermRefs(terms?.categories ?? post.data.terms?.category, "category"),
 		tags: toTermRefs(terms?.tags ?? post.data.terms?.tag, "tag"),
+	};
+}
+
+// ── Comments ────────────────────────────────────────────────────────────────
+
+type PublicComment = GetCommentsResult["items"][number];
+
+/**
+ * EmDash's public comment shape → ApiComment. Only what the web shows
+ * publicly: never the email, IP hash or moderation data (EmDash does not
+ * expose them here either).
+ */
+export function toApiComment(comment: PublicComment): ApiComment {
+	return {
+		id: comment.id,
+		authorName: comment.authorName,
+		isMember: comment.isRegisteredUser,
+		body: comment.body,
+		createdAt: comment.createdAt,
+		replies: (comment.replies ?? []).map(toApiComment),
 	};
 }

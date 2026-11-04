@@ -26,6 +26,7 @@ JSON baca-saja untuk aplikasi mobile. Hanya konten yang sudah terbit; draf selal
 | `GET /api/v1/site` | Judul, tagline, logo, item menu `primary` |
 | `GET /api/v1/posts?cursor=&limit=&category=&tag=` | Ringkasan tulisan (terbaru dulu) + `nextCursor` |
 | `GET /api/v1/posts/:slug` | Detail tulisan + konten Portable Text |
+| `GET /api/v1/posts/:slug/comments` | Komentar yang sudah disetujui (berutas), untuk dibaca di aplikasi |
 | `GET /api/v1/pages/:slug` | Halaman statis, mis. `tentang` |
 | `GET /api/v1/categories`, `GET /api/v1/tags` | Daftar istilah + jumlah tulisan |
 | `GET /api/v1/search?q=` | Hasil pencarian tulisan dan halaman |
@@ -37,6 +38,18 @@ curl http://localhost:4321/api/v1/posts?limit=2
 ```
 
 Dari emulator Android pakai `http://10.0.2.2:4321`; dari HP fisik pakai IP LAN Mac dan jalankan web agar mendengar di jaringan: `pnpm dev:stop` lalu `pnpm --filter @blog/web dev --host`. Di produksi, `EMDASH_SITE_URL` diatur di `vars` pada `wrangler.jsonc`; di Workers URL request sudah memakai domain publik, jadi URL di API, canonical dan RSS otomatis benar.
+
+## Tautan aplikasi (Universal Links / App Links)
+
+Agar tautan `https://domain-anda/posts/…` (juga `/pages/…`, `/category/…`, `/tag/…`) terbuka di aplikasi mobile, situs menyajikan dua file verifikasi. Isinya diatur lewat `vars` di `wrangler.jsonc`; bila kosong, file menjawab 404.
+
+| Variabel | Isi |
+|---|---|
+| `APP_LINKS_IOS_APP_IDS` | `<Team ID>.<bundle id>`, mis. `ABCDE12345.com.example.blog` (boleh beberapa, pisahkan dengan koma) |
+| `APP_LINKS_ANDROID_PACKAGE` | Package Android (= `APP_ID` aplikasi), mis. `com.example.blog` |
+| `APP_LINKS_ANDROID_SHA256` | Sidik jari SHA-256 sertifikat penanda tangan, `AB:CD:…` (boleh beberapa, pisahkan dengan koma) |
+
+Setelah `pnpm run deploy`, periksa `https://domain-anda/.well-known/apple-app-site-association` dan `/.well-known/assetlinks.json`: harus 200 dengan JSON. Langkah di sisi aplikasi ada di `apps/mobile/README.md`.
 
 ## Struktur `src/`
 

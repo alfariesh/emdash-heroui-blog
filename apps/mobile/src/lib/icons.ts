@@ -32,6 +32,8 @@ export { default as BookmarkIcon } from "@hugeicons/core-free-icons/Bookmark02Ic
 export { default as BookOpenIcon } from "@hugeicons/core-free-icons/BookOpen01Icon";
 export { default as CalendarIcon } from "@hugeicons/core-free-icons/Calendar03Icon";
 export { default as CheckIcon } from "@hugeicons/core-free-icons/Tick02Icon";
+export { default as CommentIcon } from "@hugeicons/core-free-icons/BubbleChatIcon";
+export { default as CommentWriteIcon } from "@hugeicons/core-free-icons/BubbleChatEditIcon";
 export { default as ClockIcon } from "@hugeicons/core-free-icons/Clock01Icon";
 export { default as CompassIcon } from "@hugeicons/core-free-icons/Compass01Icon";
 export { default as DatabaseIcon } from "@hugeicons/core-free-icons/Database01Icon";

@@ -74,7 +74,12 @@ Put code where its kind lives: data and side effects in `lib/`, presentational p
 - Typed routes: navigate with object hrefs, `router.push({ pathname: "/posts/[slug]", params: { slug } })`. Read params with `useLocalSearchParams<{ slug: string }>()`.
 - Screens set dynamic titles with `<Stack.Screen options={{ title }} />`. Header styling comes from `useStackScreenOptions()`; the article screen draws its own bar.
 - Links inside content go through `useOpenLink()` → `toAppHref()` (`lib/links.ts`): blog URLs open the matching screen, other http(s) URLs the in-app browser. When `apps/web` gains a route the app also shows, add it to `ROUTES` there.
+- Links from outside the app (verified Universal Links / App Links) need no code: Expo Router strips the origin and routes the path, because the app's routes mirror the web's. `app.config.ts` registers `APP_LINK_PATH_PREFIXES` (`@blog/shared`, imported by relative path because the config loader runs outside Metro) for the host of `EXPO_PUBLIC_API_URL` when it is https; the web serves the matching verification files. A new prefix needs a screen at the same path.
 - Tab screens leave `useTabBarInset()` of bottom padding (the tab bar floats over content); stack screens use the bottom safe-area inset. Top insets come from `useSafeAreaInsets()`; HeroUI's provider also feeds Uniwind's `pt-safe`-style classes.
+
+## Comments
+
+`components/post/post-comments.tsx` shows approved comments under the article (`postCommentsQuery`, after the body has loaded): threads with one level of replies, a "Penulis" chip for site members, bare URLs made tappable with `splitLinks()` (`lib/text.ts`), the first 5 threads and then "Tampilkan N komentar lainnya". The app does not post comments: "Tulis komentar" opens the web form (`<post url>#komentar`) in the in-app browser. The card disappears when the API reports `enabled: false`.
 
 ## Portable Text
 
