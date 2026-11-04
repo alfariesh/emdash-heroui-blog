@@ -4,13 +4,33 @@ import { d1, r2 } from "@emdash-cms/cloudflare";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import emdash from "emdash/astro";
+import { readFileSync } from "node:fs";
 
-// Optional canonical origin for URLs built at render time (canonical/OG, RSS,
-// /api/v1). On Cloudflare the request URL is already the public one, so this
-// is only needed to force a single host. EmDash itself reads EMDASH_SITE_URL
-// at runtime from `vars` in wrangler.jsonc (passkeys, CSRF, email links).
-// Keep it unset for local dev so passkeys stay on localhost and LAN /
-// Android-emulator testing works. See src/lib/site-url.ts.
+/** `vars.EMDASH_SITE_URL` from wrangler.jsonc (JSONC: comments, trailing commas). */
+function siteUrlFromWrangler() {
+	try {
+		const jsonc = readFileSync(new URL("./wrangler.jsonc", import.meta.url), "utf8");
+		const json = jsonc
+			// Drop // and /* */ comments, but keep strings intact (URLs contain //)
+			.replace(/("(?:\\.|[^"\\])*")|\/\/[^\n]*|\/\*[\s\S]*?\*\//g, (_, str) => str ?? "")
+			.replace(/,(\s*[}\]])/g, "$1");
+		return JSON.parse(json)?.vars?.EMDASH_SITE_URL || undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+// Public origin (EMDASH_SITE_URL). wrangler.jsonc `vars` is the single source:
+// - at runtime EmDash reads it there (passkeys, CSRF, email links);
+// - for `astro build` we also need it in process.env, because EmDash bakes
+//   the image-optimisation allow-list (image.remotePatterns) at build time and
+//   Astro `site` drives canonical/OG/RSS and /api/v1 URLs (src/lib/site-url.ts).
+// `astro dev` leaves it unset so passkeys stay on localhost and LAN /
+// Android-emulator testing works. An explicit env var always wins.
+if (process.argv.includes("build") && !process.env.EMDASH_SITE_URL && !process.env.SITE_URL) {
+	const fromWrangler = siteUrlFromWrangler();
+	if (fromWrangler) process.env.EMDASH_SITE_URL = fromWrangler;
+}
 const siteUrl = process.env.EMDASH_SITE_URL || process.env.SITE_URL || undefined;
 
 export default defineConfig({
