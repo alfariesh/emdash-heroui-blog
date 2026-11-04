@@ -1,0 +1,54 @@
+---
+import { getEmDashCollection } from "emdash";
+import Base from "../../layouts/Base.astro";
+import PageIntro from "../../components/PageIntro.astro";
+import PostCard from "../../components/PostCard.astro";
+import Pagination from "../../components/Pagination.astro";
+import { getPostTerms } from "../../lib/post-terms";
+
+// Sort in the database so it can use its index on published_at.
+const cursor = Astro.url.searchParams.get("cursor") || undefined;
+const {
+	entries: posts,
+	cacheHint,
+	nextCursor,
+} = await getEmDashCollection("posts", {
+	orderBy: { published_at: "desc" },
+	limit: 20,
+	cursor,
+});
+
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+// Tags + category for every post on this page in two batched queries.
+const termsFor = await getPostTerms(posts.map((p) => p.data.id));
+---
+
+<Base title="Semua Tulisan" description="Arsip seluruh tulisan, dari yang terbaru.">
+	<PageIntro
+		eyebrow="Arsip"
+		title="Semua Tulisan"
+		description="Seluruh tulisan yang sudah terbit, diurutkan dari yang terbaru."
+	/>
+
+	<section class="container-page">
+		{
+			posts.length > 0 ? (
+				<div class="flex flex-col gap-5">
+					{posts.map((post) => (
+						<PostCard
+							post={post}
+							{...termsFor(post.data.id)}
+							variant="row"
+						/>
+					))}
+				</div>
+			) : (
+				<p class="rounded-3xl bg-surface px-6 py-16 text-center text-sm text-muted shadow-surface">
+					Belum ada tulisan yang terbit.
+				</p>
+			)
+		}
+		<Pagination basePath="/posts" cursor={cursor} nextCursor={nextCursor} />
+	</section>
+</Base>

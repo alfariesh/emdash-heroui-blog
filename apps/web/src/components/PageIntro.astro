@@ -1,0 +1,44 @@
+---
+import { chipVariants, cn } from "@heroui/styles";
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+
+interface Props {
+	/** Small label above the title, e.g. "Kategori" */
+	eyebrow?: string;
+	title: string;
+	description?: string | null;
+	/** Hugeicons icon shown in a tile above the title (e.g. a category icon) */
+	icon?: IconSvgElement;
+	class?: string;
+}
+
+const { eyebrow, title, description, icon, class: className } = Astro.props;
+const chip = chipVariants({ size: "sm", variant: "soft", color: "accent" });
+---
+
+<header class={cn("container-page pt-12 pb-8 sm:pt-16 sm:pb-10", className)}>
+	<div class="flex max-w-3xl flex-col items-start gap-4">
+		{
+			icon && (
+				<span
+					class="flex size-12 items-center justify-center rounded-2xl bg-accent-soft text-accent-soft-foreground"
+					aria-hidden="true"
+				>
+					<HugeiconsIcon icon={icon} size={24} />
+				</span>
+			)
+		}
+		{
+			eyebrow && (
+				<span class={chip.base()}>
+					<span class={chip.label()}>{eyebrow}</span>
+				</span>
+			)
+		}
+		<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
+			{title}
+		</h1>
+		{description && <p class="max-w-2xl text-lg leading-8 text-muted text-pretty">{description}</p>}
+		<slot />
+	</div>
+</header>

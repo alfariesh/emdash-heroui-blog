@@ -1,0 +1,245 @@
+---
+import { getMenuWithCacheHint, getSiteSettingsWithCacheHint } from "emdash";
+import {
+	WidgetArea,
+	EmDashHead,
+	EmDashBodyStart,
+	EmDashBodyEnd,
+} from "emdash/ui";
+import { createPublicPageContext } from "emdash/page";
+import { Font } from "astro:assets";
+import SiteHeader, { type NavItem } from "../components/islands/SiteHeader";
+import ThemeSwitcher from "../components/islands/ThemeSwitcher";
+import { isThemePreference, type ThemePreference } from "../lib/theme";
+import { getLocale } from "../lib/locale";
+import { resolveBlogSiteIdentity } from "@blog/shared";
+import "../styles/global.css";
+
+interface Props {
+	title: string;
+	pageTitle?: string | null;
+	description?: string | null;
+	image?: string | null;
+	canonical?: string | null;
+	robots?: string | null;
+	type?: "website" | "article";
+	publishedTime?: string | null;
+	modifiedTime?: string | null;
+	author?: string | null;
+	/** Pass content reference for plugin page contributions on content pages */
+	content?: { collection: string; id: string; slug?: string | null };
+}
+
+const {
+	title,
+	pageTitle,
+	description,
+	image,
+	canonical,
+	robots,
+	type = "website",
+	publishedTime,
+	modifiedTime,
+	author,
+	content,
+} = Astro.props;
+
+const [settingsResult, menuResult] = await Promise.all([
+	getSiteSettingsWithCacheHint(),
+	getMenuWithCacheHint("primary"),
+]);
+if (Astro.cache?.enabled) {
+	Astro.cache.set(settingsResult.cacheHint);
+	Astro.cache.set(menuResult.cacheHint);
+}
+
+const { siteTitle, siteTagline, siteLogo } = resolveBlogSiteIdentity(
+	settingsResult.data,
+);
+const titleIncludesSiteName =
+	title === siteTitle ||
+	title.endsWith(` | ${siteTitle}`) ||
+	title.endsWith(` — ${siteTitle}`);
+const fullTitle = titleIncludesSiteName ? title : `${title} — ${siteTitle}`;
+
+const menuItems = menuResult.data?.items ?? [];
+
+// Build public page context for plugin contributions.
+// SEO data is passed here and rendered securely by EmDashHead.
+const pageCtx = createPublicPageContext({
+	Astro,
+	kind: content ? "content" : "custom",
+	pageType: type,
+	title: fullTitle,
+	pageTitle: pageTitle ?? title,
+	description,
+	canonical,
+	image,
+	content,
+	seo: { ogImage: image, robots },
+	articleMeta: { publishedTime, modifiedTime, author },
+	siteName: siteTitle,
+});
+
+// Signed-in editors get an Admin shortcut in the header
+const isLoggedIn = !!Astro.locals.user;
+
+const TRAILING_SLASH = /\/$/;
+const currentPath = Astro.url.pathname.replace(TRAILING_SLASH, "") || "/";
+
+/** "page" for the current page, "true" for its parent section (e.g. Posts on a post). */
+function navCurrent(url: string): NavItem["current"] {
+	let target: URL;
+	try {
+		target = new URL(url, Astro.url);
+	} catch {
+		return undefined;
+	}
+	if (target.origin !== Astro.url.origin || target.hash) return undefined;
+	if (target.search && target.search !== Astro.url.search) return undefined;
+	const path = target.pathname.replace(TRAILING_SLASH, "") || "/";
+	if (path === currentPath) return "page";
+	if (path !== "/" && currentPath.startsWith(`${path}/`)) return "true";
+	return undefined;
+}
+
+const navItems: NavItem[] = menuItems.map((item) => ({
+	label: item.label,
+	url: item.url,
+	target: item.target ?? undefined,
+	current: navCurrent(item.url),
+}));
+
+// Explicit theme choice from the cookie; no cookie = follow the OS
+const themeCookie = Astro.cookies.get("theme")?.value;
+const themePreference: ThemePreference =
+	isThemePreference(themeCookie) ? themeCookie : "system";
+
+const searchQuery =
+	currentPath === "/search" ? (Astro.url.searchParams.get("q") ?? "") : "";
+
+const lang = getLocale();
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html
+	lang={lang}
+	class={themePreference === "system" ? undefined : themePreference}
+	data-theme-preference={themePreference}
+>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<Font cssVariable="--font-body" preload />
+		<Font cssVariable="--font-code" />
+		<title>{fullTitle}</title>
+		<EmDashHead page={pageCtx} />
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title={`${siteTitle} RSS Feed`}
+			href="/rss.xml"
+		/>
+		<script is:inline>
+			// Resolve the colour theme before first paint. HeroUI reads a
+			// light/dark class on <html>; with no cookie we follow the OS.
+			(function () {
+				var root = document.documentElement;
+				var media = window.matchMedia("(prefers-color-scheme: dark)");
+				var match = document.cookie.match(/(?:^|; )theme=(light|dark)/);
+				root.dataset.themePreference = match ? match[1] : "system";
+				function apply() {
+					var pref = root.dataset.themePreference;
+					var theme = pref === "light" || pref === "dark" ? pref : media.matches ? "dark" : "light";
+					root.classList.remove("light", "dark");
+					root.classList.add(theme);
+				}
+				apply();
+				media.addEventListener("change", apply);
+			})();
+		</script>
+	</head>
+	<body>
+		<EmDashBodyStart page={pageCtx} />
+		<a href="#main" class="skip-link">Langsung ke konten</a>
+
+		<SiteHeader
+			client:load
+			siteTitle={siteTitle}
+			logo={siteLogo?.url ? { url: siteLogo.url, alt: siteLogo.alt } : null}
+			items={navItems}
+			isLoggedIn={isLoggedIn}
+			searchQuery={searchQuery}
+			themePreference={themePreference}
+		/>
+
+		<main id="main" tabindex="-1">
+			<slot />
+		</main>
+
+		<footer class="mt-24 border-t border-separator/70">
+			<div class="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
+				<div class="flex max-w-sm flex-col gap-3">
+					<a href="/" class="text-[0.9375rem] font-semibold tracking-tight text-foreground">
+						{siteTitle}
+					</a>
+					{siteTagline && <p class="text-sm leading-6 text-muted">{siteTagline}</p>}
+					<div class="footer-widgets mt-2 text-sm text-muted">
+						<WidgetArea name="footer" />
+					</div>
+				</div>
+
+				{
+					navItems.length > 0 && (
+						<nav aria-labelledby="footer-nav" class="flex flex-col gap-3">
+							<h2 id="footer-nav" class="text-sm font-semibold text-foreground">
+								Jelajahi
+							</h2>
+							<ul class="flex flex-col gap-2 text-sm">
+								{navItems.map((item) => (
+									<li>
+										<a
+											href={item.url}
+											target={item.target}
+											rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+											class="text-muted hover:text-foreground"
+										>
+											{item.label}
+										</a>
+									</li>
+								))}
+							</ul>
+						</nav>
+					)
+				}
+
+				<div class="flex flex-col gap-3">
+					<h2 class="text-sm font-semibold text-foreground">Ikuti</h2>
+					<ul class="flex flex-col gap-2 text-sm">
+						<li>
+							<a href="/rss.xml" class="text-muted hover:text-foreground">Feed RSS</a>
+						</li>
+						<li>
+							<a href="/search" class="text-muted hover:text-foreground">Cari tulisan</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="border-t border-separator/70">
+				<div class="container-page flex flex-col-reverse items-start justify-between gap-4 py-6 sm:flex-row sm:items-center">
+					<p class="text-xs text-muted">
+						© {year} {siteTitle}. Dibangun dengan{" "}
+						<a href="https://emdashcms.com" class="text-foreground hover:underline">EmDash</a>{" "}
+						dan{" "}
+						<a href="https://heroui.com" class="text-foreground hover:underline">HeroUI</a>.
+					</p>
+					<ThemeSwitcher client:visible initialPreference={themePreference} />
+				</div>
+			</div>
+		</footer>
+
+		<EmDashBodyEnd page={pageCtx} />
+	</body>
+</html>

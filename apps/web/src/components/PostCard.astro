@@ -1,0 +1,168 @@
+---
+import type { ContentEntry, InferCollectionData } from "emdash";
+import { Image } from "emdash/ui";
+import { cardVariants, chipVariants, cn } from "@heroui/styles";
+import Byline from "./Byline.astro";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { categoryIcon } from "../lib/icons";
+import { formatDate } from "../lib/locale";
+import type { TermLink } from "../lib/post-terms";
+import { formatReadingTime, getReadingTime } from "@blog/shared";
+
+interface Props {
+	post: ContentEntry<InferCollectionData<"posts">>;
+	tags?: TermLink[];
+	/** Shown first with its icon; omit it on that category's own archive page. */
+	category?: TermLink | null;
+	/** card: grid tile. feature: large split card. row: archive list item. */
+	variant?: "card" | "feature" | "row";
+	headingLevel?: 2 | 3;
+	/** Load the image eagerly; use for the largest image above the fold. */
+	priority?: boolean;
+}
+
+const {
+	post,
+	tags = [],
+	category = null,
+	variant = "card",
+	headingLevel = 2,
+	priority = false,
+} = Astro.props;
+
+const Heading = `h${headingLevel}` as const;
+const href = `/posts/${post.id}`;
+const title = post.data.title || "Tanpa judul";
+const publishedAt = post.data.publishedAt ?? null;
+const readingTime = formatReadingTime(getReadingTime(post.data.content));
+const bylines = post.data.bylines ?? [];
+// The category takes one of the chip slots so cards keep a single row
+const maxChips = variant === "card" ? 2 : 3;
+const visibleTags = tags.slice(0, maxChips - (category ? 1 : 0));
+
+const card = cardVariants();
+const chip = chipVariants({ size: "sm", variant: "soft" });
+const categoryChip = chipVariants({ size: "sm", variant: "soft", color: "accent" });
+
+const sizes = {
+	card: "(min-width: 1024px) 360px, (min-width: 640px) 45vw, 100vw",
+	feature: "(min-width: 1024px) 620px, 100vw",
+	row: "(min-width: 640px) 220px, 100vw",
+}[variant];
+
+const layout = {
+	card: "flex h-full flex-col",
+	// minmax(0, …) stops the image's intrinsic width from widening the grid
+	feature: "grid grid-cols-[minmax(0,1fr)] gap-0 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]",
+	row: "grid grid-cols-[minmax(0,1fr)] gap-0 sm:grid-cols-[220px_minmax(0,1fr)]",
+}[variant];
+
+const mediaRatio = {
+	card: "aspect-[16/10]",
+	feature: "aspect-[16/10] md:aspect-auto md:min-h-[22rem]",
+	row: "aspect-[16/10] sm:aspect-auto sm:h-full sm:min-h-[9.5rem]",
+}[variant];
+
+const titleClass = {
+	card: "text-lg leading-snug",
+	feature: "text-2xl leading-tight sm:text-3xl",
+	row: "text-lg leading-snug sm:text-xl",
+}[variant];
+---
+
+<article class={cn(card.base(), "group gap-0 p-2", layout)}>
+	<a href={href} class={cn("media-frame rounded-2xl", mediaRatio)} tabindex="-1" aria-hidden="true">
+		{
+			post.data.featured_image ? (
+				<div class="h-full w-full" {...post.edit.featured_image}>
+					<Image
+						image={post.data.featured_image}
+						sizes={sizes}
+						priority={priority}
+						class="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+					/>
+				</div>
+			) : (
+				<div class="h-full w-full bg-linear-to-br from-accent/15 via-surface-secondary to-surface-tertiary" />
+			)
+		}
+	</a>
+
+	<div
+		class={cn(
+			"flex flex-1 flex-col gap-3",
+			variant === "feature" ? "p-4 sm:p-8 md:justify-center" : "p-3 pt-4",
+			variant === "row" && "sm:p-5",
+		)}
+	>
+		{
+			(category || visibleTags.length > 0) && (
+				<ul class="relative z-10 flex flex-wrap gap-1.5" aria-label="Kategori dan tag">
+					{category && (
+						<li>
+							<a href={`/category/${category.slug}`} class={cn(categoryChip.base(), "hover:opacity-80")}>
+								<HugeiconsIcon icon={categoryIcon(category.slug)} size={12} strokeWidth={2} aria-hidden="true" />
+								<span class={categoryChip.label()}>{category.label}</span>
+							</a>
+						</li>
+					)}
+					{visibleTags.map((tag) => (
+						<li>
+							<a href={`/tag/${tag.slug}`} class={cn(chip.base(), "hover:opacity-80")}>
+								<span class={chip.label()}>{tag.label}</span>
+							</a>
+						</li>
+					))}
+				</ul>
+			)
+		}
+
+		<Heading class={cn("font-semibold tracking-tight text-foreground text-balance", titleClass)}>
+			<a href={href} class="after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none" {...post.edit.title}>
+				{title}
+			</a>
+		</Heading>
+
+		{
+			post.data.excerpt && (
+				<p
+					class={cn(
+						"text-sm leading-6 text-muted",
+						variant === "feature" ? "line-clamp-3 sm:text-base sm:leading-7" : "line-clamp-2",
+					)}
+					{...post.edit.excerpt}
+				>
+					{post.data.excerpt}
+				</p>
+			)
+		}
+
+		<div class="mt-auto flex items-center justify-between gap-4 pt-2">
+			<Byline
+				bylines={bylines}
+				max={variant === "card" ? 1 : 2}
+				avatars={variant === "card" ? 1 : 3}
+				size="sm"
+			/>
+			<p class="flex shrink-0 items-center gap-1.5 text-xs text-muted tabular-nums">
+				{
+					publishedAt && (
+						<time datetime={publishedAt.toISOString()}>
+							{formatDate(publishedAt, "short")}
+						</time>
+					)
+				}
+				{publishedAt && <span aria-hidden="true">·</span>}
+				<span>{readingTime}</span>
+			</p>
+		</div>
+	</div>
+</article>
+
+<style>
+	/* The whole card is clickable via the title link; keep its focus ring on the card */
+	article:has(h2 a:focus-visible, h3 a:focus-visible) {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
+</style>

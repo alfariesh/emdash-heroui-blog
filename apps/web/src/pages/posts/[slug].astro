@@ -1,0 +1,344 @@
+---
+import {
+	getEmDashEntry,
+	getEmDashCollection,
+	getSeoMeta,
+	decodeSlug,
+	getSiteSettings,
+} from "emdash";
+import { Image, PortableText, WidgetArea } from "emdash/ui";
+import { Comments, CommentForm } from "emdash/ui/comments";
+import { ArrowRight01Icon, ArrowRight02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { categoryIcon } from "../../lib/icons";
+import { getPostTerms } from "../../lib/post-terms";
+import { breadcrumbsVariants, buttonVariants, cardVariants, chipVariants, cn } from "@heroui/styles";
+import Base from "../../layouts/Base.astro";
+import Byline from "../../components/Byline.astro";
+import PostCard from "../../components/PostCard.astro";
+import { formatDate, getLocale } from "../../lib/locale";
+import { formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
+
+const slug = decodeSlug(Astro.params.slug);
+
+if (!slug) {
+	return Astro.rewrite("/404");
+}
+
+const { entry: post, cacheHint } = await getEmDashEntry("posts", slug);
+
+if (!post) {
+	return Astro.rewrite("/404");
+}
+
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+// Featured image URL for the OG fallback.
+// The image may have src (external) or meta.storageKey (local).
+function getImageUrl(img: unknown): string | undefined {
+	if (!img || typeof img !== "object") return undefined;
+	const image = img as Record<string, unknown>;
+	if (typeof image.src === "string" && image.src) {
+		return image.src.startsWith("http") ? image.src : `${Astro.url.origin}${image.src}`;
+	}
+	const meta = image.meta as Record<string, unknown> | undefined;
+	const storageKey =
+		(typeof meta?.storageKey === "string" ? meta.storageKey : undefined) ||
+		(typeof image.id === "string" ? image.id : undefined);
+	if (storageKey) {
+		return `${Astro.url.origin}/_emdash/api/media/file/${storageKey}`;
+	}
+	return undefined;
+}
+const featuredImageUrl = getImageUrl(post.data.featured_image);
+const { siteTitle } = resolveBlogSiteIdentity(await getSiteSettings());
+
+// Generate SEO meta from content
+const seo = getSeoMeta(post, {
+	siteTitle,
+	siteUrl: Astro.url.origin,
+	path: Astro.url.pathname.replace(/\/$/, ""),
+	defaultOgImage: featuredImageUrl,
+});
+
+// Bylines and terms are already hydrated by getEmDashEntry
+const bylines = post.data.bylines ?? [];
+const tags = post.data.terms?.tag ?? [];
+const categories = post.data.terms?.category ?? [];
+const readingTime = formatReadingTime(getReadingTime(post.data.content));
+
+// Fetch a few extra recent posts in case the current post is among them.
+const { entries: recentPosts, cacheHint: recentPostsCacheHint } = await getEmDashCollection(
+	"posts",
+	{ orderBy: { published_at: "desc" }, limit: 4 },
+);
+if (Astro.cache?.enabled) Astro.cache.set(recentPostsCacheHint);
+const otherPosts = recentPosts.filter((p) => p.id !== post.id).slice(0, 3);
+
+// Tags + category for the related posts in two batched queries
+const otherTermsFor = await getPostTerms(otherPosts.map((p) => p.data.id));
+
+const publishedAt = post.data.publishedAt ?? null;
+const publishDate = publishedAt ? formatDate(publishedAt, "long") : null;
+
+// The script below builds the table of contents and has the final say; this
+// guess keeps the sidebar from shifting when the page loads.
+const hasHeadings = (post.data.content ?? []).some(
+	(block) =>
+		block._type === "block" &&
+		"style" in block &&
+		(block.style === "h2" || block.style === "h3"),
+);
+
+const crumbs = breadcrumbsVariants();
+const card = cardVariants();
+const categoryChip = chipVariants({ variant: "soft", color: "accent" });
+const tagChip = chipVariants({ variant: "secondary" });
+
+const commentFormLabels = {
+	name: "Nama",
+	email: "Email (tidak ditampilkan)",
+	comment: "Komentar",
+	submit: "Kirim komentar",
+	submitting: "Mengirim…",
+	published: "Terima kasih! Komentar Anda sudah tampil.",
+	pending: "Terima kasih! Komentar Anda akan tampil setelah disetujui.",
+	error: "Komentar gagal dikirim. Silakan coba lagi.",
+	networkError: "Koneksi bermasalah. Periksa internet Anda lalu coba lagi.",
+};
+const commentListLabels = {
+	heading: (count: number) => (count === 0 ? "Belum ada komentar" : `${count} komentar`),
+	member: "Penulis",
+	like: "Suka",
+};
+---
+
+<Base
+	title={seo.title}
+	pageTitle={seo.ogTitle}
+	description={seo.description}
+	image={seo.ogImage}
+	canonical={seo.canonical}
+	robots={seo.robots}
+	type="article"
+	publishedTime={post.data.publishedAt?.toISOString() ?? null}
+	modifiedTime={post.data.updatedAt.toISOString()}
+	content={{ collection: "posts", id: post.data.id, slug }}
+>
+	<article>
+		<header class="container-page pt-10 sm:pt-14">
+			<div class="mx-auto flex max-w-5xl flex-col items-start gap-5 [&>*]:max-w-3xl">
+				<nav aria-label="Breadcrumb">
+					<ol class={crumbs.base()}>
+						<li class={crumbs.item()}>
+							<a href="/" class={crumbs.link()}>Beranda</a>
+							<HugeiconsIcon icon={ArrowRight01Icon} className={crumbs.separator()} aria-hidden="true" />
+						</li>
+						<li class={crumbs.item()}>
+							<a href="/posts" class={crumbs.link()}>Tulisan</a>
+							{categories[0] && <HugeiconsIcon icon={ArrowRight01Icon} className={crumbs.separator()} aria-hidden="true" />}
+						</li>
+						{
+							categories[0] && (
+								<li class={crumbs.item()}>
+									<a href={`/category/${categories[0].slug}`} class={crumbs.link()}>
+										{categories[0].label}
+									</a>
+								</li>
+							)
+						}
+					</ol>
+				</nav>
+
+				<h1
+					class="text-4xl leading-[1.1] font-semibold tracking-tight text-balance text-foreground sm:text-5xl"
+					{...post.edit.title}
+				>
+					{post.data.title}
+				</h1>
+
+				{
+					post.data.excerpt && (
+						<p class="text-lg leading-8 text-muted text-pretty sm:text-xl sm:leading-9" {...post.edit.excerpt}>
+							{post.data.excerpt}
+						</p>
+					)
+				}
+
+				<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1">
+					<Byline bylines={bylines} max={2} size="md" />
+					<p class="flex items-center gap-2 text-sm text-muted tabular-nums">
+						{publishedAt && <time datetime={publishedAt.toISOString()}>{publishDate}</time>}
+						{publishedAt && <span aria-hidden="true">·</span>}
+						<span>{readingTime}</span>
+					</p>
+				</div>
+			</div>
+		</header>
+
+		{
+			post.data.featured_image && (
+				<div class="container-page mt-10 sm:mt-12">
+					<div
+						class="media-frame mx-auto aspect-[16/9] max-w-5xl rounded-3xl"
+						{...post.edit.featured_image}
+					>
+						<Image
+							image={post.data.featured_image}
+							sizes="(min-width: 1088px) 1024px, 94vw"
+							priority
+						/>
+					</div>
+				</div>
+			)
+		}
+
+		<div class="container-page mt-12">
+			<div class="mx-auto grid max-w-5xl gap-12 lg:grid-cols-[minmax(0,1fr)_17rem]">
+				<div class="min-w-0">
+					<div class="typography-prose article-prose" data-post-content>
+						<PortableText value={post.data.content} />
+					</div>
+
+					{
+						tags.length > 0 && (
+							<ul class="mt-12 flex flex-wrap gap-2" aria-label="Tag">
+								{tags.map((tag) => (
+									<li>
+										<a href={`/tag/${tag.slug}`} class={cn(tagChip.base(), "h-8 px-3 hover:bg-default")}>
+											<span class={tagChip.label()}>#{tag.label}</span>
+										</a>
+									</li>
+								))}
+							</ul>
+						)
+					}
+
+					<section
+						class={cn(card.base(), "post-comments mt-12 gap-4 p-6 sm:p-8")}
+						aria-labelledby="comments-title"
+					>
+						<h2 id="comments-title" class="text-xl font-semibold tracking-tight">
+							Diskusi
+						</h2>
+						<Comments
+							collection="posts"
+							contentId={post.data.id}
+							threaded
+							locale={getLocale()}
+							labels={commentListLabels}
+						/>
+						<CommentForm collection="posts" contentId={post.data.id} labels={commentFormLabels} />
+					</section>
+				</div>
+
+				<aside class="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start" aria-label="Info tambahan">
+					<nav
+						class={cn(card.base(), "hidden gap-2 p-3 lg:flex")}
+						aria-labelledby="toc-title"
+						hidden={!hasHeadings}
+						data-toc
+					>
+						<h2 id="toc-title" class="px-3 pt-1 text-sm font-semibold text-foreground">
+							Di halaman ini
+						</h2>
+						<ol class="flex flex-col gap-0.5" data-toc-list></ol>
+					</nav>
+
+					{
+						categories.length > 0 && (
+							<div class="flex flex-wrap gap-2 lg:hidden">
+								{categories.map((category) => (
+									<a href={`/category/${category.slug}`} class={categoryChip.base()}>
+										<HugeiconsIcon icon={categoryIcon(category.slug)} size={14} aria-hidden="true" />
+										<span class={categoryChip.label()}>{category.label}</span>
+									</a>
+								))}
+							</div>
+						)
+					}
+
+					<WidgetArea name="sidebar" />
+				</aside>
+			</div>
+		</div>
+	</article>
+
+	{
+		otherPosts.length > 0 && (
+			<section class="container-page mt-24" aria-labelledby="continue-reading">
+				<div class="mb-6 flex items-end justify-between gap-4">
+					<h2 id="continue-reading" class="text-2xl font-semibold tracking-tight">
+						Baca Juga
+					</h2>
+					<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
+						Semua tulisan
+						<HugeiconsIcon icon={ArrowRight02Icon} aria-hidden="true" />
+					</a>
+				</div>
+				<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					{otherPosts.map((p) => (
+						<PostCard
+							post={p}
+							{...otherTermsFor(p.data.id)}
+							variant="card"
+							headingLevel={3}
+						/>
+					))}
+				</div>
+			</section>
+		)
+	}
+
+	<script>
+		// Build the table of contents from the body's h2/h3 headings
+		function buildToc() {
+			const content = document.querySelector("[data-post-content]");
+			const toc = document.querySelector<HTMLElement>("[data-toc]");
+			const list = document.querySelector("[data-toc-list]");
+			if (!content || !toc || !list) return;
+
+			const headings = [...content.querySelectorAll<HTMLHeadingElement>("h2, h3")];
+			toc.hidden = headings.length === 0;
+			if (headings.length === 0) return;
+
+			const links = new Map<Element, HTMLAnchorElement>();
+			headings.forEach((heading, index) => {
+				if (!heading.id) heading.id = `bagian-${index + 1}`;
+
+				const item = document.createElement("li");
+				item.className = heading.tagName === "H3" ? "toc-item--nested" : "";
+
+				const link = document.createElement("a");
+				link.href = `#${heading.id}`;
+				link.className = "toc-link";
+				link.textContent = heading.textContent;
+
+				item.appendChild(link);
+				list.appendChild(item);
+				links.set(heading, link);
+			});
+
+			// Mark the section currently in view
+			const setCurrent = (link: HTMLAnchorElement) => {
+				for (const other of links.values()) other.removeAttribute("aria-current");
+				link.setAttribute("aria-current", "true");
+			};
+			const first = links.values().next().value;
+			if (first) setCurrent(first);
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					for (const entry of entries) {
+						const link = links.get(entry.target);
+						if (link && entry.isIntersecting) setCurrent(link);
+					}
+				},
+				{ rootMargin: "-96px 0px -75% 0px" },
+			);
+			headings.forEach((heading) => observer.observe(heading));
+		}
+
+		buildToc();
+	</script>
+</Base>

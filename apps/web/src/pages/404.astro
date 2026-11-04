@@ -1,0 +1,20 @@
+---
+import { buttonVariants } from "@heroui/styles";
+import Base from "../layouts/Base.astro";
+import SearchForm from "../components/islands/SearchForm";
+---
+
+<Base title="Halaman tidak ditemukan" robots="noindex">
+	<section class="container-page flex flex-col items-center py-24 text-center sm:py-32">
+		<p class="text-sm font-semibold text-accent tabular-nums">404</p>
+		<h1 class="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Halaman tidak ditemukan</h1>
+		<p class="mt-4 max-w-md text-lg leading-8 text-muted">
+			Halaman yang Anda cari tidak ada atau sudah dipindahkan.
+		</p>
+		<div class="mt-8 flex flex-wrap justify-center gap-3">
+			<a href="/" class={buttonVariants({ variant: "primary" })}>Ke beranda</a>
+			<a href="/posts" class={buttonVariants({ variant: "outline" })}>Lihat tulisan</a>
+		</div>
+		<SearchForm client:visible className="mt-10 w-full max-w-sm" placeholder="Atau cari tulisan…" />
+	</section>
+</Base>

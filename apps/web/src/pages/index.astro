@@ -1,0 +1,142 @@
+---
+import {
+	getEmDashCollection,
+	getSiteSettings,
+	getTaxonomyTermsWithCacheHint,
+} from "emdash";
+import { ArrowRight02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { buttonVariants, chipVariants, cn } from "@heroui/styles";
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import { resolveBlogSiteIdentity } from "@blog/shared";
+import { categoryIcon } from "../lib/icons";
+import { getPostTerms } from "../lib/post-terms";
+
+// Limit to what we render (1 featured + 6 grid). The DB does the slicing
+// instead of fetching every post and discarding the tail in JS.
+const POSTS_PER_PAGE = 7;
+
+const [{ entries: posts, cacheHint }, settings, categoriesResult] = await Promise.all([
+	getEmDashCollection("posts", {
+		orderBy: { published_at: "desc" },
+		limit: POSTS_PER_PAGE + 1, // +1 to detect "view all" need
+	}),
+	getSiteSettings(),
+	getTaxonomyTermsWithCacheHint("category", { includeCounts: true }),
+]);
+const { siteTitle, siteTagline } = resolveBlogSiteIdentity(settings);
+
+if (Astro.cache?.enabled) {
+	Astro.cache.set(cacheHint);
+	Astro.cache.set(categoriesResult.cacheHint);
+}
+
+const categories = categoriesResult.data.filter((term) => (term.count ?? 1) > 0);
+
+// Trim the lookahead post used to detect overflow
+const visiblePosts = posts.slice(0, POSTS_PER_PAGE);
+const hasMorePosts = posts.length > POSTS_PER_PAGE;
+
+// The newest post with a featured image leads the page
+const featuredPost = visiblePosts.find((p) => p.data.featured_image);
+const featuredIndex = featuredPost ? visiblePosts.indexOf(featuredPost) : -1;
+const gridPosts = visiblePosts.filter((_, i) => i !== featuredIndex).slice(0, 6);
+
+// Tags + category for the featured post and grid posts in two batched queries.
+// Bylines are already hydrated on entry.data.bylines by getEmDashCollection.
+const termsFor = await getPostTerms([
+	...(featuredPost ? [featuredPost.data.id] : []),
+	...gridPosts.map((p) => p.data.id),
+]);
+
+const chip = chipVariants({ variant: "secondary" });
+---
+
+<Base title={siteTitle} description={siteTagline}>
+	<section class="container-page pt-14 pb-10 sm:pt-20 sm:pb-14">
+		<div class="flex max-w-3xl flex-col gap-5">
+			<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-6xl">
+				{siteTitle}
+			</h1>
+			{siteTagline && <p class="max-w-2xl text-lg leading-8 text-muted text-pretty sm:text-xl">{siteTagline}</p>}
+			{
+				categories.length > 0 && (
+					<nav aria-label="Kategori" class="pt-2">
+						<ul class="flex flex-wrap gap-2">
+							{categories.map((category) => (
+								<li>
+									<a
+										href={`/category/${category.slug}`}
+										class={cn(chip.base(), "h-8 px-3 hover:bg-default")}
+									>
+										<HugeiconsIcon
+											icon={categoryIcon(category.slug)}
+											size={14}
+											className="text-accent"
+											aria-hidden="true"
+										/>
+										<span class={chip.label()}>{category.label}</span>
+										{category.count !== undefined && (
+											<span class="text-xs text-muted tabular-nums">{category.count}</span>
+										)}
+									</a>
+								</li>
+							))}
+						</ul>
+					</nav>
+				)
+			}
+		</div>
+	</section>
+
+	{
+		visiblePosts.length === 0 ? (
+			<section class="container-page">
+				<div class="flex flex-col items-center gap-3 rounded-3xl bg-surface px-6 py-16 text-center shadow-surface">
+					<h2 class="text-lg font-semibold">Belum ada tulisan</h2>
+					<p class="max-w-sm text-sm text-muted">
+						Tulisan yang dipublikasikan dari panel admin akan muncul di sini.
+					</p>
+					<a href="/_emdash/admin" class={cn(buttonVariants({ variant: "primary" }), "mt-2")}>
+						Tulis tulisan pertama
+					</a>
+				</div>
+			</section>
+		) : (
+			<>
+				{featuredPost && (
+					<section class="container-page" aria-label="Tulisan unggulan">
+						<PostCard
+							post={featuredPost}
+							{...termsFor(featuredPost.data.id)}
+							variant="feature"
+							priority
+						/>
+					</section>
+				)}
+
+				{gridPosts.length > 0 && (
+					<section class="container-page mt-16" aria-labelledby="latest-title">
+						<div class="mb-6 flex items-end justify-between gap-4">
+							<h2 id="latest-title" class="text-2xl font-semibold tracking-tight">
+								Tulisan Terbaru
+							</h2>
+							{hasMorePosts && (
+								<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
+									Lihat semua
+									<HugeiconsIcon icon={ArrowRight02Icon} aria-hidden="true" />
+								</a>
+							)}
+						</div>
+						<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+							{gridPosts.map((post) => (
+								<PostCard post={post} {...termsFor(post.data.id)} variant="card" headingLevel={3} />
+							))}
+						</div>
+					</section>
+				)}
+			</>
+		)
+	}
+</Base>

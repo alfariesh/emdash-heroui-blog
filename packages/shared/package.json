@@ -1,0 +1,17 @@
+{
+	"name": "@blog/shared",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Framework-agnostic code shared by the web (Astro) and mobile (React Native) apps",
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"typescript": "^6.0.3"
+	}
+}

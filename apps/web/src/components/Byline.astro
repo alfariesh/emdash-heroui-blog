@@ -1,0 +1,90 @@
+---
+import type { ContentBylineCredit } from "emdash";
+import { avatarVariants, cn } from "@heroui/styles";
+
+interface Props {
+	bylines: ContentBylineCredit[];
+	/** inline: stacked avatars + names on one line. list: one row per author with role. */
+	layout?: "inline" | "list";
+	/** How many names the inline layout spells out before collapsing the rest into "+N" */
+	max?: number;
+	/** How many stacked avatars the inline layout shows */
+	avatars?: number;
+	size?: "sm" | "md" | "lg";
+	class?: string;
+}
+
+const {
+	bylines,
+	layout = "inline",
+	max = 1,
+	avatars = 3,
+	size = "sm",
+	class: className,
+} = Astro.props;
+
+const WHITESPACE = /\s+/;
+
+const people = bylines.map(({ byline, roleLabel }) => ({
+	name: byline.displayName,
+	role: roleLabel,
+	src: byline.avatarStorageKey
+		? (Astro.locals.emdash?.getPublicMediaUrl?.(byline.avatarStorageKey) ??
+			`/_emdash/api/media/file/${byline.avatarStorageKey.split("/").map(encodeURIComponent).join("/")}`)
+		: null,
+	initials: byline.displayName
+		.split(WHITESPACE)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((word) => [...word][0]?.toUpperCase() ?? "")
+		.join(""),
+}));
+
+const shown = people.slice(0, max).map((person) => person.name);
+const hiddenCount = Math.max(0, people.length - max);
+const avatar = avatarVariants({ size, variant: "soft", color: "accent" });
+---
+
+{
+	people.length > 0 && layout === "inline" && (
+		<div class={cn("flex min-w-0 items-center gap-2.5", className)}>
+			<span class="flex shrink-0 -space-x-2">
+				{people.slice(0, Math.max(1, avatars)).map((person) => (
+					<span class={cn(avatar.base(), "ring-2 ring-surface")} aria-hidden="true">
+						{person.src ? (
+							<img class={avatar.image()} src={person.src} alt="" loading="lazy" />
+						) : (
+							<span class={cn(avatar.fallback(), "text-xs")}>{person.initials}</span>
+						)}
+					</span>
+				))}
+			</span>
+			<span class="min-w-0 truncate text-sm font-medium text-foreground">
+				{shown.join(", ")}
+				{hiddenCount > 0 && <span class="text-muted"> +{hiddenCount}</span>}
+			</span>
+		</div>
+	)
+}
+
+{
+	people.length > 0 && layout === "list" && (
+		<ul class={cn("flex flex-col gap-3", className)}>
+			{people.map((person) => (
+				<li class="flex items-center gap-3">
+					<span class={avatar.base()} aria-hidden="true">
+						{person.src ? (
+							<img class={avatar.image()} src={person.src} alt="" loading="lazy" />
+						) : (
+							<span class={cn(avatar.fallback(), "text-xs")}>{person.initials}</span>
+						)}
+					</span>
+					<span class="flex min-w-0 flex-col">
+						<span class="truncate text-sm font-medium text-foreground">{person.name}</span>
+						{person.role && <span class="truncate text-xs text-muted">{person.role}</span>}
+					</span>
+				</li>
+			))}
+		</ul>
+	)
+}

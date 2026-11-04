@@ -1,0 +1,38 @@
+---
+import { ArrowLeft02Icon, ArrowRight02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { buttonVariants } from "@heroui/styles";
+
+interface Props {
+	/** Path of the first page, e.g. "/posts" */
+	basePath: string;
+	cursor?: string;
+	nextCursor?: string;
+}
+
+const { basePath, cursor, nextCursor } = Astro.props;
+---
+
+{
+	(cursor || nextCursor) && (
+		<nav class="mt-12 flex items-center justify-between gap-3" aria-label="Paginasi">
+			{cursor ? (
+				<a href={basePath} class={buttonVariants({ variant: "outline" })}>
+					<HugeiconsIcon icon={ArrowLeft02Icon} aria-hidden="true" />
+					Halaman pertama
+				</a>
+			) : (
+				<span />
+			)}
+			{nextCursor && (
+				<a
+					href={`${basePath}?cursor=${encodeURIComponent(nextCursor)}`}
+					class={buttonVariants({ variant: "secondary" })}
+				>
+					Tulisan lebih lama
+					<HugeiconsIcon icon={ArrowRight02Icon} aria-hidden="true" />
+				</a>
+			)}
+		</nav>
+	)
+}

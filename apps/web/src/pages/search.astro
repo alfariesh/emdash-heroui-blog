@@ -1,0 +1,111 @@
+---
+export const prerender = false;
+
+import { search } from "emdash";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { buttonVariants, cardVariants, cn } from "@heroui/styles";
+import Base from "../layouts/Base.astro";
+import PageIntro from "../components/PageIntro.astro";
+import SearchForm from "../components/islands/SearchForm";
+
+const query = Astro.url.searchParams.get("q")?.trim() || "";
+
+// FTS-backed search() returns ranked results and scales with post count,
+// instead of loading every post and filtering in JS.
+const { items: results, nextCursor } = query
+	? await search(query, { collections: ["posts"], limit: 30 })
+	: { items: [], nextCursor: undefined };
+
+function escapeHtml(text: string) {
+	return text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#39;");
+}
+
+// The snippet is cut from the first indexed field, which for posts is the
+// title. When it is the whole title, show its highlights in the heading
+// instead of repeating the title underneath.
+const rows = results.map((result) => {
+	const title = result.title ?? "Tanpa judul";
+	const snippetIsTitle =
+		result.snippet?.replaceAll("<mark>", "").replaceAll("</mark>", "") === escapeHtml(title);
+	return {
+		path: `/posts/${result.slug ?? result.id}`,
+		title,
+		titleHtml: snippetIsTitle ? result.snippet : undefined,
+		snippet: snippetIsTitle ? undefined : result.snippet,
+	};
+});
+
+const countLabel = nextCursor ? `${rows.length} hasil teratas` : `${rows.length} hasil`;
+const card = cardVariants();
+---
+
+<Base title={query ? `Cari: ${query}` : "Cari"} description="Cari tulisan di blog ini">
+	<PageIntro
+		eyebrow="Pencarian"
+		title={query ? `Hasil untuk “${query}”` : "Cari tulisan"}
+		description={query ? null : "Telusuri judul dan isi seluruh tulisan."}
+	>
+		<SearchForm
+			client:load
+			className="mt-2 w-full max-w-xl"
+			defaultValue={query}
+			autoFocus={!query}
+		/>
+	</PageIntro>
+
+	{
+		query && (
+			<section class="container-page" aria-live="polite">
+				{rows.length > 0 ? (
+					<>
+						<p class="mb-4 text-sm text-muted tabular-nums">{countLabel}</p>
+						<ol class="flex max-w-3xl flex-col gap-3">
+							{rows.map((row) => (
+								<li>
+									<a href={row.path} class={cn(card.base(), "group flex-row items-center gap-4 p-5 hover:bg-surface-secondary")}>
+										<div class="flex min-w-0 flex-1 flex-col gap-1.5">
+											<h2 class="search-result text-base font-semibold text-foreground">
+												{row.titleHtml ? <Fragment set:html={row.titleHtml} /> : row.title}
+											</h2>
+											{row.snippet && (
+												<p class="search-result line-clamp-2 text-sm leading-6 text-muted">
+													<Fragment set:html={row.snippet} />
+												</p>
+											)}
+										</div>
+										<HugeiconsIcon icon={ArrowRight01Icon} className="size-4 shrink-0 text-muted" aria-hidden="true" />
+									</a>
+								</li>
+							))}
+						</ol>
+					</>
+				) : (
+					<div class="flex max-w-3xl flex-col items-start gap-3 rounded-3xl bg-surface p-8 shadow-surface">
+						<h2 class="text-lg font-semibold">Tidak ada hasil</h2>
+						<p class="text-sm text-muted">
+							Coba kata kunci lain yang lebih umum, atau jelajahi semua tulisan.
+						</p>
+						<a href="/posts" class={cn(buttonVariants({ variant: "secondary" }), "mt-1")}>
+							Lihat semua tulisan
+						</a>
+					</div>
+				)}
+			</section>
+		)
+	}
+</Base>
+
+<style>
+	.search-result :global(mark) {
+		border-radius: 0.25rem;
+		background: color-mix(in oklch, var(--accent) 18%, transparent);
+		padding-inline: 0.125rem;
+		color: var(--foreground);
+	}
+</style>

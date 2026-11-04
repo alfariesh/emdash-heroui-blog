@@ -1,0 +1,446 @@
+/*
+ * Site stylesheet: Tailwind CSS v4 + HeroUI v3.
+ * Import order matters — tailwindcss must come before @heroui/styles.
+ *
+ * Colours, radii and shadows come from HeroUI's theme tokens
+ * (bg-background, bg-surface, text-muted, border-separator, shadow-surface…).
+ * To restyle the site, override HeroUI variables such as --accent in the
+ * "Theme overrides" block below rather than hard-coding colours in pages.
+ */
+@import "tailwindcss";
+@import "@heroui/styles";
+
+/* Fonts are loaded by Astro (astro.config.mjs → fonts) */
+@theme inline {
+	--font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+	--font-mono: var(--font-code), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ---------------------------------------------------------------------------
+ * Theme overrides — HeroUI variables
+ * ------------------------------------------------------------------------- */
+:root {
+	/*
+	 * HeroUI defaults are used as-is. Cards are radius-3xl (24px); images inset
+	 * by p-2 use radius-2xl (16px) so corners stay concentric. Change --radius
+	 * or --accent here to restyle the whole site, e.g.:
+	 * --accent: oklch(0.62 0.19 150);
+	 */
+}
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------- */
+@layer base {
+	html {
+		scroll-padding-top: 6rem;
+		-webkit-text-size-adjust: 100%;
+	}
+
+	body {
+		@apply min-h-dvh bg-background font-sans text-foreground antialiased;
+		font-feature-settings: "cv11", "ss01";
+	}
+
+	::selection {
+		background: color-mix(in oklch, var(--accent) 22%, transparent);
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	main:focus {
+		outline: none;
+	}
+}
+
+@layer components {
+	/* Shared page container */
+	.container-page {
+		@apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+	}
+
+	/* Media wrappers: EmDash <Image> output fills its frame */
+	.media-frame {
+		@apply relative overflow-hidden bg-surface-secondary;
+	}
+
+	.media-frame img,
+	.media-frame picture {
+		@apply block h-full w-full object-cover;
+	}
+
+	/* Subtle definition line on images, per HeroUI image treatment */
+	.media-frame::after {
+		content: "";
+		@apply pointer-events-none absolute inset-0 rounded-[inherit];
+		box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 8%, transparent);
+	}
+
+	.skip-link {
+		@apply sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-xl focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-overlay;
+	}
+
+	/* -------------------------------------------------------------------------
+	 * Article body — extends HeroUI's .typography-prose for long-form reading
+	 * ----------------------------------------------------------------------- */
+	.article-prose {
+		@apply text-[1.0625rem] leading-[1.8];
+	}
+
+	.article-prose > * + * {
+		margin-top: 1.25em;
+	}
+
+	.article-prose p,
+	.article-prose li {
+		@apply text-[1.0625rem] leading-[1.8] text-foreground/90;
+	}
+
+	.article-prose h2 {
+		@apply mt-12 mb-4 text-2xl font-semibold tracking-tight text-foreground;
+		scroll-margin-top: 6rem;
+	}
+
+	.article-prose h3 {
+		@apply mt-10 mb-3 text-xl font-semibold tracking-tight text-foreground;
+		scroll-margin-top: 6rem;
+	}
+
+	.article-prose h4 {
+		@apply mt-8 mb-2 text-lg font-semibold text-foreground;
+	}
+
+	.article-prose h2 + *,
+	.article-prose h3 + *,
+	.article-prose h4 + * {
+		margin-top: 0;
+	}
+
+	.article-prose a {
+		@apply font-medium text-accent decoration-accent/40 underline-offset-4 hover:decoration-accent;
+	}
+
+	.article-prose figure {
+		@apply my-8;
+	}
+
+	.article-prose figure img,
+	.article-prose > img {
+		@apply my-0 w-full rounded-2xl;
+	}
+
+	.article-prose figcaption {
+		@apply mt-3 text-center text-sm text-muted;
+	}
+
+	.article-prose blockquote {
+		@apply my-8 border-s-2 border-accent ps-5 text-lg text-foreground/80 not-italic;
+	}
+
+	.article-prose pre {
+		@apply my-6 rounded-2xl bg-surface-secondary p-5 text-sm leading-relaxed;
+	}
+
+	.article-prose pre code {
+		@apply bg-transparent p-0 text-[0.875rem];
+	}
+
+	.article-prose hr {
+		@apply my-12 border-separator;
+	}
+
+	.article-prose table {
+		@apply my-8 w-full border-collapse text-sm;
+	}
+
+	.article-prose th,
+	.article-prose td {
+		@apply border-b border-separator px-3 py-2 text-start;
+	}
+
+	.article-prose th {
+		@apply font-semibold;
+	}
+
+	.article-prose ul > li::marker,
+	.article-prose ol > li::marker {
+		@apply text-muted;
+	}
+
+	/* Table of contents (built client-side from the article headings) */
+	.toc-link {
+		@apply block rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-default hover:text-foreground;
+	}
+
+	.toc-link[aria-current="true"] {
+		@apply bg-surface-secondary font-medium text-foreground;
+	}
+
+	.toc-item--nested .toc-link {
+		@apply ps-6;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+ * EmDash widget areas (WidgetArea from "emdash/ui")
+ * Unlayered on purpose: these beat the components' own scoped defaults.
+ * ------------------------------------------------------------------------- */
+.widget-area {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.widget-area .widget {
+	background: var(--surface);
+	box-shadow: var(--surface-shadow);
+	border-radius: min(32px, var(--radius-3xl));
+	padding: 1.25rem;
+}
+
+.widget-area .widget__title {
+	margin: 0 0 0.75rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--foreground);
+}
+
+.widget-area .widget__content {
+	font-size: 0.875rem;
+	color: var(--muted);
+}
+
+.widget-area ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.widget-area .widget-categories,
+.widget-area .widget-archives,
+.widget-area .widget-recent-posts {
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+	margin-inline: -0.5rem;
+}
+
+.widget-area .widget-categories li,
+.widget-area .widget-archives li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	border-radius: 0.625rem;
+	padding: 0.375rem 0.5rem;
+}
+
+.widget-area .widget-categories li:hover,
+.widget-area .widget-archives li:hover {
+	background: var(--default);
+}
+
+.widget-area .widget-categories__link,
+.widget-area .widget-archives__link {
+	color: var(--foreground);
+	text-decoration: none;
+	flex: 1;
+}
+
+.widget-area .widget-categories__count,
+.widget-area .widget-archives__count,
+.widget-area .widget-tags__count {
+	font-variant-numeric: tabular-nums;
+	font-size: 0.75rem;
+	color: var(--muted);
+}
+
+.widget-area .widget-recent-posts li {
+	display: grid;
+	gap: 0.125rem;
+	border-radius: 0.625rem;
+	padding: 0.5rem;
+}
+
+.widget-area .widget-recent-posts li:hover {
+	background: var(--default);
+}
+
+.widget-area .widget-recent-posts__link {
+	color: var(--foreground);
+	font-weight: 500;
+	line-height: 1.4;
+	text-decoration: none;
+}
+
+.widget-area .widget-recent-posts__date {
+	font-size: 0.75rem;
+	color: var(--muted);
+}
+
+.widget-area .widget-recent-posts__thumbnail {
+	display: none;
+}
+
+.widget-area .widget-tags__cloud {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.375rem;
+}
+
+/* Tag links reuse the HeroUI chip look */
+.widget-area .widget-tags__cloud li {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	border-radius: 999px;
+	background: var(--default);
+	padding: 0.125rem 0.625rem;
+}
+
+.widget-area .widget-tags__link {
+	color: var(--default-foreground);
+	font-size: 0.75rem;
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.widget-area .widget-search {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.widget-area .widget-search__input {
+	flex: 1;
+	min-width: 0;
+	border-radius: var(--field-radius);
+	background: var(--surface-secondary);
+	padding: 0.5rem 0.75rem;
+	color: var(--foreground);
+}
+
+.widget-area .widget-search__button {
+	border-radius: var(--field-radius);
+	background: var(--default);
+	padding: 0.5rem 0.875rem;
+	font-weight: 500;
+	color: var(--default-foreground);
+	cursor: var(--cursor-interactive);
+}
+
+.widget-area .widget__content p {
+	line-height: 1.6;
+}
+
+/* Footer widget area sits on the page background, not in a card */
+.footer-widgets .widget-area .widget {
+	background: transparent;
+	box-shadow: none;
+	padding: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * EmDash comments (Comments + CommentForm from "emdash/ui/comments")
+ * #main raises specificity above the components' attribute-scoped styles.
+ * ------------------------------------------------------------------------- */
+#main .post-comments .ec-comments {
+	--ec-comment-gap: 1.25rem;
+	--ec-comment-indent: 1.5rem;
+	--ec-comment-border: 1px solid var(--separator);
+}
+
+#main .post-comments .ec-comments-heading {
+	margin: 0 0 1rem;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+#main .post-comments .ec-comment-author {
+	color: var(--foreground);
+}
+
+#main .post-comments .ec-comment-date {
+	color: var(--muted);
+	opacity: 1;
+}
+
+#main .post-comments .ec-comment-body {
+	color: color-mix(in oklch, var(--foreground) 90%, transparent);
+	line-height: 1.7;
+}
+
+#main .post-comments .ec-comment-form {
+	margin-top: 1.5rem;
+}
+
+#main .post-comments .ec-comment-form-field span {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--foreground);
+}
+
+#main .post-comments .ec-comment-form-field input,
+#main .post-comments .ec-comment-form-field textarea {
+	border: 0;
+	border-radius: var(--field-radius);
+	background: var(--surface-secondary);
+	padding: 0.625rem 0.75rem;
+	color: var(--field-foreground);
+	font-size: 0.875rem;
+	transition: box-shadow 150ms ease;
+}
+
+.dark #main .post-comments .ec-comment-form-field input,
+.dark #main .post-comments .ec-comment-form-field textarea {
+	background: var(--surface-secondary);
+	color: var(--foreground);
+}
+
+#main .post-comments .ec-comment-form-field input:focus-visible,
+#main .post-comments .ec-comment-form-field textarea:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--focus);
+}
+
+#main .post-comments .ec-comment-user-info,
+.dark #main .post-comments .ec-comment-user-info {
+	border: 0;
+	border-radius: var(--field-radius);
+	background: var(--surface-secondary);
+}
+
+/* Submit button mirrors HeroUI's primary button */
+#main .post-comments .ec-comment-form-submit {
+	display: inline-flex;
+	align-items: center;
+	height: 2.5rem;
+	border-radius: calc(var(--radius) * 3);
+	background: var(--accent);
+	padding: 0 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--accent-foreground);
+	cursor: var(--cursor-interactive);
+	transition:
+		transform 150ms ease,
+		background-color 150ms ease;
+}
+
+#main .post-comments .ec-comment-form-submit:hover {
+	background: var(--accent-hover);
+}
+
+#main .post-comments .ec-comment-form-submit:active {
+	transform: scale(0.97);
+}
+
+#main .post-comments .ec-comment-form-success {
+	color: var(--success);
+}
+
+#main .post-comments .ec-comment-form-error {
+	color: var(--danger);
+}

@@ -1,0 +1,21 @@
+# Dependencies & build output (all workspaces)
+node_modules
+dist
+.astro
+.turbo
+.expo
+*.tsbuildinfo
+
+# Environment / secrets — never commit (EMDASH_ENCRYPTION_KEY lives in apps/web/.env)
+.env
+.env.*
+!.env.example
+
+# EmDash local data (apps/web)
+apps/web/data.db
+apps/web/data.db-*
+apps/web/uploads
+apps/web/.emdash/migrations.json
+
+# OS / editor
+.DS_Store

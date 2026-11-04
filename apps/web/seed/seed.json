@@ -1,0 +1,812 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "Blog HeroUI",
+		"description": "Blog dengan tulisan dan halaman, tampilan HeroUI",
+		"author": "EmDash"
+	},
+	"settings": {
+		"title": "Catatan Membangun",
+		"tagline": "Tulisan tentang perangkat lunak, desain, dan proses membuat sesuatu di web."
+	},
+	"collections": [
+		{
+			"slug": "posts",
+			"label": "Tulisan",
+			"labelSingular": "Tulisan",
+			"urlPattern": "/posts/{slug}",
+			"supports": [
+				"drafts",
+				"revisions",
+				"preview",
+				"scheduling",
+				"search",
+				"seo"
+			],
+			"commentsEnabled": true,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Judul",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Gambar Utama",
+					"type": "image"
+				},
+				{
+					"slug": "content",
+					"label": "Isi",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Ringkasan",
+					"type": "text"
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Halaman",
+			"labelSingular": "Halaman",
+			"urlPattern": "/pages/{slug}",
+			"supports": [
+				"drafts",
+				"revisions",
+				"preview",
+				"search",
+				"seo"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Judul",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Isi",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		}
+	],
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Kategori",
+			"labelSingular": "Kategori",
+			"hierarchical": true,
+			"collections": [
+				"posts"
+			],
+			"terms": [
+				{
+					"slug": "pengembangan",
+					"label": "Pengembangan"
+				},
+				{
+					"slug": "desain",
+					"label": "Desain"
+				},
+				{
+					"slug": "catatan",
+					"label": "Catatan"
+				}
+			]
+		},
+		{
+			"name": "tag",
+			"label": "Tag",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": [
+				"posts"
+			],
+			"terms": [
+				{
+					"slug": "web",
+					"label": "Web"
+				},
+				{
+					"slug": "opini",
+					"label": "Opini"
+				},
+				{
+					"slug": "perkakas",
+					"label": "Perkakas"
+				},
+				{
+					"slug": "kreativitas",
+					"label": "Kreativitas"
+				}
+			]
+		}
+	],
+	"bylines": [
+		{
+			"id": "byline-editorial",
+			"slug": "redaksi",
+			"displayName": "Redaksi"
+		},
+		{
+			"id": "byline-guest",
+			"slug": "kontributor-tamu",
+			"displayName": "Kontributor Tamu",
+			"isGuest": true
+		}
+	],
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Navigasi Utama",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Beranda",
+					"url": "/"
+				},
+				{
+					"type": "custom",
+					"label": "Tulisan",
+					"url": "/posts"
+				},
+				{
+					"type": "custom",
+					"label": "Tentang",
+					"url": "/pages/tentang"
+				}
+			]
+		}
+	],
+	"widgetAreas": [
+		{
+			"name": "sidebar",
+			"label": "Sidebar",
+			"description": "Widget di samping halaman tulisan",
+			"widgets": [
+				{
+					"type": "component",
+					"componentId": "core:categories",
+					"title": "Kategori"
+				},
+				{
+					"type": "component",
+					"componentId": "core:tags",
+					"title": "Tag"
+				}
+			]
+		},
+		{
+			"name": "footer",
+			"label": "Footer",
+			"description": "Widget di bagian bawah situs",
+			"widgets": [
+				{
+					"type": "content",
+					"content": [
+						{
+							"_type": "block",
+							"_key": "b0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s0",
+									"text": "Ditulis pelan-pelan, diterbitkan kalau sudah siap. Tanpa jadwal tetap."
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"sections": [
+		{
+			"slug": "ajakan-berlangganan",
+			"title": "Ajakan Berlangganan",
+			"description": "Blok ajakan untuk berlangganan feed",
+			"keywords": [
+				"langganan",
+				"rss",
+				"ajakan"
+			],
+			"source": "theme",
+			"content": [
+				{
+					"_type": "block",
+					"_key": "b0",
+					"style": "h3",
+					"children": [
+						{
+							"_type": "span",
+							"_key": "s0",
+							"text": "Ikuti tulisan berikutnya"
+						}
+					]
+				},
+				{
+					"_type": "block",
+					"_key": "b1",
+					"style": "normal",
+					"children": [
+						{
+							"_type": "span",
+							"_key": "s1",
+							"text": "Tambahkan feed RSS blog ini ke pembaca feed Anda supaya tidak ketinggalan tulisan baru."
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "tentang-penulis",
+			"title": "Tentang Penulis",
+			"description": "Bio singkat penulis untuk tulisan atau halaman",
+			"keywords": [
+				"penulis",
+				"bio",
+				"tentang"
+			],
+			"source": "theme",
+			"content": [
+				{
+					"_type": "block",
+					"_key": "b0",
+					"style": "normal",
+					"children": [
+						{
+							"_type": "span",
+							"_key": "s0",
+							"text": "Pengembang perangkat lunak yang suka menulis tentang cara membuat sesuatu di web, dan kenapa sebagian keputusan kecil ternyata paling penting."
+						}
+					]
+				}
+			]
+		}
+	],
+	"content": {
+		"pages": [
+			{
+				"id": "tentang",
+				"slug": "tentang",
+				"status": "published",
+				"data": {
+					"title": "Tentang",
+					"content": [
+						{
+							"_type": "block",
+							"_key": "b0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s0",
+									"text": "Tempat untuk menulis tentang perangkat lunak, desain, dan pikiran-pikiran yang sesekali mampir. Tidak ada jadwal terbit, tidak ada corong newsletter. Hanya hal-hal yang ingin saya catat."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b1",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s1",
+									"text": "Tentang situs ini"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b2",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s2",
+									"text": "Situs ini dibangun dengan Astro dan EmDash, dengan tampilan dari HeroUI. Semua tulisan dan halaman, termasuk halaman ini, bisa diubah dari panel admin."
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"posts": [
+			{
+				"id": "post-1",
+				"slug": "membangun-untuk-jangka-panjang",
+				"status": "published",
+				"data": {
+					"title": "Membangun untuk Jangka Panjang",
+					"excerpt": "Framework akan berganti, database akan berganti. Yang bertahan adalah kejernihan cara berpikir Anda.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop",
+							"alt": "Kode di layar monitor dalam ruangan gelap",
+							"filename": "membangun-jangka-panjang.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"_key": "b0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s0",
+									"text": "Setiap beberapa tahun, industri ini serempak memutuskan bahwa cara kerja kita selama ini salah dan ada cara yang lebih baik. Framework baru, paradigma baru, build tool baru. Perputarannya tidak pernah berhenti, dan kalau tidak hati-hati, kita lebih sibuk bermigrasi daripada membangun."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b1",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s1",
+									"text": "Saya sudah cukup lama menulis perangkat lunak untuk melihat beberapa siklus seperti itu. Setiap transisi terasa mendesak pada masanya. Namun kalau menoleh ke belakang, hal yang benar-benar penting jarang sekali soal framework."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b2",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s2",
+									"text": "Apa yang bertahan"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b3",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s3",
+									"text": "Model data yang rapi bertahan. Batas yang jelas antarsistem bertahan. Penamaan yang baik bertahan. Keputusan untuk tetap sederhana ketika sebenarnya bisa dibuat rumit, itu jelas bertahan."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b4",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s4",
+									"text": "Struktur data yang mencerminkan domain, bukan selera framework."
+								}
+							],
+							"listItem": "bullet",
+							"level": 1
+						},
+						{
+							"_type": "block",
+							"_key": "b5",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s5",
+									"text": "Kode yang bisa dibaca orang lain tanpa harus bertanya ke penulisnya."
+								}
+							],
+							"listItem": "bullet",
+							"level": 1
+						},
+						{
+							"_type": "block",
+							"_key": "b6",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s6",
+									"text": "Dokumentasi singkat tentang alasan sebuah keputusan diambil."
+								}
+							],
+							"listItem": "bullet",
+							"level": 1
+						},
+						{
+							"_type": "block",
+							"_key": "b7",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s7",
+									"text": "Apa yang tidak bertahan"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b8",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s8",
+									"text": "Yang tidak bertahan adalah kode yang ditulis untuk membuat kagum, abstraksi untuk masalah yang tidak pernah muncul, dan arsitektur yang mengikuti opini framework alih-alih kenyataan domainnya."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b9",
+							"style": "blockquote",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s9",
+									"text": "Kode terbaik yang pernah saya tulis justru membosankan. Ia terbaca seperti prosa dan mengerjakan satu hal dengan baik."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b10",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s10",
+									"text": "Kode terburuk yang pernah saya tulis terasa sangat canggih pada saat itu. Itu pelajaran yang terus saya ingat setiap kali tergoda membuat sesuatu yang pintar."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [
+					{
+						"byline": "byline-editorial"
+					},
+					{
+						"byline": "byline-guest",
+						"roleLabel": "Esai tamu"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"pengembangan"
+					],
+					"tag": [
+						"opini"
+					]
+				}
+			},
+			{
+				"id": "post-2",
+				"slug": "alasan-memilih-situs-statis",
+				"status": "published",
+				"data": {
+					"title": "Alasan Memilih Situs Statis",
+					"excerpt": "Situs statis bukan langkah mundur. Ia adalah hasil dari menganggap serius performa dan kesederhanaan.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=800&fit=crop",
+							"alt": "Laptop dan secangkir kopi di atas meja kayu",
+							"filename": "situs-statis.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"_key": "b0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s0",
+									"text": "Ada ironi kecil dalam sejarah web: awalnya statis, lalu menjadi dinamis, dan sekarang perlahan kembali ke statis. Tetapi situs statis hari ini bukan lagi halaman HTML yang diketik manual seperti tahun 1998. Ia dihasilkan, dioptimalkan, lalu disajikan dari jaringan edge dalam hitungan milidetik."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b1",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s1",
+									"text": "Janji server-side rendering untuk semua hal memang menarik: konten dinamis, personalisasi, data real time. Namun sebagian besar situs tidak membutuhkan semua itu hampir di setiap waktu. Sebuah tulisan blog tidak perlu dirender ulang pada setiap permintaan."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b2",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s2",
+									"text": "Argumen performa"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b3",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s3",
+									"text": "File statis yang disajikan dari CDN adalah bentuk tercepat yang bisa diberikan web. Tidak ada cold start, tidak ada query database, tidak ada beban rendering di server. Waktu respons pertamanya pada dasarnya hanya latensi jaringan ke edge terdekat."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b4",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s4",
+									"text": "Interaktivitas secukupnya"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b5",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s5",
+									"text": "Ketika perilaku dinamis benar-benar dibutuhkan, tambahkan secara presisi. Sebuah pulau interaktif di tengah lautan HTML statis. Dapat yang terbaik dari keduanya, tanpa harus membayar biaya keduanya setiap saat."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [
+					{
+						"byline": "byline-editorial"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"pengembangan"
+					],
+					"tag": [
+						"web",
+						"opini"
+					]
+				}
+			},
+			{
+				"id": "post-3",
+				"slug": "perkakas-kecil-dampak-besar",
+				"status": "published",
+				"data": {
+					"title": "Perkakas Kecil, Dampak Besar",
+					"excerpt": "Perkakas developer terbaik mengerjakan satu hal dengan baik lalu menyingkir dari jalan Anda.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1575026615908-666710ae5e47?w=1200&h=800&fit=crop",
+							"alt": "Kunci pas dan perkakas tangan tergantung di dinding bengkel",
+							"filename": "perkakas-kecil.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"_key": "b0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s0",
+									"text": "Ada golongan perangkat lunak yang jarang mendapat pujian. Bukan framework, platform, atau IDE, melainkan perkakas kecil dan tajam yang menyelesaikan satu masalah dengan begitu baik sampai kita lupa sedang memakainya. Menjadi tak terlihat adalah pujian tertinggi untuk sebuah perkakas."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b1",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s1",
+									"text": "Contohnya ripgrep, yang mencari kode begitu cepat sampai mengubah cara saya berpikir soal pencarian. Atau jq, yang membuat JSON terasa seperti format data kelas satu di terminal. Atau curl, yang diam-diam menopang pipa internet selama puluhan tahun."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b2",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s2",
+									"text": "Filosofi Unix, ditengok kembali"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b3",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s3",
+									"text": "Kerjakan satu hal dengan baik. Nasihat ini sudah begitu tua sampai terdengar klise, tetapi perkakas modern terbaik masih mengikutinya. Mereka tidak mencoba menjadi platform. Mereka mengerjakan tugasnya dan bisa dirangkai dengan perkakas lain."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b4",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s4",
+									"text": "Godaan untuk menambah selalu ada: satu fitur lagi, satu opsi lagi, satu integrasi lagi. Setiap tambahan adalah keputusan yang harus diambil seseorang dan jalur kode yang harus dirawat. Perkakas terbaik menahan godaan itu, dan karena tetap kecil, mereka tetap andal."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [
+					{
+						"byline": "byline-editorial"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"pengembangan"
+					],
+					"tag": [
+						"perkakas"
+					]
+				}
+			},
+			{
+				"id": "post-4",
+				"slug": "mendesain-dengan-batasan",
+				"status": "published",
+				"data": {
+					"title": "Mendesain dengan Batasan",
+					"excerpt": "Batasan bukan penghalang kreativitas. Batasan adalah struktur yang membuat kreativitas mungkin terjadi.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=1200&h=800&fit=crop",
+							"alt": "Pensil dan alat desain di atas meja",
+							"filename": "mendesain-dengan-batasan.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"_key": "b0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s0",
+									"text": "Berikan seorang desainer kanvas kosong dan waktu tanpa batas, sering kali hasilnya biasa saja. Berikan brief yang ketat, layar kecil, dan tenggat, hasilnya bisa mengejutkan. Ini bukan paradoks, memang begitulah kreativitas bekerja."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b1",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s1",
+									"text": "Batasan memaksa kita mengambil keputusan. Ketika hanya boleh memakai dua jenis huruf, kita memilih dengan cermat. Ketika halaman harus termuat di bawah satu detik, setiap elemen harus layak berada di sana."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b2",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s2",
+									"text": "Merangkul kotak"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b3",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s3",
+									"text": "Web sendiri adalah batasan. HTML mengalir ke satu arah. CSS punya box model. Peramban punya ukuran viewport dan keunikan rendering huruf. Kita bisa melawan batasan itu atau bekerja bersamanya, dan hasilnya sangat berbeda."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "b4",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s4",
+									"text": "Desain yang paling saya kagumi tidak terlihat dipaksakan lewat sebuah framework. Ia terlihat tumbuh secara alami dari mediumnya, mengikuti seratnya alih-alih melawannya."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [
+					{
+						"byline": "byline-editorial"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"desain"
+					],
+					"tag": [
+						"kreativitas"
+					]
+				}
+			},
+			{
+				"id": "post-draft",
+				"slug": "masih-ditulis",
+				"status": "draft",
+				"data": {
+					"title": "Masih Ditulis",
+					"excerpt": "Tulisan ini belum selesai.",
+					"content": [
+						{
+							"_type": "block",
+							"_key": "b0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "s0",
+									"text": "Ini draf. Draf tidak muncul di daftar tulisan publik sampai dipublikasikan."
+								}
+							]
+						}
+					]
+				}
+			}
+		]
+	}
+}
