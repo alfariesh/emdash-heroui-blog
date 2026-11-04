@@ -10,11 +10,11 @@ Aplikasi pembaca blog untuk iOS dan Android: [Expo](https://expo.dev) SDK 58 (Re
 | Jelajah | Kartu kategori (ikon, jumlah tulisan) dan awan tag |
 | Cari | Pencarian tulisan & halaman dengan debounce, sorotan hasil, saran tag |
 | Tersimpan | Tulisan yang ditandai, tersimpan di perangkat (bisa dibuka offline) |
-| Tulisan | Gambar hero parallax, bar atas kaca dengan progres baca, Portable Text native, tag, diskusi (baca komentar; menulis lewat formulir web), "Baca Juga", simpan & bagikan |
+| Tulisan | Gambar hero parallax, bar atas kaca dengan progres baca, Portable Text native, tag, diskusi (baca komentar; menulis lewat formulir web), "Baca Juga", simpan & bagikan, tawaran "Lanjutkan membaca" saat tulisan yang belum selesai dibuka lagi |
 | Kategori / Tag / Halaman | Arsip per istilah dan halaman statis (mis. Tentang) |
 | Pengaturan | Tema (sistem/terang/gelap), halaman dari menu situs, buka situs web, bersihkan cache |
 
-Tautan di dalam konten yang mengarah ke situs sendiri dibuka sebagai layar aplikasi; tautan lain dibuka di browser dalam aplikasi. Tautan tulisan dari luar (chat, email, media sosial) bisa langsung membuka aplikasi, lihat [Tautan aplikasi](#tautan-aplikasi-universal-links--app-links). Feed dan tulisan terakhir disimpan 24 jam sehingga aplikasi tetap bisa dibaca saat offline.
+Tautan di dalam konten yang mengarah ke situs sendiri dibuka sebagai layar aplikasi; tautan lain dibuka di browser dalam aplikasi. Tautan tulisan dari luar (chat, email, media sosial) bisa langsung membuka aplikasi, dan tautan yang berakhir `#komentar` langsung menuju diskusi; lihat [Tautan aplikasi](#tautan-aplikasi-universal-links--app-links). Feed dan tulisan terakhir disimpan 24 jam sehingga aplikasi tetap bisa dibaca saat offline.
 
 ## Menjalankan
 

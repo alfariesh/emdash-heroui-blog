@@ -21,14 +21,14 @@ src/
 ├── app/                    Expo Router routes (files = screens; default export only here)
 │   ├── _layout.tsx         Root: fonts, splash, providers, native stack
 │   ├── (tabs)/             Floating tab bar: index (Beranda), explore, search, saved
-│   ├── posts/[slug].tsx    Article: parallax hero, glass top bar, reading progress
+│   ├── posts/[slug].tsx    Article: parallax hero, glass top bar, reading progress, resume offer, #komentar
 │   ├── category/[slug].tsx, tag/[slug].tsx, pages/[slug].tsx, settings.tsx, +not-found.tsx
 ├── components/
 │   ├── ui/                 App primitives on top of HeroUI (Icon, Image, StateView, ScreenHeader, GlassIconButton)
 │   ├── post/               Post cards, list, byline, meta, chips, article top bar
 │   ├── portable-text/      Native Portable Text renderer (no WebView, no HTML)
 │   └── …                   Screen-level pieces (tab-bar, category-rail, term-header, navigation theme)
-├── lib/                    No JSX: config, api client, queries, query client, storage, theme, links, icons, bookmarks
+├── lib/                    No JSX: config, api client, queries, query client, storage, theme, links, icons, bookmarks, reading progress
 └── global.css              Tailwind + Uniwind + HeroUI Native imports, font tokens
 ```
 
@@ -67,7 +67,8 @@ Put code where its kind lives: data and side effects in `lib/`, presentational p
 - **Instant navigation:** prefetch on `onPressIn` (`prefetchPost`) and paint detail screens from cached summaries with `placeholderData` (`findCachedSummary`); show a skeleton only for the part still missing.
 - **States:** every query UI handles pending (skeleton with the final layout's footprint), paused-offline (`fetchStatus === "paused"`), error (`ErrorView` with retry; 404 → "Tidak ditemukan"), empty (`StateView`) and end-of-list. Pull-to-refresh shows the spinner only for a manual refresh.
 - **Persistence:** the query cache is persisted to SQLite for 24 h (`lib/query-client.ts`) so the app opens offline on the last feed; search is excluded. Bump nothing by hand: the buster is the API prefix + app version.
-- **Local state:** small device-only data (theme, bookmarks) uses `storage` (`lib/storage.ts`: expo-sqlite kv-store with a sync API, localStorage on web) behind a tiny external store + `useSyncExternalStore` (see `lib/theme.ts`, `lib/bookmarks.ts`). No React context for global state, no other storage library.
+- **Local state:** small device-only data (theme, bookmarks) uses `storage` (`lib/storage.ts`: expo-sqlite kv-store with a sync API, localStorage on web) behind a tiny external store + `useSyncExternalStore` (see `lib/theme.ts`, `lib/bookmarks.ts`). No React context for global state, no other storage library. Reading positions (`lib/reading-progress.ts`) have no live subscribers, so they are plain sync reads/writes.
+- **"Lanjutkan membaca":** `useReadingPosition()` (`lib/use-reading-position.ts`) saves the article's scroll offset when the screen closes or the app leaves the foreground (never per scroll frame), as progress through the body only. The rules are pure and unit-tested in `lib/reading-positions.ts`: under 5 % or from 95 % the entry is dropped, at most 50 are kept. Coming back to a half-read article shows the `ResumeReading` glass pill for 10 s.
 
 ## Navigation and links
 
@@ -79,7 +80,7 @@ Put code where its kind lives: data and side effects in `lib/`, presentational p
 
 ## Comments
 
-`components/post/post-comments.tsx` shows approved comments under the article (`postCommentsQuery`, after the body has loaded): threads with one level of replies, a "Penulis" chip for site members, bare URLs made tappable with `splitLinks()` (`lib/text.ts`), the first 5 threads and then "Tampilkan N komentar lainnya". The app does not post comments: "Tulis komentar" opens the web form (`<post url>#komentar`) in the in-app browser. The card disappears when the API reports `enabled: false`.
+`components/post/post-comments.tsx` shows approved comments under the article (`postCommentsQuery`, after the body has loaded): threads with one level of replies, a "Penulis" chip for site members, bare URLs made tappable with `splitLinks()` (`lib/text.ts`), the first 5 threads and then "Tampilkan N komentar lainnya". The app does not post comments: "Tulis komentar" opens the web form (`<post url>#komentar`) in the in-app browser. A link to `…/posts/<slug>#komentar` opens the article scrolled to the card: Expo Router passes the fragment as the `"#"` param, and the scroll is retried for 3 s while the content below still loads (it would be clamped otherwise), unless the reader drags first. The card disappears when the API reports `enabled: false`.
 
 ## Portable Text
 
