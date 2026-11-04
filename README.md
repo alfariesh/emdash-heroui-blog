@@ -63,3 +63,15 @@ export const CATEGORY_ICONS = {
 ```
 
 Kategori tanpa entri otomatis memakai ikon folder. Ikon baru di luar daftar `CATEGORY_ICON_KEYS` perlu ditambahkan juga ke `apps/web/src/lib/icons.ts` (dan nanti ke aplikasi mobile).
+
+## Lisensi
+
+[MIT](LICENSE) © 2026 Salman Alfariesh.
+
+## Kredit
+
+- Kerangka situs dan skill agen di `.agents/skills/` berasal dari [template blog EmDash](https://github.com/emdash-cms/templates) — MIT, © Cloudflare, Inc.
+- [EmDash](https://emdashcms.com) dan [Astro](https://astro.build) — MIT.
+- [HeroUI](https://heroui.com) (`@heroui/react`, `@heroui/styles`) — Apache-2.0.
+- [Hugeicons](https://hugeicons.com) versi gratis (`@hugeicons/core-free-icons`, `@hugeicons/react`) — MIT.
+- Foto contoh di `apps/web/seed/seed.json` diunduh dari [Unsplash](https://unsplash.com) saat seeding (Unsplash License) dan tidak disimpan di repo.

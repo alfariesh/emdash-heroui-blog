@@ -2,6 +2,7 @@
   "name": "blog",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Blog EmDash: web (Astro + HeroUI) dan mobile (React Native + HeroUI Native)",
   "scripts": {
