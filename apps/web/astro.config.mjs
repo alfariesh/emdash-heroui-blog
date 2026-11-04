@@ -5,7 +5,15 @@ import { defineConfig, fontProviders } from "astro/config";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
 
+// Public origin, e.g. https://blog.example.com. Set EMDASH_SITE_URL where
+// the site is built AND where it runs; EmDash reads the same variable for
+// passkeys, CSRF and email links. Leave it unset for local dev so passkeys
+// stay bound to localhost and the API follows the request origin
+// (LAN / Android emulator testing). See src/lib/site-url.ts.
+const siteUrl = process.env.EMDASH_SITE_URL || process.env.SITE_URL || undefined;
+
 export default defineConfig({
+	site: siteUrl,
 	output: "server",
 	adapter: node({
 		mode: "standalone",

@@ -36,7 +36,7 @@ Format: sukses `{ "ok": true, "data": … }` (daftar juga punya `"nextCursor"`),
 curl http://localhost:4321/api/v1/posts?limit=2
 ```
 
-Dari emulator Android pakai `http://10.0.2.2:4321`; dari HP fisik pakai IP LAN Mac dan jalankan web agar mendengar di jaringan: `pnpm dev:stop` lalu `pnpm --filter @blog/web dev --host`. Di build produksi, origin tidak mengikuti header `Host` sampai `security.allowedDomains` diatur di `astro.config.mjs`.
+Dari emulator Android pakai `http://10.0.2.2:4321`; dari HP fisik pakai IP LAN Mac dan jalankan web agar mendengar di jaringan: `pnpm dev:stop` lalu `pnpm --filter @blog/web dev --host`. Di produksi, set `EMDASH_SITE_URL=https://blog.example.com` saat build dan saat server berjalan; semua URL (API, canonical, RSS) akan memakai domain itu.
 
 ## Struktur `src/`
 

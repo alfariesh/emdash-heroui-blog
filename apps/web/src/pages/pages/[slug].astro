@@ -7,8 +7,10 @@ import {
 } from "emdash";
 import { PortableText } from "emdash/ui";
 import Base from "../../layouts/Base.astro";
+import { publicOrigin } from "../../lib/site-url";
 import { resolveBlogSiteIdentity } from "@blog/shared";
 
+const origin = publicOrigin(Astro);
 const slug = decodeSlug(Astro.params.slug);
 
 if (!slug) {
@@ -25,7 +27,7 @@ if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const { siteTitle } = resolveBlogSiteIdentity(await getSiteSettings());
 const seo = getSeoMeta(page, {
 	siteTitle,
-	siteUrl: Astro.url.origin,
+	siteUrl: origin,
 	path: Astro.url.pathname.replace(/\/$/, ""),
 });
 ---

@@ -101,7 +101,7 @@ Rules (enforced in `src/lib/public-api.ts`; types come from `@blog/shared`):
 - **Envelope:** `{ ok: true, data }`, lists `{ ok: true, data, nextCursor }`, errors `{ ok: false, error: { status, code, message } }` with Indonesian messages. Bad `limit`/`cursor` → 400 (the live loader re-wraps `InvalidCursorError`, so it is matched by message too).
 - **Absolute URLs** for images, avatars, logo, menu items and root-relative links inside Portable Text, built from `context.url.origin`. Portable Text image blocks are rewritten to `{ _type: "image", url, alt, caption, width, height }`.
 - **Headers:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` on success, `no-store` on errors, `Access-Control-Allow-Origin: *`.
-- In `astro dev` the origin follows the request's `Host` header (so `10.0.2.2` / LAN IPs work). A production build ignores `Host` unless `security.allowedDomains` is set in `astro.config.mjs`, so configure it (or a fixed site URL) before deploying.
+- **Public origin:** every absolute URL goes through `publicOrigin()` (`src/lib/site-url.ts`): Astro's `site` when set, else the request origin. `astro.config.mjs` sets `site` from `EMDASH_SITE_URL` (production: `https://blog.example.com`), the same variable EmDash uses for passkeys/CSRF/email links. Set it in both the build and the runtime environment. Keep it unset locally so dev passkeys stay on localhost and `10.0.2.2` / LAN IPs keep working.
 
 ## Shared code
 

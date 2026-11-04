@@ -3,13 +3,14 @@ import { DEFAULT_LOCALE, resolveBlogSiteIdentity } from "@blog/shared";
 import type { APIRoute } from "astro";
 import { getMenu, getSiteSettings, type MenuItem } from "emdash";
 import { absoluteUrl, handle, jsonOk, toApiImage } from "../../../lib/public-api";
+import { publicOrigin } from "../../../lib/site-url";
 
 /** GET /api/v1/site: title, tagline, logo and the primary menu. */
 export const GET: APIRoute = (context) =>
 	handle(async () => {
 		const [settings, menu] = await Promise.all([getSiteSettings(), getMenu("primary")]);
 		const { siteTitle, siteTagline, siteLogo } = resolveBlogSiteIdentity(settings);
-		const origin = context.url.origin;
+		const origin = publicOrigin(context);
 
 		const toItem = (item: MenuItem): ApiMenuItem => ({
 			label: item.label,

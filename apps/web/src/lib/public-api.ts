@@ -3,7 +3,7 @@
  *
  * The response shapes come from `@blog/shared` (the API contract). Everything
  * here turns EmDash entries into those shapes: only published content, and
- * every URL absolute, built from the request origin.
+ * every URL absolute, built from the public origin (see site-url.ts).
  */
 import type {
 	ApiByline,
@@ -20,6 +20,7 @@ import { DEFAULT_PAGE_SIZE, getCategoryIcon, getReadingTime, MAX_PAGE_SIZE } fro
 import type { APIContext } from "astro";
 import type { ContentBylineCredit, ContentEntry, PortableTextBlock, TaxonomyTerm } from "emdash";
 import { InvalidCursorError } from "emdash";
+import { publicOrigin } from "./site-url";
 
 const INTERNAL_MEDIA_PREFIX = "/_emdash/api/media/file/";
 
@@ -147,7 +148,7 @@ function mediaUrl(
 		// A bare media id: only the internal file route can resolve it.
 		url = `${INTERNAL_MEDIA_PREFIX}${ref.id}`;
 	}
-	return url ? absoluteUrl(url, context.url.origin) : null;
+	return url ? absoluteUrl(url, publicOrigin(context)) : null;
 }
 
 const asString = (value: unknown) => (typeof value === "string" && value ? value : undefined);
@@ -241,9 +242,9 @@ function normalizeNode(context: APIContext, node: unknown): unknown {
 	const out: Record<string, unknown> = {};
 	for (const [key, child] of Object.entries(value)) {
 		if (key === "href" && typeof child === "string") {
-			out[key] = absoluteLink(child, context.url.origin);
+			out[key] = absoluteLink(child, publicOrigin(context));
 		} else if (key === "url" && typeof child === "string" && value._type !== "span") {
-			out[key] = absoluteLink(child, context.url.origin);
+			out[key] = absoluteLink(child, publicOrigin(context));
 		} else {
 			out[key] = normalizeNode(context, child);
 		}
