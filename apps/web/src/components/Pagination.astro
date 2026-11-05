@@ -18,7 +18,7 @@ const { basePath, cursor, nextCursor } = Astro.props;
 		<nav class="mt-12 flex items-center justify-between gap-3" aria-label="Paginasi">
 			{cursor ? (
 				<a href={basePath} class={buttonVariants({ variant: "outline" })}>
-					<HugeiconsIcon icon={ArrowLeft02Icon} aria-hidden="true" />
+					<HugeiconsIcon icon={ArrowLeft02Icon} className="nudge-icon nudge-icon--back" aria-hidden="true" />
 					Halaman pertama
 				</a>
 			) : (
@@ -30,7 +30,7 @@ const { basePath, cursor, nextCursor } = Astro.props;
 					class={buttonVariants({ variant: "secondary" })}
 				>
 					Tulisan lebih lama
-					<HugeiconsIcon icon={ArrowRight02Icon} aria-hidden="true" />
+					<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 				</a>
 			)}
 		</nav>

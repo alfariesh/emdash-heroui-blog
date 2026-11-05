@@ -1,9 +1,9 @@
 import { Menu01Icon, Moon02Icon, Search01Icon, Sun03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Button, Drawer, Separator, Tooltip } from "@heroui/react";
+import { Button, Drawer, Separator, Tooltip, type PressEvent } from "@heroui/react";
 import { buttonVariants, cn } from "@heroui/styles";
 
-import { getResolvedTheme, setThemePreference } from "../../lib/theme";
+import { getResolvedTheme, setThemePreference, themeOrigin } from "../../lib/theme";
 import SearchForm from "./SearchForm";
 import ThemeSwitcher from "./ThemeSwitcher";
 import type { ThemePreference } from "../../lib/theme";
@@ -30,7 +30,7 @@ function Brand({ siteTitle, logo }: Pick<Props, "siteTitle" | "logo">) {
 	return (
 		<a
 			href="/"
-			className="flex min-w-0 items-center gap-2.5 rounded-xl text-foreground"
+			className="pressable flex min-w-0 items-center gap-2.5 rounded-xl text-foreground"
 		>
 			{logo ? (
 				<img src={logo.url} alt={logo.alt || siteTitle} className="h-8 w-auto" />
@@ -69,11 +69,13 @@ export default function SiteHeader({
 	searchQuery = "",
 	themePreference,
 }: Props) {
-	const toggleTheme = () =>
-		setThemePreference(getResolvedTheme() === "dark" ? "light" : "dark");
+	const toggleTheme = (press: PressEvent) =>
+		setThemePreference(getResolvedTheme() === "dark" ? "light" : "dark", themeOrigin(press));
 
+	// backdrop-blur-md, not xl: the blur is redrawn under every scrolled frame and its
+	// cost grows with the radius; at 80% opacity the larger radius doesn't show.
 	return (
-		<header className="sticky top-0 z-50 border-b border-separator/70 bg-background/80 backdrop-blur-xl backdrop-saturate-150">
+		<header className="sticky top-0 z-50 border-b border-separator/70 bg-background/80 backdrop-blur-md backdrop-saturate-150">
 			<div className="container-page flex h-16 items-center gap-3">
 				<Brand siteTitle={siteTitle} logo={logo} />
 
@@ -160,7 +162,7 @@ export default function SiteHeader({
 																}
 																aria-current={item.current}
 																className={cn(
-																	"flex h-11 items-center rounded-xl px-3 text-[0.9375rem] font-medium",
+																	"pressable flex h-11 items-center rounded-xl px-3 text-[0.9375rem] font-medium [--press-scale:0.98]",
 																	item.current
 																		? "bg-surface-secondary text-foreground"
 																		: "text-muted hover:bg-default hover:text-foreground",

@@ -16,6 +16,21 @@
 	--font-mono: var(--font-code), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/*
+ * Motion tokens. The CSS keyword curves are too soft to feel intentional, so
+ * the site uses stronger ones. Overriding Tailwind's --ease-out also sharpens
+ * HeroUI's own transitions, which read var(--ease-out).
+ *   ease-out     entering / exiting, press feedback (starts fast)
+ *   ease-in-out  something moving on screen (e.g. the TOC indicator)
+ *   ease-drawer  iOS-like settle for big moves (drawers, the card → article image)
+ * Never ease-in: it delays the moment the visitor is watching.
+ */
+@theme {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 /* ---------------------------------------------------------------------------
  * Theme overrides — HeroUI variables
  * ------------------------------------------------------------------------- */
@@ -121,6 +136,7 @@
 
 	.article-prose a {
 		@apply font-medium text-accent decoration-accent/40 underline-offset-4 hover:decoration-accent;
+		transition: text-decoration-color 150ms ease;
 	}
 
 	.article-prose figure {
@@ -170,17 +186,349 @@
 		@apply text-muted;
 	}
 
-	/* Table of contents (built client-side from the article headings) */
+	/*
+	 * Table of contents (built client-side from the article headings).
+	 * The active state is a second, aria-hidden copy of the list styled as
+	 * "active" and clipped to the current item; moving the clip slides the pill
+	 * and swaps the text colour in one composited animation, so the two never
+	 * drift apart. Both lists share the same type styles so they line up, and
+	 * the current link (aria-current) is styled only through the copy.
+	 */
 	.toc-link {
 		@apply block rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-default hover:text-foreground;
-	}
-
-	.toc-link[aria-current="true"] {
-		@apply bg-surface-secondary font-medium text-foreground;
+		transition:
+			background-color 150ms ease,
+			color 150ms ease;
 	}
 
 	.toc-item--nested .toc-link {
 		@apply ps-6;
+	}
+
+	.toc-active {
+		@apply pointer-events-none absolute inset-0 rounded-lg bg-surface-secondary;
+		/* Hidden until the script places it on the current heading */
+		clip-path: inset(0 0 100% 0 round 0.5rem);
+	}
+
+	.toc-active .toc-link {
+		@apply text-foreground;
+	}
+
+	.toc-active[data-ready] {
+		transition: clip-path 250ms var(--ease-in-out);
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion
+ * Only transform/opacity (and clip-path) animate, so everything stays on the
+ * compositor. Every effect has a reduced-motion fallback: movement goes,
+ * opacity stays.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * Press feedback for links that look like chips or cards. HeroUI buttons
+ * already scale on press; this gives the same feel to everything else.
+ * Cards set --press-scale closer to 1: big surfaces need less travel.
+ */
+@utility pressable {
+	transition-property: scale, opacity, background-color, color;
+	transition-duration: 160ms, 150ms, 150ms, 150ms;
+	transition-timing-function: var(--ease-out), ease, ease, ease;
+
+	&:active {
+		scale: var(--press-scale, 0.97);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&:active {
+			scale: none;
+		}
+	}
+}
+
+@layer components {
+	/* HeroUI presses at 250ms `ease`; 160ms on the strong ease-out reads as instant. */
+	.button,
+	.toggle-button {
+		transition-duration: 160ms, 100ms, 100ms;
+		transition-timing-function: var(--ease-out), var(--ease-out), var(--ease-out);
+	}
+
+	/*
+	 * Post cards: the whole card is the title link's hit area, so press the
+	 * card when that link is pressed (chips inside keep their own press).
+	 */
+	.post-card {
+		transition: scale 160ms var(--ease-out);
+	}
+
+	.post-card:has(.post-card__link:active) {
+		scale: 0.985;
+	}
+
+	.post-card__image {
+		transition: scale 400ms var(--ease-out);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.post-card:hover .post-card__image {
+			scale: 1.03;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.post-card:has(.post-card__link:active),
+		.post-card:hover .post-card__image {
+			scale: none;
+		}
+	}
+
+	/* A trailing arrow leans toward where the link goes */
+	.nudge-icon {
+		transition: translate 200ms var(--ease-out);
+	}
+
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		:where(a, button):hover > .nudge-icon {
+			translate: 2px 0;
+		}
+
+		:where(a, button):hover > .nudge-icon--back {
+			translate: -2px 0;
+		}
+	}
+
+	/* Text links fade their colour instead of snapping */
+	.link-fade {
+		transition:
+			color 150ms ease,
+			text-decoration-color 150ms ease;
+	}
+}
+
+/*
+ * Page entrance. Each page's intro (title, lede, meta) settles in once on
+ * load; the rest of the page is already there. Roles, not a uniform stagger:
+ *   lead        the title: travels furthest, starts first
+ *   support     lede, meta, actions: shorter travel, a beat later
+ *   decoration  eyebrows, breadcrumbs, chips: fade only
+ *   pop         an icon tile: scales in on a soft spring
+ * The start time comes from --enter-delay (inline style), so the order can
+ * follow importance rather than DOM order. Never put it on the largest image
+ * (LCP): it would hold back the metric by the delay.
+ */
+@keyframes enter-rise {
+	from {
+		opacity: 0;
+		translate: 0 var(--enter-distance);
+	}
+}
+
+@keyframes enter-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes enter-pop {
+	from {
+		scale: 0.85;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	[data-enter] {
+		/* `backwards` hides it during the delay; the end state is its own style */
+		animation: enter-rise var(--enter-duration) var(--ease-out) var(--enter-delay, 0ms) backwards;
+	}
+
+	[data-enter="lead"] {
+		--enter-distance: 12px;
+		--enter-duration: 600ms;
+	}
+
+	[data-enter="support"] {
+		--enter-distance: 8px;
+		--enter-duration: 500ms;
+	}
+
+	[data-enter="decoration"] {
+		animation-name: enter-fade;
+		--enter-duration: 400ms;
+	}
+
+	[data-enter="pop"] {
+		animation:
+			enter-fade 300ms var(--ease-out) var(--enter-delay, 0ms) backwards,
+			enter-pop 450ms var(--ease-out) var(--enter-delay, 0ms) backwards;
+	}
+
+	/* Spring with a little bounce (duration 0.5, bounce 0.3), sampled into linear() */
+	@supports (animation-timing-function: linear(0, 1)) {
+		[data-enter="pop"] {
+			animation:
+				enter-fade 300ms var(--ease-out) var(--enter-delay, 0ms) backwards,
+				enter-pop 700ms
+					linear(
+						0, 0.046, 0.156, 0.297, 0.446, 0.587, 0.712, 0.815, 0.896, 0.956, 0.998, 1.025, 1.039,
+						1.045, 1.045, 1.041, 1.035, 1.029, 1.022, 1.016, 1.011, 1.006, 1.003, 1.001, 0.999,
+						0.998, 0.998, 0.998, 1
+					)
+					var(--enter-delay, 0ms) backwards;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* Collapse the choreography: no movement, no delays, one gentle fade */
+	[data-enter] {
+		animation: enter-fade 200ms ease backwards;
+	}
+}
+
+/*
+ * Reading progress on articles: a hairline that fills as the body is read.
+ * Scroll-driven, so it runs on the compositor with no script. Browsers
+ * without view timelines don't show it.
+ */
+.reading-progress {
+	display: none;
+}
+
+@supports (animation-timeline: view()) {
+	.reading-scope {
+		view-timeline: --post-body block;
+	}
+
+	.reading-progress {
+		@apply pointer-events-none fixed inset-x-0 top-0 z-[60] block h-0.5 bg-accent;
+		transform-origin: 0 50%;
+		/* Empty if the timeline is inactive */
+		scale: 0 1;
+		animation: reading-progress linear both;
+		animation-timeline: --post-body;
+		animation-range: contain 0% contain 100%;
+	}
+}
+
+@keyframes reading-progress {
+	from {
+		scale: 0 1;
+	}
+	to {
+		scale: 1 1;
+	}
+}
+
+/*
+ * Page transitions (cross-document View Transitions: Chrome/Edge 126+,
+ * Safari 18.2+; other browsers navigate as before). HeroUI leaves the root
+ * out of view transitions (`:root { view-transition-name: none }`), so the
+ * new page is live at once and plays its own intro; the only thing that
+ * travels is the image of the post being opened, from its card to the
+ * article hero (and back). Base.astro names that one image at navigation
+ * time. Only the image is snapshotted, which keeps it cheap. Off for
+ * reduced motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+	@view-transition {
+		navigation: auto;
+	}
+}
+
+::view-transition-group(post-image) {
+	animation-duration: 420ms;
+	animation-timing-function: var(--ease-drawer);
+	overflow: clip;
+	border-radius: 1.25rem;
+}
+
+/*
+ * The card's image is already loaded, the hero's may not be yet: carry the
+ * old image for most of the trip and resolve to the new one at the end.
+ */
+::view-transition-old(post-image),
+::view-transition-new(post-image) {
+	height: 100%;
+	object-fit: cover;
+	animation-timing-function: linear;
+}
+
+::view-transition-old(post-image) {
+	animation-name: post-image-out;
+}
+
+::view-transition-new(post-image) {
+	animation-name: post-image-in;
+}
+
+/* Only on one side (the other page has no match on screen): just fade */
+::view-transition-old(post-image):only-child {
+	animation: fade-out 150ms var(--ease-out) both;
+}
+
+::view-transition-new(post-image):only-child {
+	animation: enter-fade 200ms var(--ease-out) both;
+}
+
+@keyframes fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes post-image-out {
+	0%,
+	55% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes post-image-in {
+	0%,
+	55% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+/*
+ * Theme switch: the new palette grows out of the button that was pressed
+ * (src/lib/theme.ts sets data-theme-transition and the origin). A rare
+ * action, so it can afford a moment; keyboard toggles switch instantly.
+ * The root is snapshotted for this transition only.
+ */
+:root[data-theme-transition] {
+	view-transition-name: root;
+}
+
+:root[data-theme-transition]::view-transition-old(root),
+:root[data-theme-transition]::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+:root[data-theme-transition]::view-transition-new(root) {
+	animation: theme-reveal 500ms var(--ease-out);
+}
+
+@keyframes theme-reveal {
+	from {
+		clip-path: circle(0 at var(--theme-x) var(--theme-y));
+	}
+	to {
+		clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y));
 	}
 }
 
@@ -226,6 +574,12 @@
 	flex-direction: column;
 	gap: 0.125rem;
 	margin-inline: -0.5rem;
+}
+
+.widget-area .widget-categories li,
+.widget-area .widget-archives li,
+.widget-area .widget-recent-posts li {
+	transition: background-color 150ms ease;
 }
 
 .widget-area .widget-categories li,
@@ -425,7 +779,7 @@
 	color: var(--accent-foreground);
 	cursor: var(--cursor-interactive);
 	transition:
-		transform 150ms ease,
+		transform 160ms var(--ease-out),
 		background-color 150ms ease;
 }
 
@@ -435,6 +789,12 @@
 
 #main .post-comments .ec-comment-form-submit:active {
 	transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#main .post-comments .ec-comment-form-submit:active {
+		transform: none;
+	}
 }
 
 #main .post-comments .ec-comment-form-success {

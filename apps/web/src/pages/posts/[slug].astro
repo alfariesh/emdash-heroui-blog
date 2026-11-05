@@ -18,6 +18,7 @@ import { publicOrigin } from "../../lib/site-url";
 import Byline from "../../components/Byline.astro";
 import PostCard from "../../components/PostCard.astro";
 import { formatDate, getLocale } from "../../lib/locale";
+import { enterDelay } from "../../lib/motion";
 import { formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
 
 const origin = publicOrigin(Astro);
@@ -130,7 +131,7 @@ const commentListLabels = {
 	<article>
 		<header class="container-page pt-10 sm:pt-14">
 			<div class="mx-auto flex max-w-5xl flex-col items-start gap-5 [&>*]:max-w-3xl">
-				<nav aria-label="Breadcrumb">
+				<nav aria-label="Breadcrumb" data-enter="decoration">
 					<ol class={crumbs.base()}>
 						<li class={crumbs.item()}>
 							<a href="/" class={crumbs.link()}>Beranda</a>
@@ -154,6 +155,7 @@ const commentListLabels = {
 
 				<h1
 					class="text-4xl leading-[1.1] font-semibold tracking-tight text-balance text-foreground sm:text-5xl"
+					data-enter="lead"
 					{...post.edit.title}
 				>
 					{post.data.title}
@@ -161,13 +163,18 @@ const commentListLabels = {
 
 				{
 					post.data.excerpt && (
-						<p class="text-lg leading-8 text-muted text-pretty sm:text-xl sm:leading-9" {...post.edit.excerpt}>
+						<p
+							class="text-lg leading-8 text-muted text-pretty sm:text-xl sm:leading-9"
+							data-enter="support"
+							style={enterDelay(80)}
+							{...post.edit.excerpt}
+						>
 							{post.data.excerpt}
 						</p>
 					)
 				}
 
-				<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1">
+				<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1" data-enter="support" style={enterDelay(140)}>
 					<Byline bylines={bylines} max={2} size="md" />
 					<p class="flex items-center gap-2 text-sm text-muted tabular-nums">
 						{publishedAt && <time datetime={publishedAt.toISOString()}>{publishDate}</time>}
@@ -181,8 +188,10 @@ const commentListLabels = {
 		{
 			post.data.featured_image && (
 				<div class="container-page mt-10 sm:mt-12">
+					{/* Same data-post-image as the post's card: the image travels between them (Base.astro). */}
 					<div
 						class="media-frame mx-auto aspect-[16/9] max-w-5xl rounded-3xl"
+						data-post-image={`/posts/${post.id}`}
 						{...post.edit.featured_image}
 					>
 						<Image
@@ -198,8 +207,12 @@ const commentListLabels = {
 		<div class="container-page mt-12">
 			<div class="mx-auto grid max-w-5xl gap-12 lg:grid-cols-[minmax(0,1fr)_17rem]">
 				<div class="min-w-0">
-					<div class="typography-prose article-prose" data-post-content>
-						<PortableText value={post.data.content} />
+					{/* Defines the scroll timeline the reading-progress hairline follows. */}
+					<div class="reading-scope">
+						<div class="reading-progress" aria-hidden="true"></div>
+						<div class="typography-prose article-prose" data-post-content>
+							<PortableText value={post.data.content} />
+						</div>
 					</div>
 
 					{
@@ -207,7 +220,7 @@ const commentListLabels = {
 							<ul class="mt-12 flex flex-wrap gap-2" aria-label="Tag">
 								{tags.map((tag) => (
 									<li>
-										<a href={`/tag/${tag.slug}`} class={cn(tagChip.base(), "h-8 px-3 hover:bg-default")}>
+										<a href={`/tag/${tag.slug}`} class={cn(tagChip.base(), "pressable h-8 px-3 hover:bg-default")}>
 											<span class={tagChip.label()}>#{tag.label}</span>
 										</a>
 									</li>
@@ -246,14 +259,18 @@ const commentListLabels = {
 						<h2 id="toc-title" class="px-3 pt-1 text-sm font-semibold text-foreground">
 							Di halaman ini
 						</h2>
-						<ol class="flex flex-col gap-0.5" data-toc-list></ol>
+						<div class="relative">
+							<ol class="flex flex-col gap-0.5" data-toc-list></ol>
+							{/* Visual copy of the list in its "active" style; see .toc-active */}
+							<ol class="toc-active flex flex-col gap-0.5" aria-hidden="true" data-toc-active></ol>
+						</div>
 					</nav>
 
 					{
 						categories.length > 0 && (
 							<div class="flex flex-wrap gap-2 lg:hidden">
 								{categories.map((category) => (
-									<a href={`/category/${category.slug}`} class={categoryChip.base()}>
+									<a href={`/category/${category.slug}`} class={cn(categoryChip.base(), "pressable")}>
 										<HugeiconsIcon icon={categoryIcon(category.slug)} size={14} aria-hidden="true" />
 										<span class={categoryChip.label()}>{category.label}</span>
 									</a>
@@ -277,7 +294,7 @@ const commentListLabels = {
 					</h2>
 					<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
 						Semua tulisan
-						<HugeiconsIcon icon={ArrowRight02Icon} aria-hidden="true" />
+						<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 					</a>
 				</div>
 				<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -299,8 +316,9 @@ const commentListLabels = {
 		function buildToc() {
 			const content = document.querySelector("[data-post-content]");
 			const toc = document.querySelector<HTMLElement>("[data-toc]");
-			const list = document.querySelector("[data-toc-list]");
-			if (!content || !toc || !list) return;
+			const list = document.querySelector<HTMLElement>("[data-toc-list]");
+			const active = document.querySelector<HTMLElement>("[data-toc-active]");
+			if (!content || !toc || !list || !active) return;
 
 			const headings = [...content.querySelectorAll<HTMLHeadingElement>("h2, h3")];
 			toc.hidden = headings.length === 0;
@@ -309,27 +327,60 @@ const commentListLabels = {
 			const links = new Map<Element, HTMLAnchorElement>();
 			headings.forEach((heading, index) => {
 				if (!heading.id) heading.id = `bagian-${index + 1}`;
+				const nested = heading.tagName === "H3" ? "toc-item--nested" : "";
 
 				const item = document.createElement("li");
-				item.className = heading.tagName === "H3" ? "toc-item--nested" : "";
-
+				item.className = nested;
 				const link = document.createElement("a");
 				link.href = `#${heading.id}`;
 				link.className = "toc-link";
 				link.textContent = heading.textContent;
-
 				item.appendChild(link);
 				list.appendChild(item);
 				links.set(heading, link);
+
+				// Same text and box in the "active" copy, so the two lists line up
+				const copyItem = document.createElement("li");
+				copyItem.className = nested;
+				const copy = document.createElement("span");
+				copy.className = "toc-link";
+				copy.textContent = heading.textContent;
+				copyItem.appendChild(copy);
+				active.appendChild(copyItem);
 			});
+
+			// Clip the active copy to the current link; the clip transitions, so the
+			// pill slides and the text colour changes with it.
+			let current: HTMLAnchorElement | undefined;
+			let placed = false;
+			const place = () => {
+				// Not laid out while the rail is hidden (below lg)
+				if (!current || list.offsetHeight === 0) return;
+				const top = current.offsetTop;
+				const bottom = list.offsetHeight - top - current.offsetHeight;
+				active.style.clipPath = `inset(${top}px 0 ${bottom}px 0 round 0.5rem)`;
+				// The first placement jumps; only later moves animate
+				if (!placed) {
+					placed = true;
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => active.setAttribute("data-ready", ""));
+					});
+				}
+			};
 
 			// Mark the section currently in view
 			const setCurrent = (link: HTMLAnchorElement) => {
-				for (const other of links.values()) other.removeAttribute("aria-current");
+				if (link === current) return;
+				current?.removeAttribute("aria-current");
 				link.setAttribute("aria-current", "true");
+				current = link;
+				place();
 			};
 			const first = links.values().next().value;
 			if (first) setCurrent(first);
+
+			// Re-measure when the rail is shown (lg+) or the text re-wraps
+			new ResizeObserver(place).observe(list);
 
 			const observer = new IntersectionObserver(
 				(entries) => {

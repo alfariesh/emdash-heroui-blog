@@ -122,6 +122,17 @@ Framework-agnostic helpers live in `packages/shared` (`@blog/shared`) so the mob
 - Fonts are configured in `astro.config.mjs` under `fonts:` (`--font-body` → Tailwind `font-sans`, `--font-code` → `font-mono`). Don't rename `--font-code` to `--font-mono`; Tailwind owns that name.
 - Post cards: `src/components/PostCard.astro` (`card`, `feature`, `row` variants; optional `category` chip with icon + tags). Fetch both with `getPostTerms()` from `src/lib/post-terms.ts` (two batched queries). Bylines: `src/components/Byline.astro`. Page headings: `src/components/PageIntro.astro`.
 
+## Motion
+
+Motion follows Emil Kowalski's design-engineering rules (skills.sh/emilkowalski/skills): animate only `transform`/`opacity` (and `clip-path`), strong custom curves, UI motion under ~300ms, no animation on keyboard-triggered or high-frequency actions, and a `prefers-reduced-motion` fallback for everything (movement goes, opacity stays). The styles are in the "Motion" section of `src/styles/global.css`.
+
+- **Easing tokens** (`@theme`): `--ease-out` (overrides Tailwind's, which also sharpens HeroUI's own transitions), `--ease-in-out`, `--ease-drawer`. Never `ease-in`. HeroUI `.button`/`.toggle-button` presses are retimed to 160ms.
+- **Page entrance**: put `data-enter="lead|support|decoration|pop"` on a page's intro elements and stagger them with `style={enterDelay(ms[, index])}` from `src/lib/motion.ts`. One title per page is the `lead`; body content, cards and the largest image (LCP) don't animate in.
+- **Press feedback**: HeroUI buttons scale on press already; give other pressable links (chips, cards) the `pressable` utility (`[--press-scale:0.985]` for large surfaces). Post cards press through `.post-card` / `.post-card__link`.
+- **Card → article image**: cross-document View Transitions. Elements carry `data-post-image="/posts/<slug>"` (card media and article hero); the inline script in `Base.astro` names only the image being opened or left at `pageswap`/`pagereveal`, so nothing else moves. HeroUI keeps `:root` out of view transitions, so the new page is live immediately; don't add `view-transition-name` to elements statically (duplicate names cancel the transition).
+- **Theme switch**: `setThemePreference(pref, themeOrigin(pressEvent))` grows the new palette out of the pressed control; keyboard presses switch instantly.
+- **Article**: the table of contents' current item is a clipped "active" copy of the list (`.toc-active`), and `.reading-progress` is a scroll-driven hairline (no script).
+
 ## What not to do
 
 - Don't hard-code colours (`bg-blue-500`); use HeroUI semantic tokens and variants.

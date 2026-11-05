@@ -12,6 +12,7 @@ import PostCard from "../components/PostCard.astro";
 import { resolveBlogSiteIdentity } from "@blog/shared";
 import { categoryIcon } from "../lib/icons";
 import { getPostTerms } from "../lib/post-terms";
+import { enterDelay } from "../lib/motion";
 
 // Limit to what we render (1 featured + 6 grid). The DB does the slicing
 // instead of fetching every post and discarding the tail in JS.
@@ -56,19 +57,29 @@ const chip = chipVariants({ variant: "secondary" });
 <Base title={siteTitle} description={siteTagline}>
 	<section class="container-page pt-14 pb-10 sm:pt-20 sm:pb-14">
 		<div class="flex max-w-3xl flex-col gap-5">
-			<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-6xl">
+			<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-6xl" data-enter="lead">
 				{siteTitle}
 			</h1>
-			{siteTagline && <p class="max-w-2xl text-lg leading-8 text-muted text-pretty sm:text-xl">{siteTagline}</p>}
+			{
+				siteTagline && (
+					<p
+						class="max-w-2xl text-lg leading-8 text-muted text-pretty sm:text-xl"
+						data-enter="support"
+						style={enterDelay(80)}
+					>
+						{siteTagline}
+					</p>
+				)
+			}
 			{
 				categories.length > 0 && (
 					<nav aria-label="Kategori" class="pt-2">
 						<ul class="flex flex-wrap gap-2">
-							{categories.map((category) => (
-								<li>
+							{categories.map((category, index) => (
+								<li data-enter="decoration" style={enterDelay(140, index)}>
 									<a
 										href={`/category/${category.slug}`}
-										class={cn(chip.base(), "h-8 px-3 hover:bg-default")}
+										class={cn(chip.base(), "pressable h-8 px-3 hover:bg-default")}
 									>
 										<HugeiconsIcon
 											icon={categoryIcon(category.slug)}
@@ -125,7 +136,7 @@ const chip = chipVariants({ variant: "secondary" });
 							{hasMorePosts && (
 								<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
 									Lihat semua
-									<HugeiconsIcon icon={ArrowRight02Icon} aria-hidden="true" />
+									<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 								</a>
 							)}
 						</div>

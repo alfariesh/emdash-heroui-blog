@@ -1,9 +1,9 @@
 import { ComputerIcon, Moon02Icon, Sun03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { ToggleButton, ToggleButtonGroup, Tooltip } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { ToggleButton, ToggleButtonGroup, Tooltip, type PressEvent } from "@heroui/react";
+import { useEffect, useRef, useState } from "react";
 
-import { THEME_EVENT, isThemePreference, setThemePreference } from "../../lib/theme";
+import { THEME_EVENT, isThemePreference, setThemePreference, themeOrigin } from "../../lib/theme";
 import type { ThemePreference } from "../../lib/theme";
 
 interface Props {
@@ -20,6 +20,9 @@ const OPTIONS: { id: ThemePreference; label: string; icon: IconSvgElement }[] = 
 /** Light / dark / system switch built on HeroUI's detached ToggleButtonGroup */
 export default function ThemeSwitcher({ initialPreference }: Props) {
 	const [preference, setPreference] = useState<ThemePreference>(initialPreference);
+	// The press that is about to change the selection: the new theme grows out
+	// of that button. onPressStart runs before the group's selection changes.
+	const lastPress = useRef<PressEvent | null>(null);
 
 	// Stay in sync when another control (e.g. the header toggle) changes the theme
 	useEffect(() => {
@@ -41,15 +44,24 @@ export default function ThemeSwitcher({ initialPreference }: Props) {
 			selectedKeys={[preference]}
 			onSelectionChange={(keys) => {
 				const [next] = [...keys];
+				const press = lastPress.current;
+				lastPress.current = null;
 				if (isThemePreference(next)) {
 					setPreference(next);
-					setThemePreference(next);
+					setThemePreference(next, press ? themeOrigin(press) : undefined);
 				}
 			}}
 		>
 			{OPTIONS.map(({ id, label, icon }) => (
 				<Tooltip key={id} delay={300}>
-					<ToggleButton id={id} isIconOnly aria-label={label}>
+					<ToggleButton
+						id={id}
+						isIconOnly
+						aria-label={label}
+						onPressStart={(press) => {
+							lastPress.current = press;
+						}}
+					>
 						<HugeiconsIcon icon={icon} />
 					</ToggleButton>
 					<Tooltip.Content>{label}</Tooltip.Content>
