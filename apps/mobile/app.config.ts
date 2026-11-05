@@ -1,7 +1,8 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
-// Relative path, not "@blog/shared": the config loader runs this file outside
-// Metro, and app-links.ts is the one shared file with no imports of its own.
+// Relative paths, not "@blog/shared": the config loader runs this file outside
+// Metro, so it can only load shared files that have no imports of their own.
 import { APP_LINK_PATH_PREFIXES } from "../../packages/shared/src/app-links.ts";
+import { NEW_POSTS_CHANNEL_ID } from "../../packages/shared/src/push.ts";
 
 /**
  * Expo app config.
@@ -16,10 +17,16 @@ import { APP_LINK_PATH_PREFIXES } from "../../packages/shared/src/app-links.ts";
  *   APP_NAME             Name under the home-screen icon (default "Blog").
  *   APP_ID               iOS bundle identifier and Android package.
  *   APP_SCHEME           Deep-link scheme, e.g. blog://posts/slug.
+ *   EAS_PROJECT_ID       EAS project (`eas init` prints it). Push notifications need it to
+ *                        get an Expo push token; without it the switch in Pengaturan is off.
+ *   GOOGLE_SERVICES_JSON Path to google-services.json (an EAS "file" variable): Firebase
+ *                        Cloud Messaging, which Android push goes through.
  */
 const APP_NAME = process.env.APP_NAME || "Blog";
 const APP_ID = process.env.APP_ID || "com.example.blog";
 const APP_SCHEME = process.env.APP_SCHEME || "blog";
+const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID?.trim() || undefined;
+const GOOGLE_SERVICES_JSON = process.env.GOOGLE_SERVICES_JSON?.trim() || undefined;
 
 /**
  * Verified links (iOS Universal Links, Android App Links): https URLs on the
@@ -61,6 +68,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	},
 	android: {
 		package: APP_ID,
+		...(GOOGLE_SERVICES_JSON ? { googleServicesFile: GOOGLE_SERVICES_JSON } : {}),
 		adaptiveIcon: {
 			backgroundColor: ACCENT,
 			foregroundImage: "./assets/images/android-icon-foreground.png",
@@ -93,6 +101,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		"expo-sqlite",
 		"expo-web-browser",
 		[
+			"expo-notifications",
+			{
+				// Android draws the small icon as a white silhouette: the monochrome launcher layer fits.
+				icon: "./assets/images/android-icon-monochrome.png",
+				color: ACCENT,
+				defaultChannel: NEW_POSTS_CHANNEL_ID,
+			},
+		],
+		[
 			"expo-splash-screen",
 			{
 				image: "./assets/images/splash-icon.png",
@@ -102,6 +119,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 			},
 		],
 	],
+	...(EAS_PROJECT_ID ? { extra: { ...config.extra, eas: { projectId: EAS_PROJECT_ID } } } : {}),
 	experiments: {
 		typedRoutes: true,
 		reactCompiler: true,

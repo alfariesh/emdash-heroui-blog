@@ -44,6 +44,7 @@ Tanpa konfigurasi, aplikasi memakai API dari komputer yang menjalankan Metro (po
 4. `pnpm --filter @blog/web exec wrangler secret put EMDASH_ENCRYPTION_KEY` — pakai kunci baru dari `npx emdash secrets generate` dan simpan cadangannya.
 5. **Segera** buka `https://domain-anda/_emdash/admin` dan selesaikan setup: pengunjung pertama yang menyelesaikan wizard menjadi admin. Passkey terikat ke domain, jadi setup harus dilakukan di domain produksi.
 6. Opsional: isi `APP_LINKS_*` di `vars` agar tautan tulisan membuka aplikasi mobile (lihat `apps/mobile/README.md`).
+7. Opsional: notifikasi push tulisan baru sudah aktif di sisi situs; langkah aplikasi (proyek EAS, Firebase) ada di `apps/mobile/README.md`.
 
 ## Catatan
 

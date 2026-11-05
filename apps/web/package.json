@@ -14,7 +14,8 @@
     "preview": "astro build && wrangler dev",
     "deploy": "astro build && wrangler deploy",
     "cf-typegen": "wrangler types",
-    "typecheck": "astro check"
+    "typecheck": "astro check",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.4",

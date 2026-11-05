@@ -17,14 +17,17 @@ import { MissingConfig } from "@/components/missing-config";
 import { NavigationTheme } from "@/components/navigation-theme";
 import { useStackScreenOptions } from "@/components/stack-screen-options";
 import { API_URL } from "@/lib/config";
+import { configureNotifications, syncPushRegistration } from "@/lib/notifications";
 import { persistOptions, queryClient } from "@/lib/query-client";
 import { applyStoredTheme } from "@/lib/theme";
+import { useNotificationNavigation } from "@/lib/use-notification-navigation";
 
 // Before the first render: keep the splash up until fonts load, and apply
 // the stored light/dark choice so nothing renders in the wrong theme.
 void SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({ fade: true, duration: 250 });
 applyStoredTheme();
+configureNotifications();
 
 /** Defined once at module scope (HeroUI: don't recreate the config per render). */
 const HEROUI_CONFIG: HeroUINativeConfig = {
@@ -71,6 +74,11 @@ export default function RootLayout() {
 
 function RootStack() {
 	const screenOptions = useStackScreenOptions();
+	useNotificationNavigation();
+	useEffect(() => {
+		void syncPushRegistration();
+	}, []);
+
 	return (
 		<Stack screenOptions={screenOptions}>
 			<Stack.Screen name="(tabs)" options={{ headerShown: false }} />

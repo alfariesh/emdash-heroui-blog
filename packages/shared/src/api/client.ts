@@ -1,5 +1,7 @@
 import {
 	API_BASE_PATH,
+	type ApiDeviceRegistration,
+	type ApiDeviceStatus,
 	type ApiError,
 	type ApiErrorCode,
 	type ApiPage,
@@ -27,7 +29,7 @@ interface FetchResponseLike {
 }
 type FetchLike = (
 	input: string,
-	init?: { headers?: Record<string, string>; signal?: unknown },
+	init?: { method?: string; headers?: Record<string, string>; body?: string; signal?: unknown },
 ) => Promise<FetchResponseLike>;
 
 export interface RequestOptions {
@@ -59,6 +61,10 @@ export interface BlogClient {
 	getCategories(options?: RequestOptions): Promise<ApiTerm[]>;
 	getTags(options?: RequestOptions): Promise<ApiTerm[]>;
 	search(query: SearchQuery, options?: RequestOptions): Promise<ApiPage<ApiSearchResult>>;
+	/** Subscribes a device to new-post notifications (idempotent: re-registering refreshes it). */
+	registerDevice(device: ApiDeviceRegistration, options?: RequestOptions): Promise<ApiDeviceStatus>;
+	/** Unsubscribes a device; succeeds even when the token was not registered. */
+	unregisterDevice(token: string, options?: RequestOptions): Promise<ApiDeviceStatus>;
 }
 
 function toQueryString(params: Record<string, string | number | undefined>): string {
@@ -91,7 +97,10 @@ function isOk(body: unknown): body is { ok: true } {
 export function createBlogClient(baseUrl: string): BlogClient {
 	const root = baseUrl.replace(/\/+$/, "");
 
-	async function request<T>(path: string, options?: RequestOptions): Promise<T> {
+	async function request<T>(
+		path: string,
+		options?: RequestOptions & { method?: "POST" | "DELETE"; body?: unknown },
+	): Promise<T> {
 		const fetchImpl = (globalThis as { fetch?: FetchLike }).fetch;
 		if (!fetchImpl) {
 			throw new BlogApiError(0, "network_error", "fetch tidak tersedia di lingkungan ini.");
@@ -99,8 +108,13 @@ export function createBlogClient(baseUrl: string): BlogClient {
 
 		let response: FetchResponseLike;
 		try {
+			const hasBody = options?.body !== undefined;
 			response = await fetchImpl(`${root}${API_BASE_PATH}${path}`, {
-				headers: { Accept: "application/json" },
+				method: options?.method ?? "GET",
+				headers: hasBody
+					? { Accept: "application/json", "Content-Type": "application/json" }
+					: { Accept: "application/json" },
+				body: hasBody ? JSON.stringify(options.body) : undefined,
 				signal: options?.signal,
 			});
 		} catch (error) {
@@ -124,7 +138,7 @@ export function createBlogClient(baseUrl: string): BlogClient {
 		return body as T;
 	}
 
-	const data = async <T>(path: string, options?: RequestOptions) =>
+	const data = async <T>(path: string, options?: Parameters<typeof request>[1]) =>
 		(await request<ApiSuccess<T>>(path, options)).data;
 
 	return {
@@ -151,5 +165,9 @@ export function createBlogClient(baseUrl: string): BlogClient {
 				`/search${toQueryString({ q: query.q, cursor: query.cursor, limit: query.limit })}`,
 				options,
 			),
+		registerDevice: (device, options) =>
+			data<ApiDeviceStatus>("/devices", { ...options, method: "POST", body: device }),
+		unregisterDevice: (token, options) =>
+			data<ApiDeviceStatus>(`/devices/${encodeURIComponent(token)}`, { ...options, method: "DELETE" }),
 	};
 }

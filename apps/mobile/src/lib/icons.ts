@@ -45,6 +45,7 @@ export { default as HomeIcon } from "@hugeicons/core-free-icons/Home11Icon";
 export { default as InformationIcon } from "@hugeicons/core-free-icons/InformationCircleIcon";
 export { default as LinkIcon } from "@hugeicons/core-free-icons/LinkSquare02Icon";
 export { default as MoonIcon } from "@hugeicons/core-free-icons/Moon02Icon";
+export { default as NotificationIcon } from "@hugeicons/core-free-icons/Notification03Icon";
 export { default as PlayIcon } from "@hugeicons/core-free-icons/PlayCircleIcon";
 export { default as RefreshIcon } from "@hugeicons/core-free-icons/Refresh01Icon";
 export { default as SearchIcon } from "@hugeicons/core-free-icons/Search01Icon";
