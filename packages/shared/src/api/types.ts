@@ -24,7 +24,8 @@ export interface ApiErrorBody {
 	message: string;
 }
 
-export type ApiErrorCode = "not_found" | "bad_request" | "internal_error";
+/** Clients must accept codes they do not know: new ones may be added within /api/v1. */
+export type ApiErrorCode = "not_found" | "bad_request" | "too_many_requests" | "internal_error";
 
 /** Every error response: `{ ok: false, error: {...} }`. */
 export interface ApiError {
@@ -235,6 +236,19 @@ export interface ApiPostComments {
 	total: number;
 	/** Top-level comments, oldest first, each with its replies. At most 500 comments in all. */
 	comments: ApiComment[];
+}
+
+/** POST /api/v1/devices body: subscribes a device to new-post notifications. */
+export interface ApiDeviceRegistration {
+	/** Expo push token, "ExponentPushToken[…]" (see isExpoPushToken). */
+	token: string;
+	platform: "ios" | "android";
+}
+
+/** POST /api/v1/devices and DELETE /api/v1/devices/[token] */
+export interface ApiDeviceStatus {
+	/** Whether the token now receives new-post notifications. */
+	registered: boolean;
 }
 
 // ── Query parameters ────────────────────────────────────────────────────────

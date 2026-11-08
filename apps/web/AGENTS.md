@@ -26,6 +26,8 @@ The admin UI is at `http://localhost:4321/_emdash/admin`.
 | `worker-configuration.d.ts` | Generated binding types (`pnpm run cf-typegen`)                                 |
 | `src/live.config.ts`     | EmDash loader registration (boilerplate -- don't modify)                           |
 | `src/lib/app-links.ts`   | Builds `/.well-known/apple-app-site-association` and `assetlinks.json` from the `APP_LINKS_*` vars |
+| `src/plugins/push-notifications/` | Native EmDash plugin: device storage, public register/unregister routes, `content:afterPublish` → Expo push (`expo.ts` is pure and unit-tested) |
+| `src/lib/push-devices.ts` | `/api/v1/devices` helpers: body validation, `DEVICES_RATE_LIMIT`, in-process call to the plugin's public routes |
 | `seed/seed.json`         | Schema definition + demo content (collections, fields, taxonomies, menus, widgets) |
 | `emdash-env.d.ts`        | Generated types for collections (auto-regenerated on dev server start)             |
 | `src/layouts/Base.astro` | Base layout with EmDash wiring (menus, search, page contributions)                 |
@@ -98,6 +100,8 @@ Read-only endpoints for the mobile app and other clients. The EmDash admin API (
 | `GET /api/v1/site` | `ApiSite`: title, tagline, logo, locale, origin, `primary` menu items |
 | `GET /api/v1/posts?cursor=&limit=&category=&tag=` | `ApiPage<ApiPostSummary>`, newest first; `limit` 1–50 (default 10); unknown category/tag → 404 |
 | `GET /api/v1/posts/[slug]` | `ApiPost` (summary + `updatedAt` + Portable Text `content`) |
+| `POST /api/v1/devices` | Body `ApiDeviceRegistration` → `ApiDeviceStatus`; registers an Expo push token for new-post notifications. `no-store`, rate-limited (429 `too_many_requests`) |
+| `DELETE /api/v1/devices/[token]` | `ApiDeviceStatus` with `registered: false`; fine for unknown tokens |
 | `GET /api/v1/posts/[slug]/comments` | `ApiPostComments`: approved comments, threaded (`getComments`), `enabled: false` when comments are off; 404 for drafts |
 | `GET /api/v1/pages/[slug]` | `ApiPageEntry` |
 | `GET /api/v1/categories`, `GET /api/v1/tags` | `ApiTerm[]` with published-post `count` |
@@ -143,3 +147,12 @@ Motion follows Emil Kowalski's design-engineering rules (skills.sh/emilkowalski/
 ## Verified app links (`/.well-known/`)
 
 `src/pages/.well-known/apple-app-site-association.ts` and `assetlinks.json.ts` let `https://<domain>/posts/…` (and `/pages/…`, `/category/…`, `/tag/…`, see `APP_LINK_PATH_PREFIXES` in `@blog/shared`) open the mobile app. They read Worker vars through `cloudflare:workers` `env`: `APP_LINKS_IOS_APP_IDS` (`<Team ID>.<bundle id>`, comma-separated), `APP_LINKS_ANDROID_PACKAGE` and `APP_LINKS_ANDROID_SHA256` (signing-cert fingerprints, comma-separated). Empty vars → plain 404, invalid entries are dropped with a warning. `APP_LINKS_IOS_STORE_ID` (numeric App Store ID) adds `<meta name="apple-itunes-app">` in `Base.astro` (Safari's Smart App Banner) with the page's public URL, without its query, as `app-argument`. Both files must answer 200 with `application/json` and no redirect, so keep them out of any redirect, auth or bot-challenge rule on the domain.
+
+## Push notifications (`src/plugins/push-notifications/`)
+
+A native EmDash plugin (this site has no sandbox runner), registered in `astro.config.mjs` with the Vite root-relative entrypoint `/src/plugins/push-notifications/index.ts`; keep its `id`/`version` there and in `createPlugin()` identical.
+
+- **Devices** live in the plugin's storage collection `devices` (id = Expo push token). The plugin never opens the EmDash database. `/api/v1/devices` validates the body, applies the `DEVICES_RATE_LIMIT` binding (per IP, 20/min, see `wrangler.jsonc`) and calls the plugin's public `register`/`unregister` routes in-process through `locals.emdash.handlePublicPluginApiRoute`, so the API keeps its own envelope.
+- **Sending** happens in `content:afterPublish` (manual and scheduled publishes) for the `posts` collection: one Expo request per 100 tokens via `ctx.http` (`allowedHosts: ["exp.host"]`). A KV claim `notified:<content id>` makes it once per post; it is released only when no request reached Expo. Tokens Expo reports as `DeviceNotRegistered` are deleted. The log line `New-post notification` carries the URL and counts.
+- **Settings** (admin → Plugins → push-notifications): `enabled` (default on) and `expoAccessToken` (secret, only for Expo's enhanced push security; encrypted with `EMDASH_ENCRYPTION_KEY`).
+- Each batch is a subrequest: the Workers subrequest limit per invocation caps the device count (about 100 × the limit). Receipts are not fetched; tokens are pruned from the tickets only.

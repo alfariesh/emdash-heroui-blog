@@ -12,7 +12,7 @@ Aplikasi pembaca blog untuk iOS dan Android: [Expo](https://expo.dev) SDK 58 (Re
 | Tersimpan | Tulisan yang ditandai, tersimpan di perangkat (bisa dibuka offline) |
 | Tulisan | Gambar hero parallax, bar atas kaca dengan progres baca, Portable Text native, tag, diskusi (baca komentar; menulis lewat formulir web), "Baca Juga", simpan & bagikan, tawaran "Lanjutkan membaca" saat tulisan yang belum selesai dibuka lagi |
 | Kategori / Tag / Halaman | Arsip per istilah dan halaman statis (mis. Tentang) |
-| Pengaturan | Tema (sistem/terang/gelap), halaman dari menu situs, buka situs web, bersihkan cache |
+| Pengaturan | Tema (sistem/terang/gelap), notifikasi tulisan baru (opt-in), halaman dari menu situs, buka situs web, bersihkan cache |
 
 Tautan di dalam konten yang mengarah ke situs sendiri dibuka sebagai layar aplikasi; tautan lain dibuka di browser dalam aplikasi. Tautan tulisan dari luar (chat, email, media sosial) bisa langsung membuka aplikasi, dan tautan yang berakhir `#komentar` langsung menuju diskusi; lihat [Tautan aplikasi](#tautan-aplikasi-universal-links--app-links). Feed dan tulisan terakhir disimpan 24 jam sehingga aplikasi tetap bisa dibaca saat offline.
 
@@ -62,6 +62,16 @@ Bila `EXPO_PUBLIC_API_URL` memakai https, build menyertakan Universal Links (iOS
 4. Setelah aplikasi terbit di App Store, isi juga `APP_LINKS_IOS_STORE_ID` (ID numerik dari App Store Connect): Safari di iPhone lalu menampilkan banner "Buka di aplikasi" di situs.
 
 Cek di Android: `adb shell pm get-app-links <APP_ID>` harus `verified`. Di iOS, uji dengan mengetuk tautan dari Notes atau Messages (mengetik URL di Safari tidak membuka aplikasi); Apple mengambil file lewat CDN-nya, jadi perubahan bisa butuh waktu. Associated Domains butuh akun Apple Developer Program (berbayar); tim personal gratis tidak bisa menandatangani build dengan entitlement ini.
+
+### Notifikasi push (tulisan baru)
+
+Pembaca mengaktifkannya di **Pengaturan → Notifikasi → Tulisan baru**; aplikasi baru meminta izin saat itu. Server mengirim lewat layanan push Expo (plugin `push-notifications` di `apps/web`), dan mengetuk notifikasi membuka tulisannya.
+
+1. `eas init` untuk membuat proyek EAS, lalu isi `EAS_PROJECT_ID` (ID proyek yang ditampilkan) sebagai environment variable EAS dan di `.env` lokal. Tanpa ini sakelar di Pengaturan nonaktif.
+2. iOS: tidak ada langkah tambahan; `eas build` membuat kunci APNs dan mengaktifkan kapabilitas Push Notifications.
+3. Android: buat proyek Firebase dengan package = `APP_ID`, unduh `google-services.json`, simpan sebagai environment variable EAS bertipe *file* bernama `GOOGLE_SERVICES_JSON`, lalu unggah kunci akun layanan FCM V1 lewat `eas credentials -p android`.
+4. Opsional: bila *Enhanced push security* diaktifkan di proyek Expo, isi **Expo access token** di admin situs (Plugins → push-notifications).
+5. Build ulang (`eas build`). Notifikasi hanya bisa diuji di perangkat fisik dengan development build atau build rilis; Expo Go dan simulator tidak mendapat token push.
 
 Folder `ios/` dan `android/` tidak di-commit; keduanya dibuat oleh `expo prebuild`/EAS. Ikon dan splash ada di `assets/images/` (PNG biasa, boleh diganti).
 

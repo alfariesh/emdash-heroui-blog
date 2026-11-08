@@ -27,6 +27,7 @@ JSON baca-saja untuk aplikasi mobile. Hanya konten yang sudah terbit; draf selal
 | `GET /api/v1/posts?cursor=&limit=&category=&tag=` | Ringkasan tulisan (terbaru dulu) + `nextCursor` |
 | `GET /api/v1/posts/:slug` | Detail tulisan + konten Portable Text |
 | `GET /api/v1/posts/:slug/comments` | Komentar yang sudah disetujui (berutas), untuk dibaca di aplikasi |
+| `POST /api/v1/devices`, `DELETE /api/v1/devices/:token` | Daftar/hapus token push aplikasi untuk notifikasi tulisan baru (dibatasi 20 permintaan/menit per IP) |
 | `GET /api/v1/pages/:slug` | Halaman statis, mis. `tentang` |
 | `GET /api/v1/categories`, `GET /api/v1/tags` | Daftar istilah + jumlah tulisan |
 | `GET /api/v1/search?q=` | Hasil pencarian tulisan dan halaman |
@@ -51,6 +52,17 @@ Agar tautan `https://domain-anda/posts/…` (juga `/pages/…`, `/category/…`,
 | `APP_LINKS_IOS_STORE_ID` | ID numerik App Store (App Store Connect → App Information → Apple ID). Menampilkan Smart App Banner Safari di semua halaman; tombol "Buka" membuka halaman yang sama di aplikasi |
 
 Setelah `pnpm run deploy`, periksa `https://domain-anda/.well-known/apple-app-site-association` dan `/.well-known/assetlinks.json`: harus 200 dengan JSON. Langkah di sisi aplikasi ada di `apps/mobile/README.md`.
+
+## Notifikasi push
+
+Plugin EmDash `push-notifications` (`src/plugins/push-notifications/`) mengirim satu notifikasi ke aplikasi mobile setiap kali tulisan terbit, baik langsung maupun terjadwal, lewat layanan push Expo. Menerbitkan ulang atau menyunting tulisan yang sudah pernah dikabarkan tidak mengirim lagi.
+
+- Pengaturan ada di admin → **Plugins** → push-notifications: sakelar **Kirim notifikasi tulisan baru** dan **Expo access token** (hanya bila *Enhanced push security* aktif di proyek Expo; disimpan terenkripsi).
+- Token perangkat disimpan di storage plugin; token yang sudah tidak berlaku dihapus otomatis.
+- Log Worker (`pnpm exec wrangler tail`) mencatat `New-post notification` beserta URL dan jumlah terkirim/gagal.
+- `ratelimits` di `wrangler.jsonc` membatasi pendaftaran perangkat; `namespace_id` harus unik di akun Cloudflare Anda.
+
+Langkah di sisi aplikasi (proyek EAS, Firebase) ada di `apps/mobile/README.md`.
 
 ## Struktur `src/`
 

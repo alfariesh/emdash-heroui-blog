@@ -50,6 +50,17 @@
 		},
 	],
 
+	// Abuse guard for /api/v1/devices (push registration): requests per client
+	// IP, counted per Cloudflare location (src/lib/push-devices.ts). The
+	// namespace_id must be unique within your Cloudflare account.
+	"ratelimits": [
+		{
+			"name": "DEVICES_RATE_LIMIT",
+			"namespace_id": "1001",
+			"simple": { "limit": 20, "period": 60 },
+		},
+	],
+
 	// Scheduled publishing + maintenance (handled by `scheduled` in src/worker.ts).
 	"triggers": {
 		"crons": ["* * * * *"],

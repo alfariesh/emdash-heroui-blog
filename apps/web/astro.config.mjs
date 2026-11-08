@@ -33,6 +33,16 @@ if (process.argv.includes("build") && !process.env.EMDASH_SITE_URL && !process.e
 }
 const siteUrl = process.env.EMDASH_SITE_URL || process.env.SITE_URL || undefined;
 
+// "Tulisan baru" push notifications for the mobile app: a native EmDash plugin
+// that lives in this repo (src/plugins/push-notifications). The entrypoint is a
+// Vite root-relative path; id and version must match its createPlugin().
+const pushNotificationsPlugin = {
+	id: "push-notifications",
+	version: "1.0.0",
+	format: "native",
+	entrypoint: "/src/plugins/push-notifications/index.ts",
+};
+
 export default defineConfig({
 	site: siteUrl,
 	output: "server",
@@ -47,6 +57,7 @@ export default defineConfig({
 		emdash({
 			database: d1({ binding: "DB", session: "auto", coalesce: true }),
 			storage: r2({ binding: "MEDIA" }),
+			plugins: [pushNotificationsPlugin],
 		}),
 	],
 	vite: {

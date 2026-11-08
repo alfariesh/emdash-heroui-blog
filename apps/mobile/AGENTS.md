@@ -28,7 +28,7 @@ src/
 │   ├── post/               Post cards, list, byline, meta, chips, article top bar
 │   ├── portable-text/      Native Portable Text renderer (no WebView, no HTML)
 │   └── …                   Screen-level pieces (tab-bar, category-rail, term-header, navigation theme)
-├── lib/                    No JSX: config, api client, queries, query client, storage, theme, links, icons, bookmarks, reading progress
+├── lib/                    No JSX: config, api client, queries, query client, storage, theme, links, icons, bookmarks, reading progress, notifications
 └── global.css              Tailwind + Uniwind + HeroUI Native imports, font tokens
 ```
 
@@ -81,6 +81,10 @@ Put code where its kind lives: data and side effects in `lib/`, presentational p
 ## Comments
 
 `components/post/post-comments.tsx` shows approved comments under the article (`postCommentsQuery`, after the body has loaded): threads with one level of replies, a "Penulis" chip for site members, bare URLs made tappable with `splitLinks()` (`lib/text.ts`), the first 5 threads and then "Tampilkan N komentar lainnya". The app does not post comments: "Tulis komentar" opens the web form (`<post url>#komentar`) in the in-app browser. A link to `…/posts/<slug>#komentar` opens the article scrolled to the card: Expo Router passes the fragment as the `"#"` param, and the scroll is retried for 3 s while the content below still loads (it would be clamped otherwise), unless the reader drags first. The card disappears when the API reports `enabled: false`.
+
+## Push notifications
+
+`lib/notifications.ts` owns everything device-side: the opt-in preference (`storage` + `useSyncExternalStore`), `pushUnavailableReason()` (web, simulator, or no `EAS_PROJECT_ID` in the build), permission, the Android channel (`NEW_POSTS_CHANNEL_ID`, created before asking, as Android 13 requires), the Expo push token and `api.registerDevice()` / `api.unregisterDevice()`. Nothing prompts until the reader turns on "Tulisan baru" in Pengaturan. `syncPushRegistration()` runs on each launch (root layout): it retries a pending unregister and re-registers when the token changed or after 7 days. `configureNotifications()` shows notifications in the foreground; `useNotificationNavigation()` (root stack) opens `data.url` from a tapped notification through `useOpenLink()`, on cold start too. Push needs a development or store build on a physical device; Expo Go and simulators get no token.
 
 ## Portable Text
 
