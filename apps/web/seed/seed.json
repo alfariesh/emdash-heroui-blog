@@ -78,6 +78,66 @@
 					"searchable": true
 				}
 			]
+		},
+		{
+			"slug": "ads",
+			"label": "Iklan",
+			"labelSingular": "Iklan",
+			"description": "Banner web. Terbitkan perubahan agar tampil; tanggal mulai dan selesai menentukan periode tayang.",
+			"icon": "megaphone",
+			"routable": false,
+			"supports": ["drafts", "revisions"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Nama iklan",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "image",
+					"label": "Banner",
+					"type": "image",
+					"required": true
+				},
+				{
+					"slug": "target_url",
+					"label": "URL tujuan (http/https)",
+					"type": "url",
+					"required": true,
+					"validation": { "pattern": "^https?://" }
+				},
+				{
+					"slug": "placement",
+					"label": "Posisi",
+					"type": "select",
+					"required": true,
+					"defaultValue": "Beranda",
+					"validation": { "options": ["Beranda", "Sidebar artikel", "Bawah artikel"] }
+				},
+				{
+					"slug": "enabled",
+					"label": "Aktif",
+					"type": "boolean",
+					"defaultValue": false
+				},
+				{
+					"slug": "starts_at",
+					"label": "Mulai tayang (opsional)",
+					"type": "datetime"
+				},
+				{
+					"slug": "ends_at",
+					"label": "Selesai tayang (opsional)",
+					"type": "datetime"
+				},
+				{
+					"slug": "priority",
+					"label": "Prioritas (angka terbesar didahulukan)",
+					"type": "integer",
+					"defaultValue": 0
+				}
+			]
 		}
 	],
 	"taxonomies": [

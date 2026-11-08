@@ -14,8 +14,9 @@
     "preview": "astro build && wrangler dev",
     "deploy": "astro build && wrangler deploy",
     "cf-typegen": "wrangler types",
+    "setup:ads": "node scripts/setup-ads.mjs",
     "typecheck": "astro check",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\""
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\""
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.4",

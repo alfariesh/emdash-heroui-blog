@@ -17,6 +17,9 @@ import Base from "../../layouts/Base.astro";
 import { publicOrigin } from "../../lib/site-url";
 import Byline from "../../components/Byline.astro";
 import PostCard from "../../components/PostCard.astro";
+import AdSlot from "../../components/AdSlot.astro";
+import { getAds } from "../../lib/ads";
+import { AD_PLACEMENTS } from "../../lib/ad-selection";
 import { formatDate, getLocale } from "../../lib/locale";
 import { enterDelay } from "../../lib/motion";
 import { formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
@@ -71,12 +74,17 @@ const categories = post.data.terms?.category ?? [];
 const readingTime = formatReadingTime(getReadingTime(post.data.content));
 
 // Fetch a few extra recent posts in case the current post is among them.
-const { entries: recentPosts, cacheHint: recentPostsCacheHint } = await getEmDashCollection(
-	"posts",
-	{ orderBy: { published_at: "desc" }, limit: 4 },
-);
-if (Astro.cache?.enabled) Astro.cache.set(recentPostsCacheHint);
+const [{ entries: recentPosts, cacheHint: recentPostsCacheHint }, ads] = await Promise.all([
+	getEmDashCollection("posts", { orderBy: { published_at: "desc" }, limit: 4 }),
+	getAds([AD_PLACEMENTS.postSidebar, AD_PLACEMENTS.postBottom]),
+]);
+if (Astro.cache?.enabled) {
+	Astro.cache.set(recentPostsCacheHint);
+	Astro.cache.set(ads.cacheHint);
+}
 const otherPosts = recentPosts.filter((p) => p.id !== post.id).slice(0, 3);
+const sidebarAd = ads.forPlacement(AD_PLACEMENTS.postSidebar);
+const bottomAd = ads.forPlacement(AD_PLACEMENTS.postBottom);
 
 // Tags + category for the related posts in two batched queries
 const otherTermsFor = await getPostTerms(otherPosts.map((p) => p.data.id));
@@ -229,6 +237,12 @@ const commentListLabels = {
 						)
 					}
 
+					<AdSlot
+						ad={bottomAd}
+						placement={AD_PLACEMENTS.postBottom}
+						class={cn("mt-12", sidebarAd && "lg:hidden")}
+					/>
+
 					{/* id="komentar": the mobile app links here so readers can write a comment. */}
 					<section
 						id="komentar"
@@ -249,37 +263,45 @@ const commentListLabels = {
 					</section>
 				</div>
 
-				<aside class="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start" aria-label="Info tambahan">
-					<nav
-						class={cn(card.base(), "hidden gap-2 p-3 lg:flex")}
-						aria-labelledby="toc-title"
-						hidden={!hasHeadings}
-						data-toc
-					>
-						<h2 id="toc-title" class="px-3 pt-1 text-sm font-semibold text-foreground">
-							Di halaman ini
-						</h2>
-						<div class="relative">
-							<ol class="flex flex-col gap-0.5" data-toc-list></ol>
-							{/* Visual copy of the list in its "active" style; see .toc-active */}
-							<ol class="toc-active flex flex-col gap-0.5" aria-hidden="true" data-toc-active></ol>
-						</div>
-					</nav>
-
-					{
-						categories.length > 0 && (
-							<div class="flex flex-wrap gap-2 lg:hidden">
-								{categories.map((category) => (
-									<a href={`/category/${category.slug}`} class={cn(categoryChip.base(), "pressable")}>
-										<HugeiconsIcon icon={categoryIcon(category.slug)} size={14} aria-hidden="true" />
-										<span class={categoryChip.label()}>{category.label}</span>
-									</a>
-								))}
+				<aside class="flex flex-col gap-4" aria-label="Info tambahan">
+					{/* Keep the banner before and outside the sticky navigation group. */}
+					<AdSlot
+						ad={sidebarAd}
+						placement={AD_PLACEMENTS.postSidebar}
+						class="hidden lg:block"
+					/>
+					<div class="flex flex-col gap-4 lg:sticky lg:top-24">
+						<nav
+							class={cn(card.base(), "hidden gap-2 p-3 lg:flex")}
+							aria-labelledby="toc-title"
+							hidden={!hasHeadings}
+							data-toc
+						>
+							<h2 id="toc-title" class="px-3 pt-1 text-sm font-semibold text-foreground">
+								Di halaman ini
+							</h2>
+							<div class="relative">
+								<ol class="flex flex-col gap-0.5" data-toc-list></ol>
+								{/* Visual copy of the list in its "active" style; see .toc-active */}
+								<ol class="toc-active flex flex-col gap-0.5" aria-hidden="true" data-toc-active></ol>
 							</div>
-						)
-					}
+						</nav>
 
-					<WidgetArea name="sidebar" />
+						{
+							categories.length > 0 && (
+								<div class="flex flex-wrap gap-2 lg:hidden">
+									{categories.map((category) => (
+										<a href={`/category/${category.slug}`} class={cn(categoryChip.base(), "pressable")}>
+											<HugeiconsIcon icon={categoryIcon(category.slug)} size={14} aria-hidden="true" />
+											<span class={categoryChip.label()}>{category.label}</span>
+										</a>
+									))}
+								</div>
+							)
+						}
+
+						<WidgetArea name="sidebar" />
+					</div>
 				</aside>
 			</div>
 		</div>

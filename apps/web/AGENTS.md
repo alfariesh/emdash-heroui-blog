@@ -77,6 +77,7 @@ A blog with posts, pages, categories, tags, full-text search, comments, and RSS.
 
 - `posts` collection: `title`, `featured_image`, `content` (Portable Text), `excerpt` (text).
 - `pages` collection: `title`, `content` (Portable Text). Used for `/pages/tentang` etc.
+- `ads` collection: non-routable web banners with `title`, `image`, `target_url`, `placement`, `enabled`, optional `starts_at`/`ends_at`, and `priority`. Placement values are `Beranda`, `Sidebar artikel`, `Bawah artikel` (`AD_PLACEMENTS` in `src/lib/ad-selection.ts`). Drafts/revisions are enabled; edits must be published. Existing databases need `pnpm --filter @blog/web setup:ads` against the running site; a seed change alone does not evolve them.
 - Taxonomies: `category`, `tag`.
 - Single `primary` menu (Beranda, Tulisan, Tentang by default).
 - Widget areas: `sidebar` (post rail) and `footer`.
@@ -147,6 +148,12 @@ Motion follows Emil Kowalski's design-engineering rules (skills.sh/emilkowalski/
 ## Verified app links (`/.well-known/`)
 
 `src/pages/.well-known/apple-app-site-association.ts` and `assetlinks.json.ts` let `https://<domain>/posts/…` (and `/pages/…`, `/category/…`, `/tag/…`, see `APP_LINK_PATH_PREFIXES` in `@blog/shared`) open the mobile app. They read Worker vars through `cloudflare:workers` `env`: `APP_LINKS_IOS_APP_IDS` (`<Team ID>.<bundle id>`, comma-separated), `APP_LINKS_ANDROID_PACKAGE` and `APP_LINKS_ANDROID_SHA256` (signing-cert fingerprints, comma-separated). Empty vars → plain 404, invalid entries are dropped with a warning. `APP_LINKS_IOS_STORE_ID` (numeric App Store ID) adds `<meta name="apple-itunes-app">` in `Base.astro` (Safari's Smart App Banner) with the page's public URL, without its query, as `app-argument`. Both files must answer 200 with `application/json` and no redirect, so keep them out of any redirect, auth or bot-challenge rule on the domain.
+
+## Internal ads (`src/lib/ads.ts`, `src/components/AdSlot.astro`)
+
+`getAds()` queries published candidates for the page's positions once, then the pure `selectAd()` filters enabled ads, validates HTTP(S) targets and schedules, and picks highest priority (ID ascending breaks ties). Start is inclusive, end exclusive; missing bounds are open-ended and malformed dates fail closed. Home renders below the post list. An article shows at most one visible ad: sidebar at `lg` and up, falling back to bottom when no sidebar ad is eligible; below `lg`, only the bottom placement renders visibly. A sidebar-only campaign is not moved to mobile. The sidebar banner precedes and sits outside the sticky TOC/widget group, so it scrolls naturally. Empty slots render no wrapper. Image frames reserve 3:1 for home/bottom and 6:5 for sidebar; `object-fit: contain` preserves the whole creative even when an uploaded image has a different ratio. No mobile API or tracking is provided yet.
+
+Ad pages register the collection cache hint with `maxAge: 0, swr: 0`: eligibility changes as time passes without a content write, including when no ad is currently eligible. Do not enable long-lived route caching here without accounting for schedule boundaries.
 
 ## Push notifications (`src/plugins/push-notifications/`)
 

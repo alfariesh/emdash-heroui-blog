@@ -9,6 +9,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { buttonVariants, chipVariants, cn } from "@heroui/styles";
 import Base from "../layouts/Base.astro";
 import PostCard from "../components/PostCard.astro";
+import AdSlot from "../components/AdSlot.astro";
+import { getAds } from "../lib/ads";
+import { AD_PLACEMENTS } from "../lib/ad-selection";
 import { resolveBlogSiteIdentity } from "@blog/shared";
 import { categoryIcon } from "../lib/icons";
 import { getPostTerms } from "../lib/post-terms";
@@ -18,19 +21,21 @@ import { enterDelay } from "../lib/motion";
 // instead of fetching every post and discarding the tail in JS.
 const POSTS_PER_PAGE = 7;
 
-const [{ entries: posts, cacheHint }, settings, categoriesResult] = await Promise.all([
+const [{ entries: posts, cacheHint }, settings, categoriesResult, ads] = await Promise.all([
 	getEmDashCollection("posts", {
 		orderBy: { published_at: "desc" },
 		limit: POSTS_PER_PAGE + 1, // +1 to detect "view all" need
 	}),
 	getSiteSettings(),
 	getTaxonomyTermsWithCacheHint("category", { includeCounts: true }),
+	getAds([AD_PLACEMENTS.home]),
 ]);
 const { siteTitle, siteTagline } = resolveBlogSiteIdentity(settings);
 
 if (Astro.cache?.enabled) {
 	Astro.cache.set(cacheHint);
 	Astro.cache.set(categoriesResult.cacheHint);
+	Astro.cache.set(ads.cacheHint);
 }
 
 const categories = categoriesResult.data.filter((term) => (term.count ?? 1) > 0);
@@ -150,4 +155,5 @@ const chip = chipVariants({ variant: "secondary" });
 			</>
 		)
 	}
+	<AdSlot ad={ads.forPlacement(AD_PLACEMENTS.home)} placement={AD_PLACEMENTS.home} class="container-page mt-16" />
 </Base>

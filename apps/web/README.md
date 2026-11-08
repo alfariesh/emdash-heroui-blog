@@ -64,6 +64,34 @@ Plugin EmDash `push-notifications` (`src/plugins/push-notifications/`) mengirim 
 
 Langkah di sisi aplikasi (proyek EAS, Firebase) ada di `apps/mobile/README.md`.
 
+## Iklan internal
+
+Collection **Iklan** (`ads`) mengelola banner web melalui CMS. Instalasi baru mendapat schema dari seed. Untuk database yang sudah berjalan, jalankan sekali setelah `pnpm dev`:
+
+```bash
+pnpm --filter @blog/web setup:ads
+```
+
+Perintah ini menambahkan collection dan field yang belum ada melalui API EmDash, dapat dijalankan ulang, dan tidak mengubah isi iklan. Jika proses terputus, jalankan ulang untuk melanjutkan field yang belum dibuat. Schema yang sudah ada diperiksa sebelum penambahan: tipe field, field wajib, pilihan posisi, dan dukungan draft/revisi harus sesuai. Ketidakcocokan dilaporkan untuk diperbaiki melalui Content Types; pengaturan yang sudah ada tidak ditimpa.
+
+Untuk instance produksi, siapkan `EMDASH_TOKEN` berizin admin di environment, lalu jalankan `pnpm --filter @blog/web setup:ads --url https://blog.example.com`. Target remote wajib HTTPS; gunakan origin tanpa path, query, fragment, atau kredensial URL. Deploy kode web juga diperlukan agar slot muncul. Jangan memasukkan token ke kode atau aplikasi mobile.
+
+Di admin → **Iklan**, buat entri, pilih banner dari media, isi URL lengkap `http://` atau `https://`, pilih posisi, nyalakan **Aktif**, lalu **terbitkan**. Simpan sebagai draf bila belum siap. Perubahan pada iklan yang sudah terbit juga harus diterbitkan agar berlaku, termasuk perubahan sakelar Aktif.
+
+| Posisi | Letak |
+|---|---|
+| Beranda | Setelah daftar tulisan di beranda |
+| Sidebar artikel | Kolom samping artikel, hanya pada layar desktop (mulai 1024px); mengikuti scroll biasa |
+| Bawah artikel | Setelah isi dan tag, sebelum komentar; pada desktop menjadi pengganti jika tidak ada iklan sidebar |
+
+**Mulai tayang** dan **Selesai tayang** opsional: kosong berarti tanpa batas pada sisi tersebut. Mulai bersifat inklusif, selesai eksklusif; akhir harus setelah awal. Jadwal diperiksa pada setiap permintaan halaman, sehingga iklan yang sudah terbit dapat mulai/berhenti tanpa cron dan tanpa deploy ulang. Halaman yang sudah terbuka tidak diperbarui otomatis. Untuk input via API, gunakan timestamp dengan zona waktu, misalnya `2026-11-08T09:00:00+07:00` untuk WIB.
+
+Maksimal **satu iklan terlihat per artikel** pada setiap ukuran layar. Desktop mengutamakan sidebar dan memakai slot bawah jika sidebar kosong. Pada layar di bawah 1024px hanya iklan bawah artikel yang ditampilkan; iklan sidebar tidak dipindahkan ke bawah. Banner sidebar berada di luar kelompok sticky daftar isi dan widget, sehingga ikut bergulir bersama halaman.
+
+Frame gambar beranda/bawah artikel memakai rasio **3:1** (siapkan aset **1200 × 400 px**); sidebar memakai **6:5** (siapkan aset **600 × 500 px**). Frame sudah mendapat ruang sejak halaman dirender agar gambar yang dimuat belakangan tidak menggeser tulisan. Gambar dengan rasio berbeda tetap ditampilkan utuh di dalam frame dengan ruang kosong seperlunya. CMS tetap menerima gambar dengan dimensi lain.
+
+Angka **Prioritas** terbesar menang dalam satu posisi; jika sama, ID terkecil dipilih agar hasil konsisten. Iklan nonaktif, draf, kedaluwarsa, jadwal tidak valid, atau banner/URL tidak lengkap dilewati. Tanpa kandidat, slot dan ruangnya hilang. Versi ini belum menayangkan iklan di aplikasi native atau menghitung tayangan/klik.
+
 ## Struktur `src/`
 
 ```
