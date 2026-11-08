@@ -7,6 +7,7 @@
  */
 import type {
 	ApiByline,
+	ApiComment,
 	ApiError,
 	ApiErrorCode,
 	ApiImage,
@@ -18,7 +19,13 @@ import type {
 } from "@blog/shared";
 import { DEFAULT_PAGE_SIZE, getCategoryIcon, getReadingTime, MAX_PAGE_SIZE } from "@blog/shared";
 import type { APIContext } from "astro";
-import type { ContentBylineCredit, ContentEntry, PortableTextBlock, TaxonomyTerm } from "emdash";
+import type {
+	ContentBylineCredit,
+	ContentEntry,
+	GetCommentsResult,
+	PortableTextBlock,
+	TaxonomyTerm,
+} from "emdash";
 import { InvalidCursorError } from "emdash";
 import { publicOrigin } from "./site-url";
 
@@ -26,6 +33,8 @@ const INTERNAL_MEDIA_PREFIX = "/_emdash/api/media/file/";
 
 const CACHE_OK = "public, max-age=60, stale-while-revalidate=300";
 const CACHE_ERROR = "no-store";
+/** For responses to writes (device registration): never cached. */
+export const NO_STORE = "no-store";
 
 const BASE_HEADERS = {
 	"Content-Type": "application/json; charset=utf-8",
@@ -36,11 +45,27 @@ const BASE_HEADERS = {
 
 // ── Responses ───────────────────────────────────────────────────────────────
 
-export function jsonOk<T>(data: T): Response {
+export function jsonOk<T>(data: T, cacheControl = CACHE_OK): Response {
 	const body: ApiSuccess<T> = { ok: true, data };
 	return new Response(JSON.stringify(body), {
 		status: 200,
-		headers: { ...BASE_HEADERS, "Cache-Control": CACHE_OK },
+		headers: { ...BASE_HEADERS, "Cache-Control": cacheControl },
+	});
+}
+
+/**
+ * CORS preflight for the write endpoints. Native apps send none; this is
+ * for browser clients such as the Expo web preview.
+ */
+export function preflight(methods: string): Response {
+	return new Response(null, {
+		status: 204,
+		headers: {
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Methods": methods,
+			"Access-Control-Allow-Headers": "Content-Type",
+			"Access-Control-Max-Age": "86400",
+		},
 	});
 }
 
@@ -55,6 +80,7 @@ export function jsonPage<T>(data: T[], nextCursor: string | null | undefined): R
 const STATUS_FOR_CODE: Record<ApiErrorCode, number> = {
 	bad_request: 400,
 	not_found: 404,
+	too_many_requests: 429,
 	internal_error: 500,
 };
 
@@ -288,5 +314,25 @@ export function toApiPostSummary(
 		bylines: toApiBylines(context, post.data.bylines),
 		categories: toTermRefs(terms?.categories ?? post.data.terms?.category, "category"),
 		tags: toTermRefs(terms?.tags ?? post.data.terms?.tag, "tag"),
+	};
+}
+
+// ── Comments ────────────────────────────────────────────────────────────────
+
+type PublicComment = GetCommentsResult["items"][number];
+
+/**
+ * EmDash's public comment shape → ApiComment. Only what the web shows
+ * publicly: never the email, IP hash or moderation data (EmDash does not
+ * expose them here either).
+ */
+export function toApiComment(comment: PublicComment): ApiComment {
+	return {
+		id: comment.id,
+		authorName: comment.authorName,
+		isMember: comment.isRegisteredUser,
+		body: comment.body,
+		createdAt: comment.createdAt,
+		replies: (comment.replies ?? []).map(toApiComment),
 	};
 }

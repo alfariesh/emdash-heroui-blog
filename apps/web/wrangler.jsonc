@@ -31,6 +31,15 @@
 	// Secrets (EMDASH_ENCRYPTION_KEY) go in `wrangler secret put`, never here.
 	"vars": {
 		"EMDASH_SITE_URL": "https://emdash.alfariesh.ai.id",
+		// Open /posts/… links in the mobile app (src/lib/app-links.ts). Empty =
+		// the verification file is not served. iOS: "<Team ID>.<bundle id>";
+		// Android: the package plus the SHA-256 signing-cert fingerprints.
+		// Several values are comma-separated. IOS_STORE_ID (numeric App Store
+		// ID) adds Safari's Smart App Banner once the app is in the App Store.
+		"APP_LINKS_IOS_APP_IDS": "",
+		"APP_LINKS_ANDROID_PACKAGE": "",
+		"APP_LINKS_ANDROID_SHA256": "",
+		"APP_LINKS_IOS_STORE_ID": "",
 	},
 	// The zone must be active on Cloudflare in the same account; Wrangler
 	// creates the DNS record for the custom domain.
@@ -38,6 +47,17 @@
 		{
 			"pattern": "emdash.alfariesh.ai.id",
 			"custom_domain": true,
+		},
+	],
+
+	// Abuse guard for /api/v1/devices (push registration): requests per client
+	// IP, counted per Cloudflare location (src/lib/push-devices.ts). The
+	// namespace_id must be unique within your Cloudflare account.
+	"ratelimits": [
+		{
+			"name": "DEVICES_RATE_LIMIT",
+			"namespace_id": "1001",
+			"simple": { "limit": 20, "period": 60 },
 		},
 	],
 

@@ -24,7 +24,8 @@ export interface ApiErrorBody {
 	message: string;
 }
 
-export type ApiErrorCode = "not_found" | "bad_request" | "internal_error";
+/** Clients must accept codes they do not know: new ones may be added within /api/v1. */
+export type ApiErrorCode = "not_found" | "bad_request" | "too_many_requests" | "internal_error";
 
 /** Every error response: `{ ok: false, error: {...} }`. */
 export interface ApiError {
@@ -207,6 +208,47 @@ export interface ApiSearchResult {
 	 * without an HTML engine.
 	 */
 	snippet: string | null;
+}
+
+/** An approved comment on a post. */
+export interface ApiComment {
+	id: string;
+	/** Name the commenter entered. */
+	authorName: string;
+	/** Written by someone with an account on the site (the web marks it "Penulis"). */
+	isMember: boolean;
+	/** Plain text as submitted: may contain line breaks and bare URLs, never HTML. */
+	body: string;
+	/** ISO 8601. */
+	createdAt: string;
+	/**
+	 * Replies, oldest first. Replies are one level deep (a reply to a reply is
+	 * attached to the top-level comment), so this is always empty on a reply.
+	 */
+	replies: ApiComment[];
+}
+
+/** GET /api/v1/posts/[slug]/comments */
+export interface ApiPostComments {
+	/** False when the site has turned comments off; `comments` is then empty. */
+	enabled: boolean;
+	/** Approved comments, replies included. */
+	total: number;
+	/** Top-level comments, oldest first, each with its replies. At most 500 comments in all. */
+	comments: ApiComment[];
+}
+
+/** POST /api/v1/devices body: subscribes a device to new-post notifications. */
+export interface ApiDeviceRegistration {
+	/** Expo push token, "ExponentPushToken[…]" (see isExpoPushToken). */
+	token: string;
+	platform: "ios" | "android";
+}
+
+/** POST /api/v1/devices and DELETE /api/v1/devices/[token] */
+export interface ApiDeviceStatus {
+	/** Whether the token now receives new-post notifications. */
+	registered: boolean;
 }
 
 // ── Query parameters ────────────────────────────────────────────────────────

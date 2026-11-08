@@ -45,6 +45,13 @@ export const postQuery = (slug: string) =>
 		queryFn: ({ signal }) => api.getPost(slug, { signal }),
 	});
 
+/** Approved comments on a post. Same freshness as the post (the API's max-age). */
+export const postCommentsQuery = (slug: string) =>
+	queryOptions({
+		queryKey: ["posts", "comments", slug],
+		queryFn: ({ signal }) => api.getPostComments(slug, { signal }),
+	});
+
 export const pageQuery = (slug: string) =>
 	queryOptions({
 		queryKey: ["pages", slug],

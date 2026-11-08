@@ -6,7 +6,7 @@ This repository is a pnpm monorepo for a blog with a web app and a mobile app, b
 | ----------------- | -------------- | ---------------------------------------------------------------------------------------------- |
 | `apps/web`        | `@blog/web`    | Astro + EmDash site with HeroUI v3 (`@heroui/react`) on Cloudflare Workers (D1 + R2). Also hosts the CMS admin and owns the database. See `apps/web/AGENTS.md`. |
 | `apps/mobile`     | `@blog/mobile` | Expo SDK 58 (React Native 0.88) reader app with HeroUI Native on Uniwind, Expo Router, TanStack Query and FlashList. Reads `/api/v1` only. See `apps/mobile/AGENTS.md` (code style for the app). |
-| `packages/shared` | `@blog/shared` | Framework-agnostic TypeScript used by both apps: dates, reading time, site identity, and the public API contract + client (`src/api/`). |
+| `packages/shared` | `@blog/shared` | Framework-agnostic TypeScript used by both apps: dates, reading time, site identity, app-link paths, the push-notification contract (`src/push.ts`), and the public API contract + client (`src/api/`). |
 
 Agent skills for EmDash are in `.agents/skills/` (symlinked from `.claude/skills`). MCP configs (`.mcp.json`, `.cursor/`, `.vscode/`) stay at the repo root.
 
@@ -24,6 +24,8 @@ pnpm test             # unit tests in every workspace that has them
 pnpm --filter @blog/web <script>   # run any script in one workspace
 ```
 
+CI (`.github/workflows/ci.yml`) runs `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build` and the mobile `export` on every push and on pull requests from forks. Keep it green: it is the same list a change must pass locally.
+
 ## Rules
 
 - **Content flows one way: EmDash (in `apps/web`) → web pages and mobile app.** The EmDash REST API (`/_emdash/api/content/...`) requires authentication, and an API token must never ship inside a mobile app. The mobile app reads published content from the public, read-only JSON API at `/api/v1/*` served by `apps/web` (`apps/web/src/pages/api/v1/`), never from the EmDash admin API.
@@ -37,3 +39,6 @@ pnpm --filter @blog/web <script>   # run any script in one workspace
 - Secrets: locally `apps/web/.env` holds `EMDASH_ENCRYPTION_KEY`; in production it is a Worker secret (`wrangler secret put`). Never commit either, and back up the production key.
 - Open source: deployment-specific values (Worker/D1/R2 names, custom domain, `EMDASH_SITE_URL`) live only in `apps/web/wrangler.jsonc`; the mobile app's API origin and app identifiers come from environment variables (`apps/mobile/.env`, EAS env: `EXPO_PUBLIC_API_URL`, `APP_ID`…). Keep docs and code domain-neutral (`blog.example.com`, `com.example.blog`).
 - `EXPO_PUBLIC_*` variables are inlined into the app bundle and readable by anyone with the app: public values only, never a token.
+- Verified app links (blog URLs open the app instead of the browser): the paths live in `APP_LINK_PATH_PREFIXES` (`packages/shared/src/app-links.ts`). `apps/web` serves `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` from the `APP_LINKS_*` vars in `wrangler.jsonc` (empty = 404); `apps/mobile/app.config.ts` registers the same paths for the host of `EXPO_PUBLIC_API_URL` when it is https. A new path needs a screen at the same route in the app.
+- Comments: the app reads approved comments through `/api/v1/posts/[slug]/comments` and sends readers to the web form to write one. Posting from the app is a separate decision (it would need its own spam and moderation story).
+- Push notifications ("Tulisan baru"): opt-in in the app's Pengaturan. The app registers its Expo push token with `POST /api/v1/devices` (`DELETE /api/v1/devices/[token]` to stop); those endpoints forward to the `push-notifications` native EmDash plugin in `apps/web/src/plugins/`, which keeps tokens in its own plugin storage and sends one notification per published post from `content:afterPublish` through the Expo push service. The notification's `data.url` is the post URL, opened like any blog link. Channel id and data shape live in `packages/shared/src/push.ts`.

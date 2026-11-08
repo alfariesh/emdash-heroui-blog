@@ -4,10 +4,11 @@ import Constants from "expo-constants";
 import { router, type Href } from "expo-router";
 import { ListGroup } from "heroui-native/list-group";
 import { Separator } from "heroui-native/separator";
+import { Switch } from "heroui-native/switch";
 import { Typography } from "heroui-native/text";
 import { useToast } from "heroui-native/toast";
-import { Fragment, type ReactNode } from "react";
-import { ScrollView, View } from "react-native";
+import { Fragment, useState, type ReactNode } from "react";
+import { Linking, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -16,11 +17,19 @@ import {
 	GlobeIcon,
 	InformationIcon,
 	MoonIcon,
+	NotificationIcon,
 	SmartPhoneIcon,
 	SunIcon,
 	type IconSvgElement,
 } from "@/lib/icons";
 import { openExternal, toAppHref } from "@/lib/links";
+import {
+	disableNewPostNotifications,
+	enableNewPostNotifications,
+	pushUnavailableReason,
+	useNewPostNotifications,
+	type PushUnavailableReason,
+} from "@/lib/notifications";
 import { siteQuery } from "@/lib/queries";
 import { persistOptions, queryClient } from "@/lib/query-client";
 import { setThemePreference, useThemePreference, type ThemePreference } from "@/lib/theme";
@@ -82,6 +91,12 @@ export default function SettingsScreen() {
 				</ListGroup>
 			</Section>
 
+			<Section title="Notifikasi">
+				<ListGroup>
+					<NewPostNotificationsItem />
+				</ListGroup>
+			</Section>
+
 			<Section title="Tentang">
 				<ListGroup>
 					{pages.map(({ item, href }) => (
@@ -120,6 +135,80 @@ export default function SettingsScreen() {
 				</Typography>
 			</View>
 		</ScrollView>
+	);
+}
+
+const UNAVAILABLE: Record<PushUnavailableReason, string> = {
+	web: "Tidak tersedia di versi web.",
+	simulator: "Hanya tersedia di perangkat fisik.",
+	unconfigured: "Belum diatur untuk versi aplikasi ini.",
+};
+
+/** Opt-in switch for "Tulisan baru" pushes; the whole row toggles, the switch only shows the state. */
+function NewPostNotificationsItem() {
+	const enabled = useNewPostNotifications();
+	const [busy, setBusy] = useState(false);
+	const { toast } = useToast();
+	const unavailable = pushUnavailableReason();
+
+	const toggle = async () => {
+		if (busy || unavailable) return;
+		setBusy(true);
+		try {
+			if (enabled) {
+				await disableNewPostNotifications();
+				toast.show({ label: "Notifikasi tulisan baru dimatikan" });
+				return;
+			}
+			const result = await enableNewPostNotifications();
+			if (result === "enabled") {
+				toast.show({ variant: "success", label: "Notifikasi tulisan baru aktif" });
+			} else if (result === "denied") {
+				toast.show({
+					variant: "warning",
+					label: "Izin notifikasi ditolak",
+					description: "Izinkan notifikasi untuk aplikasi ini di pengaturan perangkat.",
+					actionLabel: "Buka",
+					onActionPress: ({ hide }) => {
+						void Linking.openSettings();
+						hide();
+					},
+				});
+			} else {
+				toast.show({
+					variant: "danger",
+					label: "Gagal mengaktifkan notifikasi",
+					description: "Periksa koneksi, lalu coba lagi.",
+				});
+			}
+		} finally {
+			setBusy(false);
+		}
+	};
+
+	return (
+		<ListGroup.Item
+			onPress={() => void toggle()}
+			disabled={unavailable !== null || busy}
+			accessibilityRole="switch"
+			accessibilityState={{ checked: enabled, disabled: unavailable !== null, busy }}
+		>
+			<ListGroup.ItemPrefix>
+				<Icon icon={NotificationIcon} size={22} tone={enabled ? "accent" : "muted"} />
+			</ListGroup.ItemPrefix>
+			<ListGroup.ItemContent>
+				<ListGroup.ItemTitle>Tulisan baru</ListGroup.ItemTitle>
+				<ListGroup.ItemDescription>
+					{unavailable ? UNAVAILABLE[unavailable] : "Kabari saya saat ada tulisan baru terbit"}
+				</ListGroup.ItemDescription>
+			</ListGroup.ItemContent>
+			<ListGroup.ItemSuffix>
+				{/* Display only: the row handles the press, so one tap toggles once. */}
+				<View pointerEvents="none">
+					<Switch isSelected={enabled} isDisabled={unavailable !== null} />
+				</View>
+			</ListGroup.ItemSuffix>
+		</ListGroup.Item>
 	);
 }
 

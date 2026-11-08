@@ -8,7 +8,8 @@ import { Skeleton } from "heroui-native/skeleton";
 import { Typography } from "heroui-native/text";
 import { useToast } from "heroui-native/toast";
 import { cn } from "heroui-native/utils";
-import { Platform, Share, useWindowDimensions, View } from "react-native";
+import { useRef } from "react";
+import { Platform, Share, useWindowDimensions, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
 	clamp,
 	Extrapolation,
@@ -16,6 +17,7 @@ import Animated, {
 	useAnimatedRef,
 	useAnimatedStyle,
 	useDerivedValue,
+	useReducedMotion,
 	useScrollOffset,
 	useSharedValue,
 } from "react-native-reanimated";
@@ -23,7 +25,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArticleTopBar, TOP_BAR_HEIGHT } from "@/components/post/article-top-bar";
 import { Byline } from "@/components/post/byline";
 import { PostCard } from "@/components/post/post-card";
+import { PostComments } from "@/components/post/post-comments";
 import { PostMeta } from "@/components/post/post-meta";
+import { ResumeReading } from "@/components/post/resume-reading";
 import { TermChips } from "@/components/post/term-chips";
 import { PortableText } from "@/components/portable-text/portable-text";
 import { GlassIconButton } from "@/components/ui/glass-icon-button";
@@ -33,11 +37,17 @@ import { toggleBookmark, useIsBookmarked } from "@/lib/bookmarks";
 import { BookmarkIcon, ShareIcon } from "@/lib/icons";
 import { postWebUrl } from "@/lib/links";
 import { findCachedSummary, flattenPages, postQuery, postsQuery } from "@/lib/queries";
+import { useReadingPosition } from "@/lib/use-reading-position";
 
 const MAX_HERO_HEIGHT = 520;
+/** URL fragment of the web's comment section: …/posts/slug#komentar opens at the comments. */
+const COMMENTS_HASH = "komentar";
+/** How long a #komentar link keeps re-aiming while comments and "Baca Juga" load below the card. */
+const COMMENTS_SCROLL_MS = 3000;
 
 export default function PostScreen() {
-	const { slug } = useLocalSearchParams<{ slug: string }>();
+	// Expo Router passes a link's #fragment as the "#" param.
+	const { slug, "#": hash } = useLocalSearchParams<{ slug: string; "#"?: string }>();
 	const queryClient = useQueryClient();
 
 	// Paint the title, image and byline from a cached list summary while the
@@ -65,7 +75,15 @@ export default function PostScreen() {
 		);
 	}
 
-	return <Article post={post} contentLoading={isPlaceholderData} contentError={error} onRetry={refetch} />;
+	return (
+		<Article
+			post={post}
+			contentLoading={isPlaceholderData}
+			contentError={error}
+			onRetry={refetch}
+			openAtComments={hash === COMMENTS_HASH}
+		/>
+	);
 }
 
 interface ArticleProps {
@@ -73,21 +91,52 @@ interface ArticleProps {
 	contentLoading: boolean;
 	contentError: Error | null;
 	onRetry: () => void;
+	/** Scroll to "Diskusi" once it lays out (a link to …#komentar). */
+	openAtComments?: boolean;
 }
 
-function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) {
+function Article({ post, contentLoading, contentError, onRetry, openAtComments = false }: ArticleProps) {
 	const { width } = useWindowDimensions();
 	const { top, bottom } = useSafeAreaInsets();
 	const scrollRef = useAnimatedRef<Animated.ScrollView>();
 	const scrollY = useScrollOffset(scrollRef);
 	const contentHeight = useSharedValue(1);
 	const viewportHeight = useSharedValue(1);
+	const reduceMotion = useReducedMotion();
+	const commentsTarget = useRef<number | null>(null);
+	const commentsDeadline = useRef(0);
 
 	const hasHero = post.featuredImage !== null;
 	const heroHeight = Math.min(Math.round(width * 1.1), MAX_HERO_HEIGHT);
 	const barHeight = top + TOP_BAR_HEIGHT;
 	const solidAt = hasHero ? heroHeight - barHeight - 24 : 8;
 	const webUrl = postWebUrl(post.slug);
+	const bodyFailed = contentError !== null && post.content.length === 0;
+	const reading = useReadingPosition({
+		slug: post.slug,
+		ready: !contentLoading && !bodyFailed,
+		offer: !openAtComments,
+		scrollY,
+		viewportHeight,
+	});
+	const resume = reading.resume;
+
+	// While the page below the card is still loading it can be too short to
+	// scroll the card to the top, so the scroll is retried as the content grows
+	// for a moment, unless the reader starts dragging first.
+	const scrollToComments = () => {
+		const target = commentsTarget.current;
+		if (target === null || Date.now() > commentsDeadline.current) return;
+		scrollRef.current?.scrollTo({ y: target, animated: !reduceMotion });
+	};
+
+	// The card mounts only after the body has rendered, so its y is final here.
+	const onCommentsLayout = (event: LayoutChangeEvent) => {
+		if (!openAtComments || commentsTarget.current !== null) return;
+		commentsTarget.current = Math.max(0, event.nativeEvent.layout.y - barHeight - 12);
+		commentsDeadline.current = Date.now() + COMMENTS_SCROLL_MS;
+		scrollToComments();
+	};
 
 	// Share of the article read, for the progress line in the top bar (UI thread).
 	const progress = useDerivedValue(() => {
@@ -112,7 +161,13 @@ function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) 
 				ref={scrollRef}
 				scrollEventThrottle={16}
 				onLayout={(event) => viewportHeight.set(event.nativeEvent.layout.height)}
-				onContentSizeChange={(_, height) => contentHeight.set(height)}
+				onContentSizeChange={(_, height) => {
+					contentHeight.set(height);
+					scrollToComments();
+				}}
+				onScrollBeginDrag={() => {
+					commentsDeadline.current = 0;
+				}}
 				contentContainerStyle={{ paddingBottom: bottom + 32, paddingTop: hasHero ? 0 : barHeight }}
 				showsVerticalScrollIndicator={false}
 			>
@@ -128,12 +183,15 @@ function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) 
 					</Animated.View>
 				) : null}
 
-				<View className={cn("gap-6 bg-background px-5", hasHero ? "-mt-8 rounded-t-[32px] pt-7" : "pt-2")}>
+				<View
+					className={cn("gap-6 bg-background px-5", hasHero ? "-mt-8 rounded-t-[32px] pt-7" : "pt-2")}
+					onLayout={reading.onBodyLayout}
+				>
 					<ArticleHeader post={post} />
 					<Separator />
 					{contentLoading ? (
 						<BodySkeleton />
-					) : contentError && post.content.length === 0 ? (
+					) : bodyFailed ? (
 						<ErrorView error={contentError} onRetry={onRetry} className="py-8" />
 					) : (
 						<PortableText value={post.content} webUrl={webUrl} />
@@ -142,6 +200,13 @@ function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) 
 						<TermChips categories={[]} tags={post.tags} max={post.tags.length} interactive size="md" className="pt-4" />
 					) : null}
 				</View>
+
+				{/* After the body has loaded, so the comments request never competes with it. */}
+				{contentLoading || bodyFailed ? null : (
+					<View className="mx-4 mt-12" onLayout={onCommentsLayout}>
+						<PostComments slug={post.slug} webUrl={webUrl} />
+					</View>
+				)}
 
 				<RelatedPosts post={post} />
 			</Animated.ScrollView>
@@ -154,6 +219,17 @@ function Article({ post, contentLoading, contentError, onRetry }: ArticleProps) 
 				overImage={hasHero}
 				actions={<ArticleActions post={post} webUrl={webUrl} />}
 			/>
+
+			{resume ? (
+				<ResumeReading
+					progress={resume.progress}
+					onResume={() => {
+						scrollRef.current?.scrollTo({ y: resume.offset, animated: !reduceMotion });
+						reading.dismiss();
+					}}
+					onDismiss={reading.dismiss}
+				/>
+			) : null}
 		</View>
 	);
 }

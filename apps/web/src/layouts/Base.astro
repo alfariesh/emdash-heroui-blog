@@ -12,6 +12,8 @@ import SiteHeader, { type NavItem } from "../components/islands/SiteHeader";
 import ThemeSwitcher from "../components/islands/ThemeSwitcher";
 import { isThemePreference, type ThemePreference } from "../lib/theme";
 import { getLocale } from "../lib/locale";
+import { smartAppBanner } from "../lib/app-links";
+import { publicOrigin } from "../lib/site-url";
 import { resolveBlogSiteIdentity } from "@blog/shared";
 import "../styles/global.css";
 
@@ -119,6 +121,8 @@ const searchQuery =
 	currentPath === "/search" ? (Astro.url.searchParams.get("q") ?? "") : "";
 
 const lang = getLocale();
+// iOS Safari "open in app" banner; null until APP_LINKS_IOS_STORE_ID is set.
+const appBanner = smartAppBanner(`${publicOrigin(Astro)}${Astro.url.pathname}`);
 const year = new Date().getFullYear();
 ---
 
@@ -131,6 +135,7 @@ const year = new Date().getFullYear();
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		{appBanner && <meta name="apple-itunes-app" content={appBanner} />}
 		<Font cssVariable="--font-body" preload />
 		<Font cssVariable="--font-code" />
 		<title>{fullTitle}</title>

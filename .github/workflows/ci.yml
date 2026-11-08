@@ -1,0 +1,49 @@
+# Checks every push and every pull request from a fork: the same commands
+# AGENTS.md asks for before a change is done. Pull requests from branches of
+# this repo are already covered by their push run, so they are skipped.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      # Version comes from "packageManager" in package.json.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # packages/shared (tsc), apps/web (astro check), apps/mobile (typegen + tsc)
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      # Bundles the Worker, so a broken import (e.g. cloudflare:workers) fails here, not on deploy.
+      - name: Build web
+        run: pnpm build
+
+      # The only check that runs Metro, Uniwind's CSS compiler and Hermes.
+      - name: Export mobile bundles
+        run: pnpm --filter @blog/mobile export
