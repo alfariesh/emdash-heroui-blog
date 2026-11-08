@@ -6,7 +6,7 @@ Monorepo blog dengan konten dari [EmDash](https://emdashcms.com) dan tampilan [H
 .
 ├── apps/
 │   ├── web/          Situs Astro + EmDash + HeroUI di Cloudflare Workers (D1 + R2), juga panel admin CMS
-│   └── mobile/       (rencana) Aplikasi React Native + HeroUI Native
+│   └── mobile/       Aplikasi Expo (React Native) + HeroUI Native, membaca API publik web
 ├── packages/
 │   └── shared/       Kode bersama web & mobile: format tanggal, waktu baca, identitas situs,
 │                     kontrak + klien API publik (src/api/)
@@ -22,9 +22,19 @@ pnpm dev          # situs:  http://localhost:4321
                   # admin:  http://localhost:4321/_emdash/admin
 pnpm dev:stop     # hentikan dev server
 pnpm typecheck    # cek tipe semua paket
+pnpm test         # unit test
 ```
 
 Butuh Node.js 22.23.4+ dan pnpm 11. Salin `apps/web/.env.example` ke `apps/web/.env` dan isi `EMDASH_ENCRYPTION_KEY` (`npx emdash secrets generate`). Dev lokal berjalan di workerd dengan D1/R2 lokal; buka `/_emdash/admin` untuk setup pertama.
+
+### Aplikasi mobile
+
+```bash
+pnpm --filter @blog/web dev --host   # API untuk HP/emulator di jaringan yang sama
+pnpm dev:mobile                      # Metro; buka di Expo Go, simulator, atau dev build
+```
+
+Tanpa konfigurasi, aplikasi memakai API dari komputer yang menjalankan Metro (port 4321). Untuk server lain, salin `apps/mobile/.env.example` ke `apps/mobile/.env` dan isi `EXPO_PUBLIC_API_URL`. Detail fitur, build, dan rilis ada di `apps/mobile/README.md`.
 
 ## Deploy ke Cloudflare
 
@@ -62,7 +72,7 @@ export const CATEGORY_ICONS = {
 };
 ```
 
-Kategori tanpa entri otomatis memakai ikon folder. Ikon baru di luar daftar `CATEGORY_ICON_KEYS` perlu ditambahkan juga ke `apps/web/src/lib/icons.ts` (dan nanti ke aplikasi mobile).
+Kategori tanpa entri otomatis memakai ikon folder. Ikon baru di luar daftar `CATEGORY_ICON_KEYS` perlu ditambahkan juga ke `apps/web/src/lib/icons.ts` dan `apps/mobile/src/lib/icons.ts` (build gagal bila salah satu terlewat).
 
 ## Lisensi
 
@@ -72,6 +82,8 @@ Kategori tanpa entri otomatis memakai ikon folder. Ikon baru di luar daftar `CAT
 
 - Kerangka situs dan skill agen di `.agents/skills/` berasal dari [template blog EmDash](https://github.com/emdash-cms/templates) — MIT, © Cloudflare, Inc.
 - [EmDash](https://emdashcms.com) dan [Astro](https://astro.build) — MIT.
-- [HeroUI](https://heroui.com) (`@heroui/react`, `@heroui/styles`) — Apache-2.0.
-- [Hugeicons](https://hugeicons.com) versi gratis (`@hugeicons/core-free-icons`, `@hugeicons/react`) — MIT.
+- [HeroUI](https://heroui.com) (`@heroui/react`, `@heroui/styles`, `heroui-native`) — Apache-2.0.
+- [Expo](https://expo.dev), [React Native](https://reactnative.dev), [Uniwind](https://uniwind.dev), [TanStack Query](https://tanstack.com/query), [FlashList](https://shopify.github.io/flash-list/) — MIT.
+- Font [Inter](https://rsms.me/inter/) (`@expo-google-fonts/inter`) — SIL Open Font License 1.1.
+- [Hugeicons](https://hugeicons.com) versi gratis (`@hugeicons/core-free-icons`, `@hugeicons/react`, `@hugeicons/react-native`) — MIT.
 - Foto contoh di `apps/web/seed/seed.json` diunduh dari [Unsplash](https://unsplash.com) saat seeding (Unsplash License) dan tidak disimpan di repo.

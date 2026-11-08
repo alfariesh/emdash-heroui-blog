@@ -5,7 +5,7 @@
  * is chosen here by slug. Only icon *keys* live in this package; each app maps
  * the keys to Hugeicons free icons (`@hugeicons/core-free-icons`):
  *   - web:    apps/web/src/lib/icons.ts     (@hugeicons/react)
- *   - mobile: apps/mobile/…                 (@hugeicons/react-native)
+ *   - mobile: apps/mobile/src/lib/icons.ts  (@hugeicons/react-native)
  * Keeping icon data out of here avoids pulling the full Hugeicons index into
  * the React Native bundle.
  */
