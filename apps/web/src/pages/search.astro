@@ -68,7 +68,13 @@ const card = cardVariants();
 						<ol class="flex max-w-3xl flex-col gap-3">
 							{rows.map((row) => (
 								<li>
-									<a href={row.path} class={cn(card.base(), "group flex-row items-center gap-4 p-5 hover:bg-surface-secondary")}>
+									<a
+										href={row.path}
+										class={cn(
+											card.base(),
+											"pressable flex-row items-center gap-4 p-5 [--press-scale:0.985] hover:bg-surface-secondary",
+										)}
+									>
 										<div class="flex min-w-0 flex-1 flex-col gap-1.5">
 											<h2 class="search-result text-base font-semibold text-foreground">
 												{row.titleHtml ? <Fragment set:html={row.titleHtml} /> : row.title}
@@ -79,7 +85,7 @@ const card = cardVariants();
 												</p>
 											)}
 										</div>
-										<HugeiconsIcon icon={ArrowRight01Icon} className="size-4 shrink-0 text-muted" aria-hidden="true" />
+										<HugeiconsIcon icon={ArrowRight01Icon} className="nudge-icon size-4 shrink-0 text-muted" aria-hidden="true" />
 									</a>
 								</li>
 							))}

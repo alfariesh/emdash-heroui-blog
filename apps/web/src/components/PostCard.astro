@@ -70,8 +70,14 @@ const titleClass = {
 }[variant];
 ---
 
-<article class={cn(card.base(), "group gap-0 p-2", layout)}>
-	<a href={href} class={cn("media-frame rounded-2xl", mediaRatio)} tabindex="-1" aria-hidden="true">
+<article class={cn(card.base(), "post-card gap-0 p-2", layout)}>
+	<a
+		href={href}
+		class={cn("media-frame rounded-2xl", mediaRatio)}
+		tabindex="-1"
+		aria-hidden="true"
+		data-post-image={post.data.featured_image ? href : undefined}
+	>
 		{
 			post.data.featured_image ? (
 				<div class="h-full w-full" {...post.edit.featured_image}>
@@ -79,7 +85,7 @@ const titleClass = {
 						image={post.data.featured_image}
 						sizes={sizes}
 						priority={priority}
-						class="transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+						class="post-card__image"
 					/>
 				</div>
 			) : (
@@ -100,7 +106,7 @@ const titleClass = {
 				<ul class="relative z-10 flex flex-wrap gap-1.5" aria-label="Kategori dan tag">
 					{category && (
 						<li>
-							<a href={`/category/${category.slug}`} class={cn(categoryChip.base(), "hover:opacity-80")}>
+							<a href={`/category/${category.slug}`} class={cn(categoryChip.base(), "pressable hover:opacity-80")}>
 								<HugeiconsIcon icon={categoryIcon(category.slug)} size={12} strokeWidth={2} aria-hidden="true" />
 								<span class={categoryChip.label()}>{category.label}</span>
 							</a>
@@ -108,7 +114,7 @@ const titleClass = {
 					)}
 					{visibleTags.map((tag) => (
 						<li>
-							<a href={`/tag/${tag.slug}`} class={cn(chip.base(), "hover:opacity-80")}>
+							<a href={`/tag/${tag.slug}`} class={cn(chip.base(), "pressable hover:opacity-80")}>
 								<span class={chip.label()}>{tag.label}</span>
 							</a>
 						</li>
@@ -118,7 +124,11 @@ const titleClass = {
 		}
 
 		<Heading class={cn("font-semibold tracking-tight text-foreground text-balance", titleClass)}>
-			<a href={href} class="after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none" {...post.edit.title}>
+			<a
+				href={href}
+				class="post-card__link after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none"
+				{...post.edit.title}
+			>
 				{title}
 			</a>
 		</Heading>

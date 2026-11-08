@@ -1,6 +1,7 @@
 ---
 import { chipVariants, cn } from "@heroui/styles";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import { enterDelay } from "../lib/motion";
 
 interface Props {
 	/** Small label above the title, e.g. "Kategori" */
@@ -23,6 +24,7 @@ const chip = chipVariants({ size: "sm", variant: "soft", color: "accent" });
 				<span
 					class="flex size-12 items-center justify-center rounded-2xl bg-accent-soft text-accent-soft-foreground"
 					aria-hidden="true"
+					data-enter="pop"
 				>
 					<HugeiconsIcon icon={icon} size={24} />
 				</span>
@@ -30,15 +32,27 @@ const chip = chipVariants({ size: "sm", variant: "soft", color: "accent" });
 		}
 		{
 			eyebrow && (
-				<span class={chip.base()}>
+				<span class={chip.base()} data-enter="decoration">
 					<span class={chip.label()}>{eyebrow}</span>
 				</span>
 			)
 		}
-		<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
+		<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl" data-enter="lead">
 			{title}
 		</h1>
-		{description && <p class="max-w-2xl text-lg leading-8 text-muted text-pretty">{description}</p>}
-		<slot />
+		{
+			description && (
+				<p class="max-w-2xl text-lg leading-8 text-muted text-pretty" data-enter="support" style={enterDelay(80)}>
+					{description}
+				</p>
+			)
+		}
+		{
+			Astro.slots.has("default") && (
+				<div class="w-full" data-enter="support" style={enterDelay(140)}>
+					<slot />
+				</div>
+			)
+		}
 	</div>
 </header>

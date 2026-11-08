@@ -164,6 +164,85 @@ const year = new Date().getFullYear();
 				media.addEventListener("change", apply);
 			})();
 		</script>
+		<script is:inline>
+			// Card ↔ article image transition (cross-document View Transitions; the
+			// motion is in global.css, "Page transitions"). Only the image of the
+			// post being opened or left gets the transition name, at navigation
+			// time, so nothing else moves. Inline in <head>: `pagereveal` fires
+			// before the first render. Elements carry data-post-image="/posts/<slug>".
+			(function () {
+				if (!("onpagereveal" in window)) return;
+				var NAME = "post-image";
+				var KEY = "post-image-transition";
+				var clicked = null;
+
+				function normalize(path) {
+					try {
+						path = decodeURI(path);
+					} catch (error) {}
+					return path.replace(/\/$/, "") || "/";
+				}
+				// The image for `path`, if it is on screen (an off-screen image would
+				// fly in from nowhere; better to let it simply appear)
+				function find(path) {
+					if (!path) return null;
+					var images = document.querySelectorAll("[data-post-image]");
+					for (var i = 0; i < images.length; i++) {
+						var rect = images[i].getBoundingClientRect();
+						var visible = rect.width > 0 && rect.bottom > 0 && rect.top < innerHeight;
+						if (visible && images[i].getAttribute("data-post-image") === path) return images[i];
+					}
+					return null;
+				}
+				// Names must be unique per page: clear before naming, and after a run
+				function clear() {
+					var named = document.querySelectorAll("[data-post-image]");
+					for (var i = 0; i < named.length; i++) named[i].style.viewTransitionName = "";
+				}
+				function remember(path) {
+					try {
+						if (path) sessionStorage.setItem(KEY, path);
+						else sessionStorage.removeItem(KEY);
+					} catch (error) {}
+				}
+
+				addEventListener(
+					"click",
+					function (event) {
+						var link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+						clicked = link ? normalize(new URL(link.href, location.href).pathname) : null;
+					},
+					true,
+				);
+
+				// Leaving: name the opened post's card, or else this article's own hero
+				addEventListener("pageswap", function (event) {
+					if (!event.viewTransition) return remember(null);
+					var entry = event.activation && event.activation.entry;
+					var target = entry && entry.url ? normalize(new URL(entry.url).pathname) : clicked;
+					var own = normalize(location.pathname);
+					var image = find(target) || find(own);
+					clear();
+					if (image) image.style.viewTransitionName = NAME;
+					remember(image ? image.getAttribute("data-post-image") : null);
+				});
+
+				// Arriving: name the matching hero or card. Also clears the name left
+				// on a page restored from the back/forward cache.
+				addEventListener("pagereveal", function (event) {
+					var path = null;
+					try {
+						path = sessionStorage.getItem(KEY);
+						sessionStorage.removeItem(KEY);
+					} catch (error) {}
+					clear();
+					var image = event.viewTransition && find(path);
+					if (!image) return;
+					image.style.viewTransitionName = NAME;
+					event.viewTransition.finished.then(clear, clear);
+				});
+			})();
+		</script>
 	</head>
 	<body>
 		<EmDashBodyStart page={pageCtx} />
@@ -208,7 +287,7 @@ const year = new Date().getFullYear();
 											href={item.url}
 											target={item.target}
 											rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
-											class="text-muted hover:text-foreground"
+											class="link-fade text-muted hover:text-foreground"
 										>
 											{item.label}
 										</a>
@@ -223,10 +302,10 @@ const year = new Date().getFullYear();
 					<h2 class="text-sm font-semibold text-foreground">Ikuti</h2>
 					<ul class="flex flex-col gap-2 text-sm">
 						<li>
-							<a href="/rss.xml" class="text-muted hover:text-foreground">Feed RSS</a>
+							<a href="/rss.xml" class="link-fade text-muted hover:text-foreground">Feed RSS</a>
 						</li>
 						<li>
-							<a href="/search" class="text-muted hover:text-foreground">Cari tulisan</a>
+							<a href="/search" class="link-fade text-muted hover:text-foreground">Cari tulisan</a>
 						</li>
 					</ul>
 				</div>
