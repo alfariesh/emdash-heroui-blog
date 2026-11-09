@@ -27,19 +27,22 @@
 	--color-ash: #a59f97;
 	--color-violet-spark: #0447ff;
 	--color-ember-orange: #ff4704;
+	/* Ember orange deepened to reach WCAG AA (4.5:1) as small text and under light labels on the light theme */
+	--color-ember-deep: #bf3302;
 }
 
 /*
  * Theme overrides. Content cards stay flat in both themes; overlays retain
- * their own elevation. The accent is the logo's orange; the blue is kept for
- * the focus ring, where an orange ring would vanish on an orange button.
+ * their own elevation. The accent is the logo's orange, deepened in the light
+ * theme so links, small labels and button text reach WCAG AA; the blue is kept
+ * for the focus ring, where an orange ring would vanish on an orange button.
  */
 @layer theme {
 	:root {
 		@variant light {
 			--surface-shadow: 0 0 0 0 transparent;
 
-			--accent: var(--color-ember-orange);
+			--accent: var(--color-ember-deep);
 			--accent-foreground: var(--color-eggshell);
 			--focus: var(--color-violet-spark);
 
@@ -55,7 +58,7 @@
 			--default-foreground: var(--color-graphite);
 			--field-background: var(--color-eggshell);
 			--field-foreground: var(--color-ink);
-			--field-placeholder: var(--color-ash);
+			--field-placeholder: var(--color-smoke);
 			--segment: var(--color-eggshell);
 			--segment-foreground: var(--color-ink);
 			--border: var(--color-stone);
@@ -66,7 +69,8 @@
 			--surface-shadow: 0 0 0 0 transparent;
 
 			--accent: var(--color-ember-orange);
-			--accent-foreground: var(--color-eggshell);
+			/* full orange as text on near-black; its button label has to be dark to reach AA */
+			--accent-foreground: var(--color-ink);
 			/* violet-spark lifted towards eggshell so the ring reads on near-black */
 			--focus: #4f7dfe;
 
@@ -81,7 +85,7 @@
 			--default-foreground: var(--color-eggshell);
 			--field-background: #171513;
 			--field-foreground: var(--color-eggshell);
-			--field-placeholder: var(--color-smoke);
+			--field-placeholder: var(--color-ash);
 			--segment: var(--color-graphite);
 			--segment-foreground: var(--color-eggshell);
 			--border: #34302c;

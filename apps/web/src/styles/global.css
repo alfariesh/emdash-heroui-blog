@@ -46,6 +46,8 @@
 	--color-ash: #a59f97;
 	--color-violet-spark: #0447ff;
 	--color-ember-orange: #ff4704;
+	/* Ember orange deepened to reach WCAG AA (4.5:1) as small text and under light labels on the light theme */
+	--color-ember-deep: #bf3302;
 }
 
 :root {
@@ -53,12 +55,14 @@
 	--surface-shadow: 0 0 0 0 transparent;
 
 	/*
-	 * Accent is the logo's orange; the blue is kept for focus rings, where an
-	 * orange ring would vanish on an orange button. Radii use HeroUI defaults.
+	 * Accent is the logo's orange, deepened here so links, small labels and
+	 * button text reach WCAG AA on the light surfaces; the dark theme keeps the
+	 * full orange. The blue is kept for focus rings, where an orange ring would
+	 * vanish on an orange button. Radii use HeroUI defaults.
 	 * Cards are radius-3xl (24px); images inset by p-2 use radius-2xl (16px) so
 	 * corners stay concentric.
 	 */
-	--accent: var(--color-ember-orange);
+	--accent: var(--color-ember-deep);
 	--accent-foreground: var(--color-eggshell);
 	--focus: var(--color-violet-spark);
 
@@ -74,7 +78,7 @@
 	--default-foreground: var(--color-graphite);
 	--field-background: var(--color-eggshell);
 	--field-foreground: var(--color-ink);
-	--field-placeholder: var(--color-ash);
+	--field-placeholder: var(--color-smoke);
 	--segment: var(--color-eggshell);
 	--segment-foreground: var(--color-ink);
 	--border: var(--color-stone);
@@ -84,6 +88,9 @@
 /* Dark: the same warm neutrals, dropped to near-black; graphite and ash carry the lines and text */
 .dark,
 [data-theme="dark"] {
+	/* The full orange reads as text on near-black; its button label has to be dark to reach AA */
+	--accent: var(--color-ember-orange);
+	--accent-foreground: var(--color-ink);
 	--background: #0c0b0a;
 	--foreground: var(--color-eggshell);
 	--surface: #171513;
@@ -95,7 +102,7 @@
 	--default-foreground: var(--color-eggshell);
 	--field-background: #171513;
 	--field-foreground: var(--color-eggshell);
-	--field-placeholder: var(--color-smoke);
+	--field-placeholder: var(--color-ash);
 	--segment: var(--color-graphite);
 	--segment-foreground: var(--color-eggshell);
 	--border: #34302c;
