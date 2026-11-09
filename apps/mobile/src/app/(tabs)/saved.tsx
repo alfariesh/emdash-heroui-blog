@@ -1,3 +1,4 @@
+import { formatCount } from "@blog/shared";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import { useScrollToTop } from "expo-router";
 import { useRef } from "react";
@@ -27,10 +28,10 @@ export default function SavedScreen() {
 				ItemSeparatorComponent={() => <View className="h-3" />}
 				ListHeaderComponent={
 					<ScreenHeader
-						title="Tersimpan"
+						title="Saved"
 						description={
 							bookmarks.length > 0
-								? `${bookmarks.length} tulisan untuk dibaca nanti, tersimpan di perangkat ini.`
+								? `${formatCount(bookmarks.length, "post")} to read later, saved on this device.`
 								: null
 						}
 						className="-mx-4"
@@ -39,8 +40,8 @@ export default function SavedScreen() {
 				ListEmptyComponent={
 					<StateView
 						icon={BookmarkIcon}
-						title="Belum ada yang disimpan"
-						description="Ketuk ikon penanda saat membaca untuk menyimpan tulisan ke sini."
+						title="Nothing saved yet"
+						description="Tap the bookmark icon while reading to save a post here."
 					/>
 				}
 				contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: bottomInset }}

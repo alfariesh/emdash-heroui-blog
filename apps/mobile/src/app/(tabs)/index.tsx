@@ -5,17 +5,19 @@ import { Button } from "heroui-native/button";
 import { Typography } from "heroui-native/text";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AdSlot } from "@/components/ad-slot";
 import { CategoryRail } from "@/components/category-rail";
 import { PostList } from "@/components/post/post-list";
 import { useTabBarInset } from "@/components/tab-bar";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { Icon } from "@/components/ui/icon";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { SettingsIcon } from "@/lib/icons";
 import { siteQuery } from "@/lib/queries";
 
-const WEEKDAY = new Intl.DateTimeFormat("id-ID", { weekday: "long" });
+const WEEKDAY = new Intl.DateTimeFormat("en-US", { weekday: "long" });
 
-/** "Rabu, 4 November 2026" */
+/** "Wednesday, November 4, 2026" */
 function today(): string {
 	const now = new Date();
 	return `${WEEKDAY.format(now)}, ${formatDate(now, "long")}`;
@@ -27,7 +29,12 @@ export default function HomeScreen() {
 
 	return (
 		<View className="flex-1 bg-background" style={{ paddingTop: top }}>
-			<PostList featureFirst bottomInset={bottomInset} header={<HomeHeader />} />
+			<PostList
+				featureFirst
+				bottomInset={bottomInset}
+				header={<HomeHeader />}
+				footer={<AdSlot placement="home" className="mt-6" />}
+			/>
 		</View>
 	);
 }
@@ -40,13 +47,14 @@ function HomeHeader() {
 			<ScreenHeader
 				overline={today()}
 				title={site?.title ?? "Blog"}
+				titleContent={<BrandLogo height={40} />}
 				description={site?.tagline}
 				actions={
 					<Button
 						isIconOnly
 						variant="ghost"
 						size="sm"
-						accessibilityLabel="Pengaturan"
+						accessibilityLabel="Settings"
 						onPress={() => router.push("/settings")}
 					>
 						<Icon icon={SettingsIcon} size={22} />
@@ -55,7 +63,7 @@ function HomeHeader() {
 			/>
 			<CategoryRail />
 			<Typography.Heading type="h5" className="px-5 pt-7 pb-3">
-				Tulisan Terbaru
+				Latest posts
 			</Typography.Heading>
 		</View>
 	);

@@ -1,5 +1,5 @@
 /**
- * "Tulisan baru" push notifications: a native EmDash plugin registered in
+ * "New post" push notifications: a native EmDash plugin registered in
  * astro.config.mjs (native because this site runs no sandbox runner).
  *
  * - Devices: the app sends its Expo push token to /api/v1/devices, which
@@ -72,7 +72,7 @@ async function notifyNewPost(ctx: PluginContext, post: NonNullable<ReturnType<ty
 	const data: NewPostNotificationData = { url: ctx.url(`/posts/${encodeURIComponent(post.slug)}`) };
 	const content: PushContent = {
 		title: truncate(post.title, TITLE_MAX),
-		body: truncate(post.excerpt ?? `Tulisan baru di ${ctx.site.name || "blog"}.`, BODY_MAX),
+		body: truncate(post.excerpt ?? `New post on ${ctx.site.name || "blog"}.`, BODY_MAX),
 		data: { ...data },
 		channelId: NEW_POSTS_CHANNEL_ID,
 	};
@@ -105,14 +105,14 @@ export function createPlugin() {
 			settingsSchema: {
 				enabled: {
 					type: "boolean",
-					label: "Kirim notifikasi tulisan baru",
-					description: "Setiap tulisan yang terbit dikirim sekali ke aplikasi mobile yang mengaktifkan notifikasi.",
+					label: "Send new-post notifications",
+					description: "Each published post is sent once to mobile apps that turned notifications on.",
 					default: true,
 				},
 				expoAccessToken: {
 					type: "secret",
 					label: "Expo access token",
-					description: "Hanya perlu bila \"Enhanced push security\" aktif di proyek Expo.",
+					description: "Only needed when Enhanced push security is on for the Expo project.",
 				},
 			},
 		},

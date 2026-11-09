@@ -13,7 +13,7 @@ export interface BlogSiteIdentitySettings {
 }
 
 const DEFAULT_SITE_TITLE = "Blog";
-const DEFAULT_SITE_TAGLINE = "Catatan, cerita, dan gagasan.";
+const DEFAULT_SITE_TAGLINE = "Notes, stories, and ideas.";
 
 export function resolveBlogSiteIdentity(settings?: BlogSiteIdentitySettings) {
 	return {

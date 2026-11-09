@@ -57,15 +57,15 @@ The repo root has `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json` so Cla
 
 ## This Template
 
-A blog with posts, pages, categories, tags, full-text search, comments, and RSS. The UI is **HeroUI v3** (`@heroui/react` + `@heroui/styles`) on **Tailwind CSS v4**, and all visitor-facing text is in **Indonesian** (dates use `id-ID`; see `src/lib/locale.ts` and `@blog/shared`).
+A blog with posts, pages, categories, tags, full-text search, comments, and RSS. The UI is **HeroUI v3** (`@heroui/react` + `@heroui/styles`) on **Tailwind CSS v4**, and all visitor-facing text is in **English** (dates use `en-US`; see `src/lib/locale.ts` and `@blog/shared`).
 
 ## Pages
 
 | Page        | Path               | What it shows                                                                                   |
 | ----------- | ------------------ | ----------------------------------------------------------------------------------------------- |
-| Home        | `/`                | Site title + tagline, category chips, featured post card, "Tulisan Terbaru" grid                |
+| Home        | `/`                | Site title + tagline, category chips, featured post card, "Latest posts" grid                   |
 | All posts   | `/posts`           | Horizontal post cards; cursor pagination                                                        |
-| Post detail | `/posts/[slug]`    | Breadcrumbs, title, excerpt, bylines, hero image, body + sticky rail (table of contents, widgets), tags, comments, "Baca Juga" |
+| Post detail | `/posts/[slug]`    | Breadcrumbs, title, excerpt, bylines, hero image, body + sticky rail (table of contents, widgets), tags, comments, "Read next" |
 | Search      | `/search`          | HeroUI SearchField + FTS results with highlighted matches                                       |
 | Page        | `/pages/[slug]`    | Static page content (Portable Text)                                                             |
 | Category    | `/category/[slug]` | Card grid of posts in a category                                                                |
@@ -76,17 +76,17 @@ A blog with posts, pages, categories, tags, full-text search, comments, and RSS.
 ## Schema
 
 - `posts` collection: `title`, `featured_image`, `content` (Portable Text), `excerpt` (text).
-- `pages` collection: `title`, `content` (Portable Text). Used for `/pages/tentang` etc.
-- `ads` collection: non-routable web banners with `title`, `image`, `target_url`, `placement`, `enabled`, optional `starts_at`/`ends_at`, and `priority`. Placement values are `Beranda`, `Sidebar artikel`, `Bawah artikel` (`AD_PLACEMENTS` in `src/lib/ad-selection.ts`). Drafts/revisions are enabled; edits must be published. Existing databases need `pnpm --filter @blog/web setup:ads` against the running site; a seed change alone does not evolve them.
+- `pages` collection: `title`, `content` (Portable Text). Used for `/pages/about` etc.
+- `ads` collection: non-routable web/native banners with `title`, `image`, `target_url`, `placement`, `enabled`, optional `starts_at`/`ends_at`, and `priority`. Placement values are `Home`, `Article sidebar`, `Below the article` (`AD_PLACEMENTS` in `src/lib/ad-selection.ts`); the Indonesian values a database set up from the original seed stores are still accepted (`LEGACY_PLACEMENTS`), so no ad stops showing until those options are edited. Drafts/revisions are enabled; edits must be published. Existing databases need `pnpm --filter @blog/web setup:ads` against the running site; a seed change alone does not evolve them.
 - Taxonomies: `category`, `tag`.
-- Single `primary` menu (Beranda, Tulisan, Tentang by default).
+- Single `primary` menu (Home, Posts, About by default).
 - Widget areas: `sidebar` (post rail) and `footer`.
 
 ## How HeroUI is wired
 
 - `src/styles/global.css` imports `tailwindcss` then `@heroui/styles` (order matters) and holds the few custom rules: `.container-page`, `.media-frame`, `.article-prose` (extends HeroUI's `.typography-prose`), and overrides for EmDash's widget and comment markup.
 - **Astro pages render HeroUI with zero JS** by using the style helpers from `@heroui/styles` (`cardVariants`, `chipVariants`, `buttonVariants`, `avatarVariants`, `breadcrumbsVariants`, `cn`). This keeps EmDash's `<Image>` and `<PortableText>` usable inside HeroUI cards.
-- **React islands** (`src/components/islands/`) use `@heroui/react` components where interaction is needed: `SiteHeader` (nav, SearchField, theme toggle, Drawer for mobile), `SearchForm`, `ThemeSwitcher` (ToggleButtonGroup). Don't put compound components (`Card.Header`…) directly in `.astro` files: each tag becomes a separate React root and loses context. Compose them inside a `.tsx` component instead.
+- **React islands** (`src/components/islands/`) use `@heroui/react` components where interaction is needed: `SiteHeader` (nav, search, Drawer for mobile; the theme is switched in the footer and in that Drawer, not in the header bar), `SearchPalette` (⌘K search), `SearchForm`, `ThemeSwitcher` (ToggleButtonGroup). Don't put compound components (`Card.Header`…) directly in `.astro` files: each tag becomes a separate React root and loses context. Compose them inside a `.tsx` component instead.
 - Look up component APIs with the HeroUI MCP (`get_component_docs`) rather than guessing. HeroUI v3 has no Provider, uses `onPress`, and has no v2 tokens like `primary-500`.
 - Dark mode: HeroUI reads a `light`/`dark` class on `<html>`. The choice is stored in a `theme` cookie (`src/lib/theme.ts`); with no cookie, the inline script in `Base.astro` follows the OS.
 - Icons: **Hugeicons free set** only. Import icon objects from `@hugeicons/core-free-icons` and render them with `<HugeiconsIcon icon={…} />` from `@hugeicons/react` (in `.astro` files too; pass `className`, not `class`). Inside HeroUI buttons the SVG size is set by HeroUI; elsewhere pass `size`. Don't add another icon library.
@@ -98,6 +98,7 @@ Read-only endpoints for the mobile app and other clients. The EmDash admin API (
 
 | Endpoint | Returns |
 | --- | --- |
+| `GET /api/v1/ads?placement=home\|post_bottom` | `ApiAdSlot`: eligible banner or null, `serverTime`, `validUntil`; `no-store`, lease capped at 60 s or next schedule boundary |
 | `GET /api/v1/site` | `ApiSite`: title, tagline, logo, locale, origin, `primary` menu items |
 | `GET /api/v1/posts?cursor=&limit=&category=&tag=` | `ApiPage<ApiPostSummary>`, newest first; `limit` 1–50 (default 10); unknown category/tag → 404 |
 | `GET /api/v1/posts/[slug]` | `ApiPost` (summary + `updatedAt` + Portable Text `content`) |
@@ -111,10 +112,10 @@ Read-only endpoints for the mobile app and other clients. The EmDash admin API (
 
 Rules (enforced in `src/lib/public-api.ts`; types come from `@blog/shared`):
 
-- **Published only.** Collection queries pass `status: "published"`; detail endpoints also check `entry.data.status === "published"`, because `getEmDashEntry` can serve drafts in preview/edit mode. The draft `masih-ditulis` must always be 404.
-- **Envelope:** `{ ok: true, data }`, lists `{ ok: true, data, nextCursor }`, errors `{ ok: false, error: { status, code, message } }` with Indonesian messages. Bad `limit`/`cursor` → 400 (the live loader re-wraps `InvalidCursorError`, so it is matched by message too).
+- **Published only.** Collection queries pass `status: "published"`; detail endpoints also check `entry.data.status === "published"`, because `getEmDashEntry` can serve drafts in preview/edit mode. The draft `still-writing` must always be 404.
+- **Envelope:** `{ ok: true, data }`, lists `{ ok: true, data, nextCursor }`, errors `{ ok: false, error: { status, code, message } }` with English messages. Bad `limit`/`cursor` → 400 (the live loader re-wraps `InvalidCursorError`, so it is matched by message too).
 - **Absolute URLs** for images, avatars, logo, menu items and root-relative links inside Portable Text, built from `context.url.origin`. Portable Text image blocks are rewritten to `{ _type: "image", url, alt, caption, width, height }`.
-- **Headers:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` on success, `no-store` on errors, `Access-Control-Allow-Origin: *`.
+- **Headers:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` on success (`/ads` and `/devices` are always `no-store`), `no-store` on errors, `Access-Control-Allow-Origin: *`.
 - **Public origin:** every absolute URL goes through `publicOrigin()` (`src/lib/site-url.ts`): Astro's `site` when set (only if `EMDASH_SITE_URL` is exported in the *build* environment), else the request origin, which on Workers is already the public host. EmDash itself reads `EMDASH_SITE_URL` at runtime from `wrangler.jsonc` `vars` for passkeys, CSRF and email links; it must be set before the production setup wizard runs, and setup must be done on that domain. Locally it is overridden to empty via `.env`, so `10.0.2.2` / LAN IPs keep working.
 
 ## Shared code
@@ -131,27 +132,29 @@ Framework-agnostic helpers live in `packages/shared` (`@blog/shared`) so the mob
 
 Motion follows Emil Kowalski's design-engineering rules (skills.sh/emilkowalski/skills): animate only `transform`/`opacity` (and `clip-path`), strong custom curves, UI motion under ~300ms, no animation on keyboard-triggered or high-frequency actions, and a `prefers-reduced-motion` fallback for everything (movement goes, opacity stays). The styles are in the "Motion" section of `src/styles/global.css`.
 
-- **Easing tokens** (`@theme`): `--ease-out` (overrides Tailwind's, which also sharpens HeroUI's own transitions), `--ease-in-out`, `--ease-drawer`. Never `ease-in`. HeroUI `.button`/`.toggle-button` presses are retimed to 160ms.
+- **Easing tokens** (`@theme`): `--ease-out` (overrides Tailwind's, which also sharpens HeroUI's own transitions), `--ease-drawer`. Never `ease-in`. HeroUI `.button`/`.toggle-button` presses are retimed to 160ms.
 - **Page entrance**: put `data-enter="lead|support|decoration|pop"` on a page's intro elements and stagger them with `style={enterDelay(ms[, index])}` from `src/lib/motion.ts`. One title per page is the `lead`; body content, cards and the largest image (LCP) don't animate in.
 - **Press feedback**: HeroUI buttons scale on press already; give other pressable links (chips, cards) the `pressable` utility (`[--press-scale:0.985]` for large surfaces). Post cards press through `.post-card` / `.post-card__link`.
 - **Card → article image**: cross-document View Transitions. Elements carry `data-post-image="/posts/<slug>"` (card media and article hero); the inline script in `Base.astro` names only the image being opened or left at `pageswap`/`pagereveal`, so nothing else moves. HeroUI keeps `:root` out of view transitions, so the new page is live immediately; don't add `view-transition-name` to elements statically (duplicate names cancel the transition).
 - **Theme switch**: `setThemePreference(pref, themeOrigin(pressEvent))` grows the new palette out of the pressed control; keyboard presses switch instantly.
-- **Article**: the table of contents' current item is a clipped "active" copy of the list (`.toc-active`), and `.reading-progress` is a scroll-driven hairline (no script).
+- **Article**: `TableOfContents.astro` (the sticky rail) builds its list in the browser from the body's h2/h3, giving them readable slug ids (`slugifyHeading`, duplicates get `-2`) and adding an "Introduction" entry when text precedes the first heading. Entries are 14px text on a 20px line with 15px gaps; beside them runs a ruler of 2px ticks on a 5px grid, four per text line, so each entry's first line sits on a tick (`lib/toc.ts` holds the pure maths and its tests; keep `TOC_LINE`/`TICK_PITCH` equal to `--toc-line` and the CSS gap). A script eases a reading cursor along the list by scroll progress and writes `--w` (ticks) plus `--t` (section being read) and `--h` (hover/focus) on the entries; `.toc__tick` / `.toc__link` in `global.css` turn them into width, opacity and colour, so nothing transitions in CSS. The current section's title is accent-coloured while the ticks swell around the cursor as it drifts to the next entry; hovering or keyboard-focusing an entry darkens its text and adds a softer second swell. A list taller than the rail scrolls with the cursor and fades at the clipped edges. Links scroll smoothly (instantly for keyboard use and `prefers-reduced-motion`) and update the hash with `replaceState`. The reading line sits below where a link lands a heading (`scroll-padding-top` + `scroll-margin-top`), or the clicked section would not become current. `BackToTop.astro` is a floating back-to-top button with a reading-progress ring measured through the body only (same rule as the mobile app). `SiteHeader` always sits on a progressive blur. On articles (`Base.astro`'s `headerTitle`) the page script sets `data-title-docked` on `<html>` so the title and current section replace the navigation while reading down past the H1; scrolling up restores it. The script feeds headings to the header through `lib/article-outline.ts`, and the docked title opens them as a table of contents. Header search is `SearchPalette` (⌘K, `/api/v1/search`).
 
 ## What not to do
 
 - Don't hard-code colours (`bg-blue-500`); use HeroUI semantic tokens and variants.
-- Don't stack extra shadows on cards (`.card` already has `shadow-surface`).
+- Keep all content cards flat: `--surface-shadow` is zero globally, matching mobile. Do not add card shadows.
 - Don't add `getStaticPaths()`; all CMS pages are server-rendered.
-- Comments are enabled on posts and rendered on the post detail page (section `id="komentar"`, which the mobile app links to for writing). Configure moderation before publishing the site, or remove `commentsEnabled` and the comments UI together. The app reads comments through `/api/v1/posts/[slug]/comments`, never through `/_emdash/api/comments/…`.
+- Comments are enabled on posts and rendered on the post detail page (section `id="comments"`, which the mobile app links to for writing). Configure moderation before publishing the site, or remove `commentsEnabled` and the comments UI together. The app reads comments through `/api/v1/posts/[slug]/comments`, never through `/_emdash/api/comments/…`.
 
 ## Verified app links (`/.well-known/`)
 
 `src/pages/.well-known/apple-app-site-association.ts` and `assetlinks.json.ts` let `https://<domain>/posts/…` (and `/pages/…`, `/category/…`, `/tag/…`, see `APP_LINK_PATH_PREFIXES` in `@blog/shared`) open the mobile app. They read Worker vars through `cloudflare:workers` `env`: `APP_LINKS_IOS_APP_IDS` (`<Team ID>.<bundle id>`, comma-separated), `APP_LINKS_ANDROID_PACKAGE` and `APP_LINKS_ANDROID_SHA256` (signing-cert fingerprints, comma-separated). Empty vars → plain 404, invalid entries are dropped with a warning. `APP_LINKS_IOS_STORE_ID` (numeric App Store ID) adds `<meta name="apple-itunes-app">` in `Base.astro` (Safari's Smart App Banner) with the page's public URL, without its query, as `app-argument`. Both files must answer 200 with `application/json` and no redirect, so keep them out of any redirect, auth or bot-challenge rule on the domain.
 
+Only compact horizontal post cards (`variant="row"`) omit publication dates and reading time. Featured/grid cards and article headers align reading time to the right on the author-name row, with the publication date directly below the names (no extra vertical gap). Keep publication dates in SEO metadata and the public API.
+
 ## Internal ads (`src/lib/ads.ts`, `src/components/AdSlot.astro`)
 
-`getAds()` queries published candidates for the page's positions once, then the pure `selectAd()` filters enabled ads, validates HTTP(S) targets and schedules, and picks highest priority (ID ascending breaks ties). Start is inclusive, end exclusive; missing bounds are open-ended and malformed dates fail closed. Home renders below the post list. An article shows at most one visible ad: sidebar at `lg` and up, falling back to bottom when no sidebar ad is eligible; below `lg`, only the bottom placement renders visibly. A sidebar-only campaign is not moved to mobile. The sidebar banner precedes and sits outside the sticky TOC/widget group, so it scrolls naturally. Empty slots render no wrapper. Image frames reserve 3:1 for home/bottom and 6:5 for sidebar; `object-fit: contain` preserves the whole creative even when an uploaded image has a different ratio. No mobile API or tracking is provided yet.
+`getAds()` queries published candidates for the page's positions once, then the pure `selectAd()` filters enabled ads, validates HTTP(S) targets and schedules, and picks highest priority (ID ascending breaks ties). Start is inclusive, end exclusive; missing bounds are open-ended and malformed dates fail closed. Home renders below the post list. An article shows at most one visible ad: sidebar at `lg` and up, falling back to bottom when no sidebar ad is eligible; below `lg`, only the bottom placement renders visibly. A sidebar-only campaign is not moved to mobile. The sidebar banner precedes and sits outside the sticky TOC/widget group, so it scrolls naturally. Empty slots render no wrapper. Image frames reserve 3:1 for home/bottom and 6:5 for sidebar; `object-fit: contain` preserves the whole creative even when an uploaded image has a different ratio. The public `/api/v1/ads` endpoint shares this selection with the native app for home/bottom only, returning a 60-second maximum lease capped by the earliest future start/end boundary (including when no ad is active). It uses `no-store`; the app hides expired data and excludes ads from offline persistence. No tracking is provided.
 
 Ad pages register the collection cache hint with `maxAge: 0, swr: 0`: eligibility changes as time passes without a content write, including when no ad is currently eligible. Do not enable long-lived route caching here without accounting for schedule boundaries.
 

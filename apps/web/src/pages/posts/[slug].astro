@@ -18,11 +18,13 @@ import { publicOrigin } from "../../lib/site-url";
 import Byline from "../../components/Byline.astro";
 import PostCard from "../../components/PostCard.astro";
 import AdSlot from "../../components/AdSlot.astro";
+import BackToTop from "../../components/BackToTop.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
 import { getAds } from "../../lib/ads";
 import { AD_PLACEMENTS } from "../../lib/ad-selection";
-import { formatDate, getLocale } from "../../lib/locale";
+import { getLocale } from "../../lib/locale";
 import { enterDelay } from "../../lib/motion";
-import { formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
+import { formatCount, formatDate, formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
 
 const origin = publicOrigin(Astro);
 const slug = decodeSlug(Astro.params.slug);
@@ -69,9 +71,10 @@ const seo = getSeoMeta(post, {
 
 // Bylines and terms are already hydrated by getEmDashEntry
 const bylines = post.data.bylines ?? [];
+const publishedAt = post.data.publishedAt ?? null;
+const readingTime = formatReadingTime(getReadingTime(post.data.content));
 const tags = post.data.terms?.tag ?? [];
 const categories = post.data.terms?.category ?? [];
-const readingTime = formatReadingTime(getReadingTime(post.data.content));
 
 // Fetch a few extra recent posts in case the current post is among them.
 const [{ entries: recentPosts, cacheHint: recentPostsCacheHint }, ads] = await Promise.all([
@@ -89,17 +92,15 @@ const bottomAd = ads.forPlacement(AD_PLACEMENTS.postBottom);
 // Tags + category for the related posts in two batched queries
 const otherTermsFor = await getPostTerms(otherPosts.map((p) => p.data.id));
 
-const publishedAt = post.data.publishedAt ?? null;
-const publishDate = publishedAt ? formatDate(publishedAt, "long") : null;
-
-// The script below builds the table of contents and has the final say; this
-// guess keeps the sidebar from shifting when the page loads.
-const hasHeadings = (post.data.content ?? []).some(
-	(block) =>
-		block._type === "block" &&
-		"style" in block &&
-		(block.style === "h2" || block.style === "h3"),
-);
+// TableOfContents builds the list in the browser and has the final say; this
+// guess (headings, plus an intro when the body starts with something else) only
+// reserves its height, so the sidebar doesn't shift when the page loads.
+const isHeading = (block: { _type: string; style?: unknown }) =>
+	block._type === "block" && (block.style === "h2" || block.style === "h3");
+const bodyBlocks = post.data.content ?? [];
+const headingCount = bodyBlocks.filter(isHeading).length;
+const tocRows =
+	headingCount === 0 ? 0 : headingCount + (bodyBlocks[0] && isHeading(bodyBlocks[0]) ? 0 : 1);
 
 const crumbs = breadcrumbsVariants();
 const card = cardVariants();
@@ -107,20 +108,20 @@ const categoryChip = chipVariants({ variant: "soft", color: "accent" });
 const tagChip = chipVariants({ variant: "secondary" });
 
 const commentFormLabels = {
-	name: "Nama",
-	email: "Email (tidak ditampilkan)",
-	comment: "Komentar",
-	submit: "Kirim komentar",
-	submitting: "Mengirim…",
-	published: "Terima kasih! Komentar Anda sudah tampil.",
-	pending: "Terima kasih! Komentar Anda akan tampil setelah disetujui.",
-	error: "Komentar gagal dikirim. Silakan coba lagi.",
-	networkError: "Koneksi bermasalah. Periksa internet Anda lalu coba lagi.",
+	name: "Name",
+	email: "Email (not shown)",
+	comment: "Comment",
+	submit: "Post comment",
+	submitting: "Sending…",
+	published: "Thanks! Your comment is now visible.",
+	pending: "Thanks! Your comment will appear after it is approved.",
+	error: "The comment could not be sent. Please try again.",
+	networkError: "Connection problem. Check your internet and try again.",
 };
 const commentListLabels = {
-	heading: (count: number) => (count === 0 ? "Belum ada komentar" : `${count} komentar`),
-	member: "Penulis",
-	like: "Suka",
+	heading: (count: number) => (count === 0 ? "No comments yet" : formatCount(count, "comment")),
+	member: "Author",
+	like: "Like",
 };
 ---
 
@@ -135,6 +136,7 @@ const commentListLabels = {
 	publishedTime={post.data.publishedAt?.toISOString() ?? null}
 	modifiedTime={post.data.updatedAt.toISOString()}
 	content={{ collection: "posts", id: post.data.id, slug }}
+	headerTitle={post.data.title}
 >
 	<article>
 		<header class="container-page pt-10 sm:pt-14">
@@ -142,11 +144,11 @@ const commentListLabels = {
 				<nav aria-label="Breadcrumb" data-enter="decoration">
 					<ol class={crumbs.base()}>
 						<li class={crumbs.item()}>
-							<a href="/" class={crumbs.link()}>Beranda</a>
+							<a href="/" class={crumbs.link()}>Home</a>
 							<HugeiconsIcon icon={ArrowRight01Icon} className={crumbs.separator()} aria-hidden="true" />
 						</li>
 						<li class={crumbs.item()}>
-							<a href="/posts" class={crumbs.link()}>Tulisan</a>
+							<a href="/posts" class={crumbs.link()}>Posts</a>
 							{categories[0] && <HugeiconsIcon icon={ArrowRight01Icon} className={crumbs.separator()} aria-hidden="true" />}
 						</li>
 						{
@@ -162,8 +164,9 @@ const commentListLabels = {
 				</nav>
 
 				<h1
-					class="text-4xl leading-[1.1] font-semibold tracking-tight text-balance text-foreground sm:text-5xl"
+					class="typography--display"
 					data-enter="lead"
+					data-post-title
 					{...post.edit.title}
 				>
 					{post.data.title}
@@ -172,7 +175,7 @@ const commentListLabels = {
 				{
 					post.data.excerpt && (
 						<p
-							class="text-lg leading-8 text-muted text-pretty sm:text-xl sm:leading-9"
+							class="typography--lead"
 							data-enter="support"
 							style={enterDelay(80)}
 							{...post.edit.excerpt}
@@ -183,12 +186,13 @@ const commentListLabels = {
 				}
 
 				<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1" data-enter="support" style={enterDelay(140)}>
-					<Byline bylines={bylines} max={2} size="md" />
-					<p class="flex items-center gap-2 text-sm text-muted tabular-nums">
-						{publishedAt && <time datetime={publishedAt.toISOString()}>{publishDate}</time>}
-						{publishedAt && <span aria-hidden="true">·</span>}
-						<span>{readingTime}</span>
-					</p>
+					<Byline bylines={bylines} max={2} size="md" readingTime={readingTime}>
+						{publishedAt && (
+							<p class="typography--body-sm text-muted tabular-nums">
+								<time datetime={publishedAt.toISOString()}>{formatDate(publishedAt, "long")}</time>
+							</p>
+						)}
+					</Byline>
 				</div>
 			</div>
 		</header>
@@ -215,12 +219,8 @@ const commentListLabels = {
 		<div class="container-page mt-12">
 			<div class="mx-auto grid max-w-5xl gap-12 lg:grid-cols-[minmax(0,1fr)_17rem]">
 				<div class="min-w-0">
-					{/* Defines the scroll timeline the reading-progress hairline follows. */}
-					<div class="reading-scope">
-						<div class="reading-progress" aria-hidden="true"></div>
-						<div class="typography-prose article-prose" data-post-content>
-							<PortableText value={post.data.content} />
-						</div>
+					<div class="typography-prose article-prose" data-post-content>
+						<PortableText value={post.data.content} />
 					</div>
 
 					{
@@ -243,14 +243,14 @@ const commentListLabels = {
 						class={cn("mt-12", sidebarAd && "lg:hidden")}
 					/>
 
-					{/* id="komentar": the mobile app links here so readers can write a comment. */}
+					{/* id="comments": the mobile app links here so readers can write a comment. */}
 					<section
-						id="komentar"
+						id="comments"
 						class={cn(card.base(), "post-comments mt-12 scroll-mt-24 gap-4 p-6 sm:p-8")}
 						aria-labelledby="comments-title"
 					>
-						<h2 id="comments-title" class="text-xl font-semibold tracking-tight">
-							Diskusi
+						<h2 id="comments-title" class="typography--h4">
+							Discussion
 						</h2>
 						<Comments
 							collection="posts"
@@ -263,7 +263,7 @@ const commentListLabels = {
 					</section>
 				</div>
 
-				<aside class="flex flex-col gap-4" aria-label="Info tambahan">
+				<aside class="flex flex-col gap-4" aria-label="More on this page">
 					{/* Keep the banner before and outside the sticky navigation group. */}
 					<AdSlot
 						ad={sidebarAd}
@@ -271,21 +271,7 @@ const commentListLabels = {
 						class="hidden lg:block"
 					/>
 					<div class="flex flex-col gap-4 lg:sticky lg:top-24">
-						<nav
-							class={cn(card.base(), "hidden gap-2 p-3 lg:flex")}
-							aria-labelledby="toc-title"
-							hidden={!hasHeadings}
-							data-toc
-						>
-							<h2 id="toc-title" class="px-3 pt-1 text-sm font-semibold text-foreground">
-								Di halaman ini
-							</h2>
-							<div class="relative">
-								<ol class="flex flex-col gap-0.5" data-toc-list></ol>
-								{/* Visual copy of the list in its "active" style; see .toc-active */}
-								<ol class="toc-active flex flex-col gap-0.5" aria-hidden="true" data-toc-active></ol>
-							</div>
-						</nav>
+						<TableOfContents rows={tocRows} />
 
 						{
 							categories.length > 0 && (
@@ -311,11 +297,11 @@ const commentListLabels = {
 		otherPosts.length > 0 && (
 			<section class="container-page mt-24" aria-labelledby="continue-reading">
 				<div class="mb-6 flex items-end justify-between gap-4">
-					<h2 id="continue-reading" class="text-2xl font-semibold tracking-tight">
-						Baca Juga
+					<h2 id="continue-reading" class="typography--h3">
+						Read next
 					</h2>
 					<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
-						Semua tulisan
+						All posts
 						<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 					</a>
 				</div>
@@ -333,89 +319,47 @@ const commentListLabels = {
 		)
 	}
 
+	<BackToTop />
+
 	<script>
-		// Build the table of contents from the body's h2/h3 headings
-		function buildToc() {
-			const content = document.querySelector("[data-post-content]");
-			const toc = document.querySelector<HTMLElement>("[data-toc]");
-			const list = document.querySelector<HTMLElement>("[data-toc-list]");
-			const active = document.querySelector<HTMLElement>("[data-toc-active]");
-			if (!content || !toc || !list || !active) return;
+		// Past the H1 the header shows the article title while reading down and the
+		// navigation as soon as the reader scrolls back up. The flag lives on <html>
+		// because React owns the header's own attributes.
+		const HEADER_HEIGHT = 64;
+		/** Ignores small scroll wobbles, so the header doesn't flicker. */
+		const SCROLL_DEADZONE = 8;
+		const postTitle = document.querySelector("[data-post-title]");
+		if (postTitle) {
+			let passed = false;
+			let scrollingUp = false;
+			let lastY = window.scrollY;
 
-			const headings = [...content.querySelectorAll<HTMLHeadingElement>("h2, h3")];
-			toc.hidden = headings.length === 0;
-			if (headings.length === 0) return;
-
-			const links = new Map<Element, HTMLAnchorElement>();
-			headings.forEach((heading, index) => {
-				if (!heading.id) heading.id = `bagian-${index + 1}`;
-				const nested = heading.tagName === "H3" ? "toc-item--nested" : "";
-
-				const item = document.createElement("li");
-				item.className = nested;
-				const link = document.createElement("a");
-				link.href = `#${heading.id}`;
-				link.className = "toc-link";
-				link.textContent = heading.textContent;
-				item.appendChild(link);
-				list.appendChild(item);
-				links.set(heading, link);
-
-				// Same text and box in the "active" copy, so the two lists line up
-				const copyItem = document.createElement("li");
-				copyItem.className = nested;
-				const copy = document.createElement("span");
-				copy.className = "toc-link";
-				copy.textContent = heading.textContent;
-				copyItem.appendChild(copy);
-				active.appendChild(copyItem);
-			});
-
-			// Clip the active copy to the current link; the clip transitions, so the
-			// pill slides and the text colour changes with it.
-			let current: HTMLAnchorElement | undefined;
-			let placed = false;
-			const place = () => {
-				// Not laid out while the rail is hidden (below lg)
-				if (!current || list.offsetHeight === 0) return;
-				const top = current.offsetTop;
-				const bottom = list.offsetHeight - top - current.offsetHeight;
-				active.style.clipPath = `inset(${top}px 0 ${bottom}px 0 round 0.5rem)`;
-				// The first placement jumps; only later moves animate
-				if (!placed) {
-					placed = true;
-					requestAnimationFrame(() => {
-						requestAnimationFrame(() => active.setAttribute("data-ready", ""));
-					});
-				}
+			const syncDock = () => {
+				document.documentElement.toggleAttribute("data-title-docked", passed && !scrollingUp);
 			};
 
-			// Mark the section currently in view
-			const setCurrent = (link: HTMLAnchorElement) => {
-				if (link === current) return;
-				current?.removeAttribute("aria-current");
-				link.setAttribute("aria-current", "true");
-				current = link;
-				place();
-			};
-			const first = links.values().next().value;
-			if (first) setCurrent(first);
-
-			// Re-measure when the rail is shown (lg+) or the text re-wraps
-			new ResizeObserver(place).observe(list);
-
-			const observer = new IntersectionObserver(
-				(entries) => {
-					for (const entry of entries) {
-						const link = links.get(entry.target);
-						if (link && entry.isIntersecting) setCurrent(link);
-					}
+			new IntersectionObserver(
+				([entry]) => {
+					if (!entry) return;
+					passed = !entry.isIntersecting && entry.boundingClientRect.top < HEADER_HEIGHT;
+					syncDock();
 				},
-				{ rootMargin: "-96px 0px -75% 0px" },
-			);
-			headings.forEach((heading) => observer.observe(heading));
-		}
+				{ rootMargin: `-${HEADER_HEIGHT}px 0px 0px 0px` },
+			).observe(postTitle);
 
-		buildToc();
+			window.addEventListener(
+				"scroll",
+				() => {
+					// Clamped: Safari's bounce at the page end would read as scrolling up.
+					const maxY = document.documentElement.scrollHeight - window.innerHeight;
+					const y = Math.min(window.scrollY, maxY);
+					if (Math.abs(y - lastY) < SCROLL_DEADZONE) return;
+					scrollingUp = y < lastY;
+					lastY = y;
+					syncDock();
+				},
+				{ passive: true },
+			);
+		}
 	</script>
 </Base>

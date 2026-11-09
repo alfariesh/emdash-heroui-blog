@@ -19,7 +19,7 @@ export default function TagScreen() {
 				filter={{ tag: slug }}
 				bottomInset={bottom + 24}
 				header={<TermHeader taxonomy="tag" slug={slug} term={term} />}
-				emptyTitle="Belum ada tulisan dengan tag ini"
+				emptyTitle="No posts with this tag yet"
 			/>
 		</View>
 	);

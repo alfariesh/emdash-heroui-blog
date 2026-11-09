@@ -14,12 +14,12 @@ import {
 export const GET: APIRoute = (context) =>
 	handle(async () => {
 		const slug = decodeSlug(context.params.slug);
-		if (!slug) return notFound("Tulisan tidak ditemukan.");
+		if (!slug) return notFound("Post not found.");
 
 		const { entry: post, error } = await getEmDashEntry("posts", slug);
 		if (error) throw error;
 		// getEmDashEntry can serve drafts in preview/edit mode; the API never does.
-		if (!post || !isPublished(post)) return notFound("Tulisan tidak ditemukan.");
+		if (!post || !isPublished(post)) return notFound("Post not found.");
 
 		const data: ApiPost = {
 			...toApiPostSummary(context, post),

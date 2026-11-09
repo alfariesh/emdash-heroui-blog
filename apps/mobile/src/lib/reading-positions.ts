@@ -1,5 +1,5 @@
 /**
- * Pure state for "Lanjutkan membaca": where the reader left each article.
+ * Pure state for "Continue reading": where the reader left each article.
  * Storage lives in reading-progress.ts; this file has no imports so the
  * rules are unit-tested with Node.
  */

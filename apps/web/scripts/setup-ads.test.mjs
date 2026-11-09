@@ -116,7 +116,7 @@ test("setup refuses incompatible fields before adding any missing ones", async (
 
 test("setup refuses a placement selector missing a supported position", async (t) => {
 	const fields = existingFields();
-	fields.find((field) => field.slug === "placement").validation = { options: ["Beranda"] };
+	fields.find((field) => field.slug === "placement").validation = { options: ["Home"] };
 	const { state, url } = await fixture(t, fields);
 	const result = await run(url);
 	assert.notEqual(result.code, 0, "An incompatible selector must not be reported as ready.");

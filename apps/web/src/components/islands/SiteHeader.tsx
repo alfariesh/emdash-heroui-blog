@@ -1,10 +1,13 @@
-import { Menu01Icon, Moon02Icon, Search01Icon, Sun03Icon } from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, ArrowRight01Icon, Menu01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Button, Drawer, Separator, Tooltip, type PressEvent } from "@heroui/react";
+import { Button, Drawer, Popover, Separator } from "@heroui/react";
 import { buttonVariants, cn } from "@heroui/styles";
+import { useState, useSyncExternalStore } from "react";
 
-import { getResolvedTheme, setThemePreference, themeOrigin } from "../../lib/theme";
+import { getEmptyOutline, getOutline, subscribeOutline } from "../../lib/article-outline";
+import BrandLogo, { BrandWordmark } from "./BrandLogo";
 import SearchForm from "./SearchForm";
+import SearchPalette from "./SearchPalette";
 import ThemeSwitcher from "./ThemeSwitcher";
 import type { ThemePreference } from "../../lib/theme";
 
@@ -23,29 +26,26 @@ interface Props {
 	isLoggedIn?: boolean;
 	searchQuery?: string;
 	themePreference: ThemePreference;
+	/** On an article: the title that replaces the navigation once the page's H1 has scrolled away. */
+	articleTitle?: string;
 }
 
 function Brand({ siteTitle, logo }: Pick<Props, "siteTitle" | "logo">) {
-	const monogram = [...siteTitle.trim()][0]?.toUpperCase() ?? "";
 	return (
 		<a
 			href="/"
-			className="pressable flex min-w-0 items-center gap-2.5 rounded-xl text-foreground"
+			className="pressable flex min-w-0 items-center rounded-xl text-foreground"
 		>
 			{logo ? (
 				<img src={logo.url} alt={logo.alt || siteTitle} className="h-8 w-auto" />
 			) : (
 				<>
-					{monogram && (
-						<span
-							aria-hidden="true"
-							className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-accent text-sm font-semibold text-accent-foreground"
-						>
-							{monogram}
+					<BrandLogo title={siteTitle} className="h-8 w-auto shrink-0" />
+					{/* Two layers so the wordmark, its gap and all, can collapse to zero width. */}
+					<span className="header-brand-name">
+						<span className="min-w-0 overflow-hidden">
+							<BrandWordmark className="block h-8 w-auto max-w-none" />
 						</span>
-					)}
-					<span className="truncate text-[0.9375rem] font-semibold tracking-tight">
-						{siteTitle}
 					</span>
 				</>
 			)}
@@ -56,8 +56,91 @@ function Brand({ siteTitle, logo }: Pick<Props, "siteTitle" | "logo">) {
 function navLinkClass(current?: NavItem["current"]) {
 	return cn(
 		buttonVariants({ variant: "ghost", size: "sm" }),
-		"font-medium",
+		"typography--weight-medium",
 		current ? "bg-default text-foreground" : "text-muted hover:text-foreground",
+	);
+}
+
+/**
+ * The article's title and current section, docked in the header while reading.
+ * With headings to jump to, it opens the table of contents.
+ */
+function DockedTitle({ title }: { title: string }) {
+	const { sections, activeId } = useSyncExternalStore(subscribeOutline, getOutline, getEmptyOutline);
+	const [isOpen, setOpen] = useState(false);
+	const active = sections.find((section) => section.id === activeId);
+
+	const label = (
+		<span className="flex min-w-0 items-center gap-1.5 typography--h6">
+			{/* On phones the section alone fits; the title returns between sections. */}
+			<span className={cn("min-w-0 shrink-[3] truncate typography--weight-semibold text-foreground", active && "max-sm:hidden")}>
+				{title}
+			</span>
+			{active && (
+				<>
+					<HugeiconsIcon
+						icon={ArrowRight01Icon}
+						size={14}
+						className="shrink-0 text-muted max-sm:hidden"
+						aria-hidden="true"
+					/>
+					<span key={active.id} className="header-section min-w-0 truncate typography--weight-medium text-muted max-sm:font-semibold max-sm:text-foreground">
+						{active.title}
+					</span>
+				</>
+			)}
+		</span>
+	);
+
+	if (sections.length === 0) {
+		// A decorative repeat of the page's H1, so screen readers skip it.
+		return (
+			<span className="header-title" aria-hidden="true">
+				{label}
+			</span>
+		);
+	}
+
+	return (
+		<span className="header-title">
+			<Popover isOpen={isOpen} onOpenChange={setOpen}>
+				<Button
+					variant="ghost"
+					size="sm"
+					aria-label="Open table of contents"
+					className="-ms-2 h-9 max-w-[calc(100%+0.5rem)] min-w-0 gap-1 px-2"
+				>
+					{label}
+					<HugeiconsIcon icon={ArrowDown01Icon} size={14} className="shrink-0 text-muted" aria-hidden="true" />
+				</Button>
+				<Popover.Content placement="bottom start" className="w-80 max-w-[calc(100vw-2rem)]">
+					<Popover.Dialog className="flex flex-col gap-1 p-2">
+						<Popover.Heading className="px-3 pt-1 pb-1 typography--body-sm typography--weight-semibold text-foreground">
+							On this page
+						</Popover.Heading>
+						<ol className="flex max-h-[60dvh] flex-col gap-0.5 overflow-y-auto">
+							{sections.map((section) => (
+								<li key={section.id} className={section.nested ? "ps-3" : undefined}>
+									<a
+										href={`#${section.id}`}
+										aria-current={section.id === activeId ? "true" : undefined}
+										className={cn(
+											"block rounded-lg px-3 py-1.5 typography--body-sm text-pretty wrap-anywhere",
+											section.id === activeId
+												? "bg-surface-secondary text-foreground"
+												: "text-muted hover:bg-default hover:text-foreground",
+										)}
+										onClick={() => setOpen(false)}
+									>
+										{section.title}
+									</a>
+								</li>
+							))}
+						</ol>
+					</Popover.Dialog>
+				</Popover.Content>
+			</Popover>
+		</span>
 	);
 }
 
@@ -68,64 +151,46 @@ export default function SiteHeader({
 	isLoggedIn = false,
 	searchQuery = "",
 	themePreference,
+	articleTitle,
 }: Props) {
-	const toggleTheme = (press: PressEvent) =>
-		setThemePreference(getResolvedTheme() === "dark" ? "light" : "dark", themeOrigin(press));
-
-	// backdrop-blur-md, not xl: the blur is redrawn under every scrolled frame and its
-	// cost grows with the radius; at 80% opacity the larger radius doesn't show.
 	return (
-		<header className="sticky top-0 z-50 border-b border-separator/70 bg-background/80 backdrop-blur-md backdrop-saturate-150">
+		<header className="sticky top-0 z-50">
+			<div className="header-progressive-blur" aria-hidden="true">
+				<span />
+				<span />
+				<span />
+			</div>
 			<div className="container-page flex h-16 items-center gap-3">
-				<Brand siteTitle={siteTitle} logo={logo} />
+				<div className="header-swap flex h-full min-w-0 flex-1 items-center">
+					<Brand siteTitle={siteTitle} logo={logo} />
 
-				{items.length > 0 && (
-					<nav aria-label="Navigasi utama" className="ms-4 hidden md:block">
-						<ul className="flex items-center gap-1">
-							{items.map((item) => (
-								<li key={`${item.url}-${item.label}`}>
-									<a
-										href={item.url}
-										target={item.target}
-										rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
-										aria-current={item.current}
-										className={navLinkClass(item.current)}
-									>
-										{item.label}
-									</a>
-								</li>
-							))}
-						</ul>
-					</nav>
-				)}
+					<div className="relative ms-4 flex h-full min-w-0 flex-1 items-center">
+						{items.length > 0 && (
+							<nav aria-label="Primary" className="header-nav hidden md:block">
+								<ul className="flex items-center gap-1">
+									{items.map((item) => (
+										<li key={`${item.url}-${item.label}`}>
+											<a
+												href={item.url}
+												target={item.target}
+												rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+												aria-current={item.current}
+												className={navLinkClass(item.current)}
+											>
+												{item.label}
+											</a>
+										</li>
+									))}
+								</ul>
+							</nav>
+						)}
 
-				<div className="ms-auto flex items-center gap-1.5">
-					<SearchForm
-						className="hidden w-64 lg:block"
-						defaultValue={searchQuery}
-						shortcut
-					/>
+						{articleTitle && <DockedTitle title={articleTitle} />}
+					</div>
+				</div>
 
-					<Tooltip delay={300}>
-						<Button
-							isIconOnly
-							variant="ghost"
-							aria-label="Cari"
-							className="lg:hidden"
-							onPress={() => window.location.assign("/search")}
-						>
-							<HugeiconsIcon icon={Search01Icon} />
-						</Button>
-						<Tooltip.Content>Cari</Tooltip.Content>
-					</Tooltip>
-
-					<Tooltip delay={300}>
-						<Button isIconOnly variant="ghost" aria-label="Ganti tema" onPress={toggleTheme}>
-							<HugeiconsIcon icon={Sun03Icon} className="dark:hidden" />
-							<HugeiconsIcon icon={Moon02Icon} className="hidden dark:block" />
-						</Button>
-						<Tooltip.Content>Ganti tema terang/gelap</Tooltip.Content>
-					</Tooltip>
+				<div className="flex items-center gap-1.5">
+					<SearchPalette />
 
 					{isLoggedIn && (
 						<a
@@ -137,7 +202,7 @@ export default function SiteHeader({
 					)}
 
 					<Drawer>
-						<Button isIconOnly variant="ghost" aria-label="Buka menu" className="md:hidden">
+						<Button isIconOnly variant="ghost" aria-label="Open menu" className="md:hidden">
 							<HugeiconsIcon icon={Menu01Icon} />
 						</Button>
 						<Drawer.Backdrop variant="blur">
@@ -150,7 +215,7 @@ export default function SiteHeader({
 									<Drawer.Body className="flex flex-col gap-6">
 										<SearchForm defaultValue={searchQuery} variant="secondary" />
 										{items.length > 0 && (
-											<nav aria-label="Navigasi utama">
+											<nav aria-label="Primary">
 												<ul className="flex flex-col gap-1">
 													{items.map((item) => (
 														<li key={`${item.url}-${item.label}`}>
@@ -162,7 +227,7 @@ export default function SiteHeader({
 																}
 																aria-current={item.current}
 																className={cn(
-																	"pressable flex h-11 items-center rounded-xl px-3 text-[0.9375rem] font-medium [--press-scale:0.98]",
+																	"pressable flex h-11 items-center rounded-xl px-3 typography--body typography--weight-medium [--press-scale:0.98]",
 																	item.current
 																		? "bg-surface-secondary text-foreground"
 																		: "text-muted hover:bg-default hover:text-foreground",
@@ -179,7 +244,7 @@ export default function SiteHeader({
 									<Drawer.Footer className="flex flex-col items-stretch gap-4">
 										<Separator />
 										<div className="flex items-center justify-between gap-3">
-											<span className="text-sm text-muted">Tema</span>
+											<span className="typography--body-sm text-muted">Theme</span>
 											<ThemeSwitcher initialPreference={themePreference} />
 										</div>
 										{isLoggedIn && (
@@ -187,7 +252,7 @@ export default function SiteHeader({
 												href="/_emdash/admin"
 												className={buttonVariants({ variant: "outline", fullWidth: true })}
 											>
-												Buka Admin
+												Open admin
 											</a>
 										)}
 									</Drawer.Footer>

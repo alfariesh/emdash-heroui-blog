@@ -1,5 +1,7 @@
 import {
 	API_BASE_PATH,
+	type ApiAdPlacement,
+	type ApiAdSlot,
 	type ApiDeviceRegistration,
 	type ApiDeviceStatus,
 	type ApiError,
@@ -54,6 +56,7 @@ export interface BlogClient {
 	/** Base URL the client was created with, without a trailing slash. */
 	readonly baseUrl: string;
 	getSite(options?: RequestOptions): Promise<ApiSite>;
+	getAd(placement: ApiAdPlacement, options?: RequestOptions): Promise<ApiAdSlot>;
 	getPosts(query?: PostListQuery, options?: RequestOptions): Promise<ApiPage<ApiPostSummary>>;
 	getPost(slug: string, options?: RequestOptions): Promise<ApiPost>;
 	getPostComments(slug: string, options?: RequestOptions): Promise<ApiPostComments>;
@@ -103,7 +106,7 @@ export function createBlogClient(baseUrl: string): BlogClient {
 	): Promise<T> {
 		const fetchImpl = (globalThis as { fetch?: FetchLike }).fetch;
 		if (!fetchImpl) {
-			throw new BlogApiError(0, "network_error", "fetch tidak tersedia di lingkungan ini.");
+			throw new BlogApiError(0, "network_error", "fetch is not available in this environment.");
 		}
 
 		let response: FetchResponseLike;
@@ -119,21 +122,21 @@ export function createBlogClient(baseUrl: string): BlogClient {
 			});
 		} catch (error) {
 			if ((error as { name?: unknown })?.name === "AbortError") throw error;
-			throw new BlogApiError(0, "network_error", "Tidak dapat terhubung ke server.");
+			throw new BlogApiError(0, "network_error", "Could not connect to the server.");
 		}
 
 		let body: unknown;
 		try {
 			body = await response.json();
 		} catch {
-			throw new BlogApiError(response.status, "invalid_response", "Respons server tidak valid.");
+			throw new BlogApiError(response.status, "invalid_response", "The server response is invalid.");
 		}
 
 		if (isApiError(body)) {
 			throw new BlogApiError(body.error.status, body.error.code, body.error.message);
 		}
 		if (!response.ok || !isOk(body)) {
-			throw new BlogApiError(response.status, "invalid_response", "Respons server tidak valid.");
+			throw new BlogApiError(response.status, "invalid_response", "The server response is invalid.");
 		}
 		return body as T;
 	}
@@ -144,6 +147,8 @@ export function createBlogClient(baseUrl: string): BlogClient {
 	return {
 		baseUrl: root,
 		getSite: (options) => data<ApiSite>("/site", options),
+		getAd: (placement, options) =>
+			data<ApiAdSlot>(`/ads${toQueryString({ placement })}`, options),
 		getPosts: (query = {}, options) =>
 			request<ApiPage<ApiPostSummary>>(
 				`/posts${toQueryString({

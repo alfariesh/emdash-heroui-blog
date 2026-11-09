@@ -21,26 +21,87 @@
  * the site uses stronger ones. Overriding Tailwind's --ease-out also sharpens
  * HeroUI's own transitions, which read var(--ease-out).
  *   ease-out     entering / exiting, press feedback (starts fast)
- *   ease-in-out  something moving on screen (e.g. the TOC indicator)
  *   ease-drawer  iOS-like settle for big moves (drawers, the card → article image)
  * Never ease-in: it delays the moment the visitor is watching.
  */
 @theme {
 	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* ---------------------------------------------------------------------------
  * Theme overrides — HeroUI variables
  * ------------------------------------------------------------------------- */
+/*
+ * Palette: warm neutrals plus two sparks. `static` keeps every token in the
+ * output, so they work as utilities too (bg-eggshell, text-graphite…).
+ */
+@theme static {
+	--color-eggshell: #fdfcfc;
+	--color-warm-taupe: #f5f3f1;
+	--color-stone: #ebe8e4;
+	--color-ink: #000000;
+	--color-graphite: #44403b;
+	--color-smoke: #777169;
+	--color-ash: #a59f97;
+	--color-violet-spark: #0447ff;
+	--color-ember-orange: #ff4704;
+}
+
 :root {
+	/* Shared with mobile: content cards are flat in light and dark themes. */
+	--surface-shadow: 0 0 0 0 transparent;
+
 	/*
-	 * HeroUI defaults are used as-is. Cards are radius-3xl (24px); images inset
-	 * by p-2 use radius-2xl (16px) so corners stay concentric. Change --radius
-	 * or --accent here to restyle the whole site, e.g.:
-	 * --accent: oklch(0.62 0.19 150);
+	 * Accent is the logo's orange; the blue is kept for focus rings, where an
+	 * orange ring would vanish on an orange button. Radii use HeroUI defaults.
+	 * Cards are radius-3xl (24px); images inset by p-2 use radius-2xl (16px) so
+	 * corners stay concentric.
 	 */
+	--accent: var(--color-ember-orange);
+	--accent-foreground: var(--color-eggshell);
+	--focus: var(--color-violet-spark);
+
+	/* Light: taupe page, eggshell cards, stone for fills and lines */
+	--background: var(--color-warm-taupe);
+	--foreground: var(--color-ink);
+	--surface: var(--color-eggshell);
+	--surface-secondary: var(--color-warm-taupe);
+	--surface-tertiary: var(--color-stone);
+	--overlay: var(--color-eggshell);
+	--muted: color-mix(in oklab, var(--color-smoke) 80%, var(--color-graphite));
+	--default: var(--color-stone);
+	--default-foreground: var(--color-graphite);
+	--field-background: var(--color-eggshell);
+	--field-foreground: var(--color-ink);
+	--field-placeholder: var(--color-ash);
+	--segment: var(--color-eggshell);
+	--segment-foreground: var(--color-ink);
+	--border: var(--color-stone);
+	--separator: color-mix(in oklab, var(--color-stone) 70%, var(--color-warm-taupe));
+}
+
+/* Dark: the same warm neutrals, dropped to near-black; graphite and ash carry the lines and text */
+.dark,
+[data-theme="dark"] {
+	--background: #0c0b0a;
+	--foreground: var(--color-eggshell);
+	--surface: #171513;
+	--surface-secondary: #221f1c;
+	--surface-tertiary: #2c2925;
+	--overlay: #171513;
+	--muted: var(--color-ash);
+	--default: #2c2925;
+	--default-foreground: var(--color-eggshell);
+	--field-background: #171513;
+	--field-foreground: var(--color-eggshell);
+	--field-placeholder: var(--color-smoke);
+	--segment: var(--color-graphite);
+	--segment-foreground: var(--color-eggshell);
+	--border: #34302c;
+	--separator: #2a2724;
+	/* The blue ring needs a lift on near-black */
+	--focus: color-mix(in oklab, var(--color-violet-spark) 70%, var(--color-eggshell));
 }
 
 /* ---------------------------------------------------------------------------
@@ -54,7 +115,6 @@
 
 	body {
 		@apply min-h-dvh bg-background font-sans text-foreground antialiased;
-		font-feature-settings: "cv11", "ss01";
 	}
 
 	::selection {
@@ -99,10 +159,30 @@
 	}
 
 	/* -------------------------------------------------------------------------
-	 * Article body — extends HeroUI's .typography-prose for long-form reading
+	 * Type scale
+	 * Every size in the markup is a HeroUI Typography class (typography--h1…h6,
+	 * typography--body, -body-sm, -body-xs; weights via typography--weight-*).
+	 * Two steps the library has no class for are added here, built from the same
+	 * Tailwind sizes, so there is still one scale and no literal sizes:
+	 *   display  page and article titles (h1, one step up from HeroUI's h1 on wider screens)
+	 *   lead     the muted standfirst under a title
+	 * ----------------------------------------------------------------------- */
+	.typography--display {
+		@apply text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl;
+	}
+
+	.typography--lead {
+		@apply text-lg leading-relaxed text-pretty text-muted sm:text-xl;
+	}
+
+	/* -------------------------------------------------------------------------
+	 * Article body — extends HeroUI's .typography-prose for long-form reading.
+	 * Running text is one step above UI body (text-lg), headings sit one step
+	 * below HeroUI's prose headings (h2 = text-2xl) so they stay in proportion
+	 * with the display title above them.
 	 * ----------------------------------------------------------------------- */
 	.article-prose {
-		@apply text-[1.0625rem] leading-[1.8];
+		@apply text-lg leading-8;
 	}
 
 	.article-prose > * + * {
@@ -111,7 +191,7 @@
 
 	.article-prose p,
 	.article-prose li {
-		@apply text-[1.0625rem] leading-[1.8] text-foreground/90;
+		@apply text-lg leading-8 text-foreground/90;
 	}
 
 	.article-prose h2 {
@@ -125,7 +205,7 @@
 	}
 
 	.article-prose h4 {
-		@apply mt-8 mb-2 text-lg font-semibold text-foreground;
+		@apply mt-8 mb-2 text-lg font-semibold tracking-tight text-foreground;
 	}
 
 	.article-prose h2 + *,
@@ -161,7 +241,7 @@
 	}
 
 	.article-prose pre code {
-		@apply bg-transparent p-0 text-[0.875rem];
+		@apply bg-transparent p-0 text-sm;
 	}
 
 	.article-prose hr {
@@ -187,40 +267,112 @@
 	}
 
 	/*
-	 * Table of contents (built client-side from the article headings).
-	 * The active state is a second, aria-hidden copy of the list styled as
-	 * "active" and clipped to the current item; moving the clip slides the pill
-	 * and swaps the text colour in one composited animation, so the two never
-	 * drift apart. Both lists share the same type styles so they line up, and
-	 * the current link (aria-current) is styled only through the copy.
+	 * Table of contents (components/TableOfContents.astro).
+	 * A ruler of 2px ticks sits beside the entries on a 5px grid that matches the
+	 * text (20px lines, 15px gaps), so every entry's first line lands on a tick.
+	 * The script writes --w (0 to 1) on each tick, and --t (the section being read)
+	 * and --h (hover / keyboard focus) on each entry; this turns them into width,
+	 * opacity and colour. Nothing here transitions: the script already eases the
+	 * values frame by frame.
 	 */
-	.toc-link {
-		@apply block rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-default hover:text-foreground;
-		transition:
-			background-color 150ms ease,
-			color 150ms ease;
+	.toc {
+		--toc-line: 20px;
+		--toc-gap: 15px;
+		--toc-gutter: 2.25rem;
+		@apply flex-col gap-3;
 	}
 
-	.toc-item--nested .toc-link {
-		@apply ps-6;
+	/* The list is filled by script: keep its room until then, but show nothing */
+	.toc:not([data-ready]) {
+		visibility: hidden;
 	}
 
-	.toc-active {
-		@apply pointer-events-none absolute inset-0 rounded-lg bg-surface-secondary;
-		/* Hidden until the script places it on the current heading */
-		clip-path: inset(0 0 100% 0 round 0.5rem);
+	.toc:not([data-ready]) .toc__track {
+		min-height: calc(var(--toc-rows, 0) * (var(--toc-line) + var(--toc-gap)) - var(--toc-gap));
 	}
 
-	.toc-active .toc-link {
-		@apply text-foreground;
+	.toc[data-ready] {
+		animation: enter-fade 250ms var(--ease-out) backwards;
 	}
 
-	.toc-active[data-ready] {
-		transition: clip-path 250ms var(--ease-in-out);
-
-		@media (prefers-reduced-motion: reduce) {
-			transition: none;
+	@media (scripting: none) {
+		.toc {
+			display: none !important;
 		}
+	}
+
+	.toc__title {
+		@apply flex items-center gap-2 text-sm font-medium text-foreground;
+	}
+
+	/* -m-1/p-1: room for focus rings, which the scroll box would otherwise clip */
+	.toc__scroller {
+		@apply -m-1 overflow-y-auto overscroll-contain p-1;
+		max-height: min(32rem, calc(100dvh - 16rem));
+		scrollbar-width: none;
+		/* Fades the edge that has more list behind it; the script sets both lengths */
+		mask-image: linear-gradient(
+			to bottom,
+			transparent,
+			#000 var(--fade-top, 0px),
+			#000 calc(100% - var(--fade-bottom, 0px)),
+			transparent
+		);
+	}
+
+	.toc__scroller::-webkit-scrollbar {
+		display: none;
+	}
+
+	.toc__track {
+		@apply relative;
+		padding-inline-start: var(--toc-gutter);
+	}
+
+	.toc__ruler {
+		@apply pointer-events-none absolute start-0 flex flex-col;
+		top: calc(var(--toc-line) / 2 - 1px);
+		gap: 3px;
+	}
+
+	/* Grows to the right and fills in towards the accent under the cursor */
+	.toc__tick {
+		@apply block h-0.5 w-3 origin-left rounded-[1px];
+		background-color: color-mix(in oklab, var(--accent) calc(var(--w, 0) * 100%), var(--foreground));
+		opacity: calc(0.2 + var(--w, 0) * 0.8);
+		transform: scaleX(calc(1 + var(--w, 0) * 1.1));
+	}
+
+	.toc__list {
+		@apply flex flex-col;
+		gap: var(--toc-gap);
+		@apply text-sm;
+		line-height: var(--toc-line);
+	}
+
+	.toc__item[data-level="3"] {
+		@apply ps-3;
+	}
+
+	/* Muted, darker under hover/focus (--h), accent for the section being read (--t) */
+	.toc__link {
+		@apply block rounded-sm text-pretty wrap-anywhere;
+		color: color-mix(
+			in oklab,
+			var(--accent) calc(var(--t, 0) * 100%),
+			color-mix(in oklab, var(--foreground) calc(var(--h, 0) * 100%), var(--muted))
+		);
+	}
+
+	.toc__link:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	/* A heading (or the article, for "Introduction") the TOC moved keyboard focus to: the focus is for continuing from there, not a target. */
+	.article-prose:focus,
+	.article-prose :is(h2, h3):focus {
+		outline: none;
 	}
 }
 
@@ -393,36 +545,119 @@
 }
 
 /*
- * Reading progress on articles: a hairline that fills as the body is read.
- * Scroll-driven, so it runs on the compositor with no script. Browsers
- * without view timelines don't show it.
+ * Site header. A tint plus three masked backdrop blurs that add up towards
+ * the top edge, dissolving below the bar. Radii stay small because the blur is
+ * redrawn under every scrolled frame.
  */
-.reading-progress {
-	display: none;
+.header-progressive-blur {
+	position: absolute;
+	inset: 0 0 auto;
+	z-index: -1;
+	height: calc(100% + 2rem);
+	pointer-events: none;
+	background: linear-gradient(
+		to bottom,
+		color-mix(in oklab, var(--background) 88%, transparent) 0%,
+		color-mix(in oklab, var(--background) 80%, transparent) 55%,
+		color-mix(in oklab, var(--background) 45%, transparent) 75%,
+		color-mix(in oklab, var(--background) 12%, transparent) 90%,
+		transparent 100%
+	);
+
+	& > span {
+		position: absolute;
+		inset: 0;
+		--mask: linear-gradient(to bottom, #000 var(--solid), transparent var(--end));
+		-webkit-backdrop-filter: blur(var(--blur));
+		backdrop-filter: blur(var(--blur));
+		-webkit-mask-image: var(--mask);
+		mask-image: var(--mask);
+	}
+
+	& > span:nth-child(1) {
+		--blur: 1px;
+		--solid: 62%;
+		--end: 100%;
+	}
+
+	& > span:nth-child(2) {
+		--blur: 3px;
+		--solid: 48%;
+		--end: 84%;
+	}
+
+	& > span:nth-child(3) {
+		--blur: 6px;
+		--solid: 32%;
+		--end: 68%;
+	}
 }
 
-@supports (animation-timeline: view()) {
-	.reading-scope {
-		view-timeline: --post-body block;
-	}
+/*
+ * While reading down past the H1 (data-title-docked, set by the article page),
+ * the site name and navigation give way to the article title. Scrolling back
+ * up, or tabbing into the navigation, brings them back.
+ */
+.header-brand-name {
+	display: grid;
+	grid-template-columns: 1fr;
+	transition:
+		grid-template-columns 280ms var(--ease-out),
+		opacity 160ms ease;
+}
 
-	.reading-progress {
-		@apply pointer-events-none fixed inset-x-0 top-0 z-[60] block h-0.5 bg-accent;
-		transform-origin: 0 50%;
-		/* Empty if the timeline is inactive */
-		scale: 0 1;
-		animation: reading-progress linear both;
-		animation-timeline: --post-body;
-		animation-range: contain 0% contain 100%;
+.header-nav {
+	transition: opacity 160ms ease;
+}
+
+.header-title {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	opacity: 0;
+	translate: 0 8px;
+	visibility: hidden;
+	transition:
+		opacity 200ms ease,
+		translate 280ms var(--ease-out),
+		visibility 200ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.header-section {
+		animation: enter-fade 200ms ease;
 	}
 }
 
-@keyframes reading-progress {
-	from {
-		scale: 0 1;
+:root[data-title-docked] .header-swap:not(:has(> a:focus-visible, .header-nav a:focus-visible)) {
+	.header-brand-name {
+		grid-template-columns: 0fr;
+		opacity: 0;
 	}
-	to {
-		scale: 1 1;
+
+	.header-nav {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.header-title {
+		opacity: 1;
+		translate: 0;
+		visibility: visible;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.header-brand-name {
+		transition: opacity 160ms ease;
+	}
+
+	.header-title {
+		translate: 0;
+		transition:
+			opacity 200ms ease,
+			visibility 200ms;
 	}
 }
 
@@ -536,28 +771,64 @@
  * EmDash widget areas (WidgetArea from "emdash/ui")
  * Unlayered on purpose: these beat the components' own scoped defaults.
  * ------------------------------------------------------------------------- */
+/*
+ * Widgets sit on the page like the table of contents: no card, a muted icon
+ * before the title (same size and weight as .toc__title). The widgets share
+ * one markup, so the icon is picked by what's inside; it's a mask of the
+ * Hugeicons Folder01 / Tag01 outlines, painted in the muted colour.
+ */
 .widget-area {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
+	gap: 1.5rem;
 }
 
-.widget-area .widget {
-	background: var(--surface);
-	box-shadow: var(--surface-shadow);
-	border-radius: min(32px, var(--radius-3xl));
-	padding: 1.25rem;
+/*
+ * In the article sidebar each section (the table of contents above, then every
+ * widget) is set off by a hairline. The 0.5rem of margin tops the flex gap of
+ * the sidebar up to the same 1.5rem the widgets use between themselves.
+ */
+#main .widget-area {
+	margin-top: 0.5rem;
+}
+
+#main .widget-area .widget {
+	/* --separator is nearly invisible on the taupe page, so tint the foreground instead */
+	border-top: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+	padding-top: 1.5rem;
 }
 
 .widget-area .widget__title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 	margin: 0 0 0.75rem;
-	font-size: 0.875rem;
-	font-weight: 600;
+	@apply text-sm font-medium;
 	color: var(--foreground);
 }
 
+#main .widget-area .widget:has(.widget-categories) .widget__title,
+#main .widget-area .widget:has(.widget-tags) .widget__title {
+	&::before {
+		content: "";
+		flex-shrink: 0;
+		width: 1.125rem;
+		height: 1.125rem;
+		background-color: var(--muted);
+		mask: var(--widget-icon) center / contain no-repeat;
+	}
+}
+
+#main .widget-area .widget:has(.widget-categories) {
+	--widget-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13.6656 6.49446H16C18.8284 6.49446 20.2426 6.49446 21.1213 7.37314C22 8.25182 22 9.66603 22 12.4945V14.5C22 17.3284 22 18.7426 21.1213 19.6213C20.2426 20.5 18.8284 20.5 16 20.5H8C5.17157 20.5 3.75736 20.5 2.87868 19.6213C2 18.7426 2 17.3284 2 14.5V8.99183C2 6.65409 2 5.48521 2.61604 4.67881C2.7778 4.46706 2.96706 4.2778 3.17881 4.11604C3.98521 3.5 5.15409 3.5 7.49183 3.5C8.16633 3.5 8.50358 3.5 8.81392 3.60442C8.8976 3.63257 8.97932 3.66623 9.05854 3.70518C9.35239 3.84965 9.59179 4.08719 10.0706 4.56227L10.8483 5.33389C11.4254 5.9066 11.714 6.19295 12.08 6.3437C12.446 6.49446 12.8525 6.49446 13.6656 6.49446Z'/%3E%3C/svg%3E");
+}
+
+#main .widget-area .widget:has(.widget-tags) {
+	--widget-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2H9.01472C10.241 2 10.8541 2 11.4054 2.22836C11.9567 2.45672 12.3903 2.89027 13.2574 3.75736L21.1262 11.6263C21.6841 12.1867 21.9982 12.9449 22 13.7357L22 13.75L22 13.7643C21.9982 14.5551 21.6841 15.3133 21.1262 15.8737L15.8737 21.1262C15.3133 21.6841 14.5551 21.9982 13.7643 22L13.75 22L13.7357 22C12.9449 21.9982 12.1867 21.6841 11.6263 21.1262L3.75736 13.2574C2.89027 12.3903 2.45672 11.9567 2.22836 11.4054C2 10.8541 2 10.241 2 9.01472V8C2 5.17157 2 3.75736 2.87868 2.87868C3.75736 2 5.17157 2 8 2Z'/%3E%3Cpath d='M7.5 7.25V7.5M8 7.5C8 7.77614 7.77614 8 7.5 8C7.22386 8 7 7.77614 7 7.5C7 7.22386 7.22386 7 7.5 7C7.77614 7 8 7.22386 8 7.5Z'/%3E%3C/svg%3E");
+}
+
 .widget-area .widget__content {
-	font-size: 0.875rem;
+	@apply text-sm;
 	color: var(--muted);
 }
 
@@ -608,7 +879,7 @@
 .widget-area .widget-archives__count,
 .widget-area .widget-tags__count {
 	font-variant-numeric: tabular-nums;
-	font-size: 0.75rem;
+	@apply text-xs;
 	color: var(--muted);
 }
 
@@ -625,13 +896,12 @@
 
 .widget-area .widget-recent-posts__link {
 	color: var(--foreground);
-	font-weight: 500;
-	line-height: 1.4;
+	@apply font-medium leading-snug;
 	text-decoration: none;
 }
 
 .widget-area .widget-recent-posts__date {
-	font-size: 0.75rem;
+	@apply text-xs;
 	color: var(--muted);
 }
 
@@ -657,8 +927,7 @@
 
 .widget-area .widget-tags__link {
 	color: var(--default-foreground);
-	font-size: 0.75rem;
-	font-weight: 500;
+	@apply text-xs font-medium;
 	text-decoration: none;
 }
 
@@ -680,20 +949,13 @@
 	border-radius: var(--field-radius);
 	background: var(--default);
 	padding: 0.5rem 0.875rem;
-	font-weight: 500;
+	@apply font-medium;
 	color: var(--default-foreground);
 	cursor: var(--cursor-interactive);
 }
 
 .widget-area .widget__content p {
-	line-height: 1.6;
-}
-
-/* Footer widget area sits on the page background, not in a card */
-.footer-widgets .widget-area .widget {
-	background: transparent;
-	box-shadow: none;
-	padding: 0;
+	@apply leading-relaxed;
 }
 
 /* ---------------------------------------------------------------------------
@@ -708,8 +970,7 @@
 
 #main .post-comments .ec-comments-heading {
 	margin: 0 0 1rem;
-	font-size: 1rem;
-	font-weight: 600;
+	@apply text-base font-semibold;
 }
 
 #main .post-comments .ec-comment-author {
@@ -723,7 +984,7 @@
 
 #main .post-comments .ec-comment-body {
 	color: color-mix(in oklch, var(--foreground) 90%, transparent);
-	line-height: 1.7;
+	@apply leading-relaxed;
 }
 
 #main .post-comments .ec-comment-form {
@@ -731,8 +992,7 @@
 }
 
 #main .post-comments .ec-comment-form-field span {
-	font-size: 0.875rem;
-	font-weight: 500;
+	@apply text-sm font-medium;
 	color: var(--foreground);
 }
 
@@ -743,7 +1003,7 @@
 	background: var(--surface-secondary);
 	padding: 0.625rem 0.75rem;
 	color: var(--field-foreground);
-	font-size: 0.875rem;
+	@apply text-sm;
 	transition: box-shadow 150ms ease;
 }
 
@@ -774,8 +1034,7 @@
 	border-radius: calc(var(--radius) * 3);
 	background: var(--accent);
 	padding: 0 1rem;
-	font-size: 0.875rem;
-	font-weight: 500;
+	@apply text-sm font-medium;
 	color: var(--accent-foreground);
 	cursor: var(--cursor-interactive);
 	transition:

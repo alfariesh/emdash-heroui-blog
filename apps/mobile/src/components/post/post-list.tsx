@@ -23,6 +23,8 @@ interface PostListProps {
 	filter?: PostFilter;
 	/** Rendered above the posts (title, chips…); scrolls with the list. */
 	header?: ReactElement;
+	/** Optional content after the last page, so pagination never moves it between posts. */
+	footer?: ReactElement;
 	/** Show the newest post that has an image as a large feature card. */
 	featureFirst?: boolean;
 	hideCategory?: boolean;
@@ -41,11 +43,12 @@ interface PostListProps {
 export function PostList({
 	filter,
 	header,
+	footer,
 	featureFirst = false,
 	hideCategory = false,
 	bottomInset,
-	emptyTitle = "Belum ada tulisan",
-	emptyDescription = "Tulisan yang diterbitkan akan muncul di sini.",
+	emptyTitle = "No posts yet",
+	emptyDescription = "Published posts will show up here.",
 }: PostListProps) {
 	const query = useInfiniteQuery(postsQuery(filter));
 	const listRef = useRef<FlashListRef<Row>>(null);
@@ -91,8 +94,8 @@ export function PostList({
 					query.fetchStatus === "paused" ? (
 						<StateView
 							icon={WifiOffIcon}
-							title="Anda sedang offline"
-							description="Tulisan akan dimuat begitu perangkat tersambung ke internet."
+							title="You are offline"
+							description="Posts will load once this device is online."
 						/>
 					) : (
 						<LoadingRows featureFirst={featureFirst} />
@@ -105,12 +108,15 @@ export function PostList({
 			}
 			ListFooterComponent={
 				rows.length > 0 ? (
-					<ListFooter
-						loading={query.isFetchingNextPage}
-						failed={query.isFetchNextPageError}
-						done={!query.hasNextPage}
-						onRetry={() => void query.fetchNextPage()}
-					/>
+					<View>
+						{!query.hasNextPage ? footer : null}
+						<ListFooter
+							loading={query.isFetchingNextPage}
+							failed={query.isFetchNextPageError}
+							done={!query.hasNextPage}
+							onRetry={() => void query.fetchNextPage()}
+						/>
+					</View>
 				) : null
 			}
 			onEndReached={onEndReached}
@@ -158,13 +164,13 @@ function ListFooter({ loading, failed, done, onRetry }: ListFooterProps) {
 				<Spinner size="sm" />
 			) : failed ? (
 				<Button variant="ghost" size="sm" onPress={onRetry}>
-					<Button.Label>Gagal memuat. Coba lagi</Button.Label>
+					<Button.Label>Could not load. Try again</Button.Label>
 				</Button>
 			) : done ? (
 				<View className="flex-row items-center gap-3">
 					<View className="h-px w-8 bg-separator" />
 					<Typography type="body-xs" color="muted">
-						Sudah sampai ujung
+						You have reached the end
 					</Typography>
 					<View className="h-px w-8 bg-separator" />
 				</View>

@@ -2,7 +2,7 @@
 import type { InferCollectionData } from "emdash";
 import { Image } from "emdash/ui";
 import { cardVariants, cn } from "@heroui/styles";
-import { AD_PLACEMENTS, type AdPlacement } from "../lib/ad-selection";
+import { AD_PLACEMENTS, adUrl, type AdPlacement } from "../lib/ad-selection";
 
 interface Props {
 	ad?: InferCollectionData<"ads">;
@@ -23,11 +23,11 @@ const card = cardVariants();
 
 {
 	ad && (
-		<section class={className} aria-label="Iklan" data-ad-placement={placement}>
-			<div class={cn(card.base(), "gap-2 rounded-3xl p-2")}>
-				<p class="px-3 pt-1 text-xs text-muted">Iklan</p>
+		<section class={className} aria-label="Advertisement" data-ad-placement={placement}>
+			<div class={cn(card.base(), "gap-2 rounded-3xl p-2 shadow-none")}>
+				<p class="px-3 pt-1 typography--body-xs text-muted">Ad</p>
 				<a
-					href={ad.target_url}
+					href={adUrl(ad.target_url)}
 					rel="sponsored"
 					class="ad-banner relative block overflow-hidden rounded-2xl bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 					style={{ aspectRatio: isSidebar ? "6 / 5" : "3 / 1" }}

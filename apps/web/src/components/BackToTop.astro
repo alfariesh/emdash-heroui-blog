@@ -1,0 +1,78 @@
+---
+import { ArrowUp01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { buttonVariants, cn } from "@heroui/styles";
+
+const RADIUS = 22.75;
+---
+
+{/* Floating back-to-top button whose ring shows how much of the article body has been read. */}
+<button
+	type="button"
+	aria-label="Back to top"
+	data-back-to-top
+	class={cn(
+		buttonVariants({ variant: "ghost", isIconOnly: true }),
+		"fixed end-4 bottom-[calc(1rem+env(safe-area-inset-bottom)+var(--back-to-top-lift,0px))] z-40 size-12 rounded-full bg-background/80 text-foreground shadow-overlay backdrop-blur-md backdrop-saturate-150 sm:end-6 sm:bottom-[calc(1.5rem+var(--back-to-top-lift,0px))]",
+		"invisible translate-y-2 opacity-0 transition-[opacity,translate,visibility,scale] duration-200 ease-out motion-reduce:translate-y-0",
+		"hover:bg-default data-visible:visible data-visible:translate-y-0 data-visible:opacity-100",
+	)}
+>
+	{/* m-0!: HeroUI's button gives every child svg icon margins, which would push the ring off-centre. */}
+	<svg class="pointer-events-none absolute inset-0 m-0! size-full -rotate-90" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+		<circle cx="24" cy="24" r={RADIUS} class="stroke-separator" stroke-width="2.5"></circle>
+		<circle
+			cx="24"
+			cy="24"
+			r={RADIUS}
+			class="stroke-accent"
+			stroke-width="2.5"
+			stroke-linecap="round"
+			pathLength="1"
+			stroke-dasharray="1"
+			stroke-dashoffset="1"
+			data-back-to-top-ring></circle>
+	</svg>
+	<HugeiconsIcon icon={ArrowUp01Icon} size={20} strokeWidth={1.9} aria-hidden="true" />
+</button>
+
+<script>
+	const button = document.querySelector<HTMLButtonElement>("[data-back-to-top]");
+	const ring = document.querySelector<SVGCircleElement>("[data-back-to-top-ring]");
+	const body = document.querySelector("[data-post-content]");
+	const footerLegal = document.querySelector("[data-footer-legal]");
+
+	if (button && ring && body) {
+		let frame = 0;
+
+		const update = () => {
+			frame = 0;
+			const { scrollY, innerHeight } = window;
+			button.toggleAttribute("data-visible", scrollY >= innerHeight / 2);
+
+			// Share of the body read: comments and "Read next" below count as finished.
+			const max = body.getBoundingClientRect().bottom + scrollY - innerHeight;
+			const progress = max > 0 ? Math.min(Math.max(scrollY / max, 0), 1) : 1;
+			ring.style.strokeDashoffset = String(1 - progress);
+
+			// Rides above the footer's last row, which holds the theme switcher at the same corner.
+			const footerTop = footerLegal?.getBoundingClientRect().top ?? innerHeight;
+			button.style.setProperty("--back-to-top-lift", `${Math.max(0, innerHeight - footerTop)}px`);
+		};
+
+		const schedule = () => {
+			frame ||= requestAnimationFrame(update);
+		};
+
+		window.addEventListener("scroll", schedule, { passive: true });
+		window.addEventListener("resize", schedule);
+		update();
+
+		button.addEventListener("click", () => {
+			const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+			// The button disappears near the top, so keyboard focus moves back to the page.
+			document.getElementById("main")?.focus({ preventScroll: true });
+		});
+	}
+</script>

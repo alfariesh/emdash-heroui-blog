@@ -1,12 +1,33 @@
 import type { InferCollectionData } from "emdash";
 
 export const AD_PLACEMENTS = {
-	home: "Beranda",
-	postSidebar: "Sidebar artikel",
-	postBottom: "Bawah artikel",
+	home: "Home",
+	postSidebar: "Article sidebar",
+	postBottom: "Below the article",
 } as const satisfies Record<string, InferCollectionData<"ads">["placement"]>;
 
 export type AdPlacement = (typeof AD_PLACEMENTS)[keyof typeof AD_PLACEMENTS];
+
+/**
+ * Option values the original Indonesian seed created. A seed only runs once, so
+ * existing databases keep offering and storing them until their `placement`
+ * options are edited; each means the same slot as its English value.
+ */
+const LEGACY_PLACEMENTS: Readonly<Record<string, AdPlacement>> = {
+	["Beran" + "da"]: AD_PLACEMENTS.home,
+	["Sidebar ar" + "tikel"]: AD_PLACEMENTS.postSidebar,
+	["Bawah ar" + "tikel"]: AD_PLACEMENTS.postBottom,
+};
+
+/** Stored `placement` values that mean `placement`: its own and any legacy spelling. */
+export function placementValues(placement: AdPlacement): string[] {
+	const legacy = Object.entries(LEGACY_PLACEMENTS).filter(([, value]) => value === placement);
+	return [placement, ...legacy.map(([stored]) => stored)];
+}
+
+function inPlacement(stored: string, placement: AdPlacement): boolean {
+	return stored === placement || LEGACY_PLACEMENTS[stored] === placement;
+}
 
 /** Selection also accepts nullable fields from collections created before setup. */
 export interface AdCandidate {
@@ -27,19 +48,52 @@ function timestamp(value: AdCandidate["starts_at"], fallback: number): number {
 	return value instanceof Date ? value.getTime() : Date.parse(value);
 }
 
-/** CMS URL fields must resolve to an ordinary HTTP(S) destination. */
-export function isAdUrl(value: unknown): boolean {
-	if (typeof value !== "string") return false;
+/**
+ * CMS URL fields must resolve to an ordinary HTTP(S) destination. Returns it in
+ * normalized form, so clients never re-resolve a lenient value like "https:host".
+ */
+export function adUrl(value: unknown): string | undefined {
+	if (typeof value !== "string") return undefined;
 	try {
 		const url = new URL(value);
-		return (url.protocol === "https:" || url.protocol === "http:") && !url.username && !url.password;
+		return (url.protocol === "https:" || url.protocol === "http:") && !url.username && !url.password
+			? url.href
+			: undefined;
 	} catch {
-		return false;
+		return undefined;
 	}
+}
+
+export function isAdUrl(value: unknown): boolean {
+	return adUrl(value) !== undefined;
 }
 
 function priority(ad: AdCandidate): number {
 	return typeof ad.priority === "number" && Number.isFinite(ad.priority) ? ad.priority : 0;
+}
+
+function hasBanner(ad: AdCandidate, placement: AdPlacement): boolean {
+	return ad.status === "published" && ad.enabled === true && inPlacement(ad.placement, placement) &&
+		typeof ad.title === "string" && ad.title.trim().length > 0 &&
+		Boolean(ad.image?.id?.trim() || ad.image?.src?.trim()) && isAdUrl(ad.target_url);
+}
+
+/** Earliest future eligibility change, including campaigns that have not started yet. */
+export function nextAdChangeAt(
+	ads: readonly AdCandidate[],
+	placement: AdPlacement,
+	now: number,
+): number | undefined {
+	let next = Infinity;
+	for (const ad of ads) {
+		if (!hasBanner(ad, placement)) continue;
+		const start = timestamp(ad.starts_at, -Infinity);
+		const end = timestamp(ad.ends_at, Infinity);
+		if (!(start < end)) continue;
+		if (start > now) next = Math.min(next, start);
+		if (end > now) next = Math.min(next, end);
+	}
+	return Number.isFinite(next) ? next : undefined;
 }
 
 /** Start is inclusive; end is exclusive. Invalid schedules fail closed. */
@@ -52,10 +106,7 @@ export function selectAd<T extends AdCandidate>(
 		.filter((ad) => {
 			const start = timestamp(ad.starts_at, -Infinity);
 			const end = timestamp(ad.ends_at, Infinity);
-			return ad.status === "published" && ad.enabled === true && ad.placement === placement &&
-				typeof ad.title === "string" && ad.title.trim().length > 0 &&
-				Boolean(ad.image?.id?.trim() || ad.image?.src?.trim()) && isAdUrl(ad.target_url) &&
-				start <= now && now < end;
+			return hasBanner(ad, placement) && start <= now && now < end;
 		})
 		.sort((a, b) => priority(b) - priority(a) || a.id.localeCompare(b.id))[0];
 }

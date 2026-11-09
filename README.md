@@ -1,58 +1,58 @@
-# Blog — web & mobile
+# Blog — web and mobile
 
-Monorepo blog dengan konten dari [EmDash](https://emdashcms.com) dan tampilan [HeroUI](https://heroui.com).
+A blog monorepo with content from [EmDash](https://emdashcms.com) and a [HeroUI](https://heroui.com) interface.
 
 ```
 .
 ├── apps/
-│   ├── web/          Situs Astro + EmDash + HeroUI di Cloudflare Workers (D1 + R2), juga panel admin CMS
-│   └── mobile/       Aplikasi Expo (React Native) + HeroUI Native, membaca API publik web
+│   ├── web/          Astro + EmDash + HeroUI site on Cloudflare Workers (D1 + R2), including the CMS admin
+│   └── mobile/       Expo (React Native) + HeroUI Native app that reads the web public API
 ├── packages/
-│   └── shared/       Kode bersama web & mobile: format tanggal, waktu baca, identitas situs,
-│                     kontrak + klien API publik (src/api/)
-├── package.json      Skrip root
+│   └── shared/       Code shared by web and mobile: date formatting, reading time, site identity,
+│                     and the public API contract + client (src/api/)
+├── package.json      Root scripts
 └── pnpm-workspace.yaml
 ```
 
-## Menjalankan
+## Run
 
 ```bash
 pnpm install
-pnpm dev          # situs:  http://localhost:4321
+pnpm dev          # site:   http://localhost:4321
                   # admin:  http://localhost:4321/_emdash/admin
-pnpm dev:stop     # hentikan dev server
-pnpm typecheck    # cek tipe semua paket
-pnpm test         # unit test
+pnpm dev:stop     # stop the dev server
+pnpm typecheck    # type-check every package
+pnpm test         # unit tests
 ```
 
-Butuh Node.js 22.23.4+ dan pnpm 11. Salin `apps/web/.env.example` ke `apps/web/.env` dan isi `EMDASH_ENCRYPTION_KEY` (`npx emdash secrets generate`). Dev lokal berjalan di workerd dengan D1/R2 lokal; buka `/_emdash/admin` untuk setup pertama.
+Requires Node.js 22.23.4+ and pnpm 11. Copy `apps/web/.env.example` to `apps/web/.env` and set `EMDASH_ENCRYPTION_KEY` (`npx emdash secrets generate`). Local dev runs in workerd with local D1/R2; open `/_emdash/admin` for the first-time setup.
 
-### Aplikasi mobile
+### Mobile app
 
 ```bash
-pnpm --filter @blog/web dev --host   # API untuk HP/emulator di jaringan yang sama
-pnpm dev:mobile                      # Metro; buka di Expo Go, simulator, atau dev build
+pnpm --filter @blog/web dev --host   # API for a phone or emulator on the same network
+pnpm dev:mobile                      # Metro; open in Expo Go, a simulator, or a dev build
 ```
 
-Tanpa konfigurasi, aplikasi memakai API dari komputer yang menjalankan Metro (port 4321). Untuk server lain, salin `apps/mobile/.env.example` ke `apps/mobile/.env` dan isi `EXPO_PUBLIC_API_URL`. Detail fitur, build, dan rilis ada di `apps/mobile/README.md`.
+With no extra config, the app uses the API on the computer running Metro (port 4321). For another server, copy `apps/mobile/.env.example` to `apps/mobile/.env` and set `EXPO_PUBLIC_API_URL`. Features, builds, and release steps are in `apps/mobile/README.md`.
 
-## Deploy ke Cloudflare
+## Deploy to Cloudflare
 
-1. Sesuaikan `apps/web/wrangler.jsonc`: `name`, nama D1/R2, `routes` (domain Anda, zonanya harus aktif di Cloudflare) dan `vars.EMDASH_SITE_URL`.
+1. Edit `apps/web/wrangler.jsonc`: `name`, D1/R2 names, `routes` (your domain; the zone must be active on Cloudflare) and `vars.EMDASH_SITE_URL`.
 2. `pnpm --filter @blog/web exec wrangler login`
-3. `pnpm deploy:web` — deploy pertama membuat database D1, bucket R2 dan record DNS custom domain.
-4. `pnpm --filter @blog/web exec wrangler secret put EMDASH_ENCRYPTION_KEY` — pakai kunci baru dari `npx emdash secrets generate` dan simpan cadangannya.
-5. **Segera** buka `https://domain-anda/_emdash/admin` dan selesaikan setup: pengunjung pertama yang menyelesaikan wizard menjadi admin. Passkey terikat ke domain, jadi setup harus dilakukan di domain produksi.
-6. Opsional: isi `APP_LINKS_*` di `vars` agar tautan tulisan membuka aplikasi mobile (lihat `apps/mobile/README.md`).
-7. Opsional: notifikasi push tulisan baru sudah aktif di sisi situs; langkah aplikasi (proyek EAS, Firebase) ada di `apps/mobile/README.md`.
+3. `pnpm deploy:web` — the first deploy creates the D1 database, the R2 bucket, and the custom-domain DNS record.
+4. `pnpm --filter @blog/web exec wrangler secret put EMDASH_ENCRYPTION_KEY` — use a new key from `npx emdash secrets generate` and keep a backup.
+5. **Immediately** open `https://your-domain/_emdash/admin` and finish setup: the first visitor who completes the wizard becomes the admin. Passkeys are bound to the domain, so setup has to happen on the production domain.
+6. Optional: set `APP_LINKS_*` in `vars` so post links open the mobile app (see `apps/mobile/README.md`).
+7. Optional: new-post push notifications are already on for the site; the app steps (EAS project, Firebase) are in `apps/mobile/README.md`.
 
-## Catatan
+## Notes
 
-- `apps/web/.env`, data lokal (`.wrangler/`) dan build tidak ikut di-commit. Di produksi kunci enkripsi disimpan sebagai secret Worker.
-- Aplikasi mobile mengambil konten lewat API publik baca-saja `/api/v1/*` dari `apps/web`, bukan dari API admin EmDash (yang wajib login). Daftar endpoint ada di `apps/web/README.md`.
-- Iklan internal web dikelola melalui collection **Iklan** di CMS. Database yang sudah berjalan memerlukan `setup:ads` sebelum memakai fitur ini; panduan posisi, jadwal, format banner, dan penerapan schema ada di [panduan web](apps/web/README.md#iklan-internal).
+- `apps/web/.env`, local data (`.wrangler/`) and build output are not committed. In production the encryption key is a Worker secret.
+- The mobile app loads content through the public read-only API `/api/v1/*` on `apps/web`, not through the EmDash admin API (which requires a login). The endpoint list is in `apps/web/README.md`.
+- Web and native app ads share the **Ads** collection in the CMS. Existing databases need `setup:ads`; see the [web guide](apps/web/README.md#internal-ads) for schema, placements and schedules, and the [mobile guide](apps/mobile/README.md#internal-ads) for the 3:1 app banners.
 
-## API publik
+## Public API
 
 ```ts
 import { createBlogClient, formatDate, formatReadingTime } from "@blog/shared";
@@ -62,31 +62,31 @@ const { data: posts, nextCursor } = await api.getPosts({ limit: 10 });
 const post = await api.getPost(posts[0].slug);
 ```
 
-## Ikon
+## Icons
 
-Semua ikon memakai [Hugeicons](https://hugeicons.com) versi gratis (MIT). Untuk memberi ikon pada kategori baru, tambahkan slug-nya di `packages/shared/src/category-icons.ts`:
+Every icon uses the free [Hugeicons](https://hugeicons.com) set (MIT). To give a new category an icon, add its slug in `packages/shared/src/category-icons.ts`:
 
 ```ts
 export const CATEGORY_ICONS = {
-	pengembangan: "code",
-	desain: "design",
-	catatan: "note",
-	"kategori-baru": "idea", // pilih dari CATEGORY_ICON_KEYS
+	development: "code",
+	design: "design",
+	notes: "note",
+	"new-category": "idea", // pick from CATEGORY_ICON_KEYS
 };
 ```
 
-Kategori tanpa entri otomatis memakai ikon folder. Ikon baru di luar daftar `CATEGORY_ICON_KEYS` perlu ditambahkan juga ke `apps/web/src/lib/icons.ts` dan `apps/mobile/src/lib/icons.ts` (build gagal bila salah satu terlewat).
+A category with no entry uses the folder icon. An icon key outside `CATEGORY_ICON_KEYS` also has to be added in `apps/web/src/lib/icons.ts` and `apps/mobile/src/lib/icons.ts` (the build fails if either map misses it).
 
-## Lisensi
+## License
 
 [MIT](LICENSE) © 2026 Salman Alfariesh.
 
-## Kredit
+## Credits
 
-- Kerangka situs dan skill agen di `.agents/skills/` berasal dari [template blog EmDash](https://github.com/emdash-cms/templates) — MIT, © Cloudflare, Inc.
-- [EmDash](https://emdashcms.com) dan [Astro](https://astro.build) — MIT.
+- The site frame and the agent skills in `.agents/skills/` come from the [EmDash blog template](https://github.com/emdash-cms/templates) — MIT, © Cloudflare, Inc.
+- [EmDash](https://emdashcms.com) and [Astro](https://astro.build) — MIT.
 - [HeroUI](https://heroui.com) (`@heroui/react`, `@heroui/styles`, `heroui-native`) — Apache-2.0.
 - [Expo](https://expo.dev), [React Native](https://reactnative.dev), [Uniwind](https://uniwind.dev), [TanStack Query](https://tanstack.com/query), [FlashList](https://shopify.github.io/flash-list/) — MIT.
-- Font [Inter](https://rsms.me/inter/) (`@expo-google-fonts/inter`) — SIL Open Font License 1.1.
-- [Hugeicons](https://hugeicons.com) versi gratis (`@hugeicons/core-free-icons`, `@hugeicons/react`, `@hugeicons/react-native`) — MIT.
-- Foto contoh di `apps/web/seed/seed.json` diunduh dari [Unsplash](https://unsplash.com) saat seeding (Unsplash License) dan tidak disimpan di repo.
+- The [Google Sans](https://fonts.google.com/specimen/Google+Sans) font (`@expo-google-fonts/google-sans` in the app, Google Fonts on the web) — SIL Open Font License 1.1.
+- The free [Hugeicons](https://hugeicons.com) set (`@hugeicons/core-free-icons`, `@hugeicons/react`, `@hugeicons/react-native`) — MIT.
+- Sample photos in `apps/web/seed/seed.json` are downloaded from [Unsplash](https://unsplash.com) during seeding (Unsplash License) and are not stored in the repo.

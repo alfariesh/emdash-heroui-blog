@@ -7,21 +7,97 @@
  *
  * Colours, radii and shadows are HeroUI theme tokens (bg-background,
  * bg-surface, text-muted, bg-accent, border-separator, shadow-surface…).
- * The web app (apps/web/src/styles/global.css) uses the HeroUI defaults too:
- * change the accent in both places or in neither.
+ * The web app (apps/web/src/styles/global.css) uses the same palette and
+ * overrides, except --separator, which is tuned per platform: change the
+ * palette in both places or in neither. Values here are plain hex (no
+ * color-mix), since native has no CSS colour mixing.
  */
 @import "tailwindcss";
 @import "uniwind";
 @import "heroui-native/styles";
 
+/* Palette: warm neutrals plus two sparks (same tokens as the web app) */
+@theme {
+	--color-eggshell: #fdfcfc;
+	--color-warm-taupe: #f5f3f1;
+	--color-stone: #ebe8e4;
+	--color-ink: #000000;
+	--color-graphite: #44403b;
+	--color-smoke: #777169;
+	--color-ash: #a59f97;
+	--color-violet-spark: #0447ff;
+	--color-ember-orange: #ff4704;
+}
+
 /*
- * Inter, loaded in src/app/_layout.tsx with expo-font. HeroUI Native maps
+ * Theme overrides. Content cards stay flat in both themes; overlays retain
+ * their own elevation. The accent is the logo's orange; the blue is kept for
+ * the focus ring, where an orange ring would vanish on an orange button.
+ */
+@layer theme {
+	:root {
+		@variant light {
+			--surface-shadow: 0 0 0 0 transparent;
+
+			--accent: var(--color-ember-orange);
+			--accent-foreground: var(--color-eggshell);
+			--focus: var(--color-violet-spark);
+
+			--background: var(--color-warm-taupe);
+			--foreground: var(--color-ink);
+			--surface: var(--color-eggshell);
+			--surface-secondary: var(--color-warm-taupe);
+			--surface-tertiary: var(--color-stone);
+			--overlay: var(--color-eggshell);
+			/* smoke, darkened 20% towards graphite for contrast on taupe */
+			--muted: #6d675f;
+			--default: var(--color-stone);
+			--default-foreground: var(--color-graphite);
+			--field-background: var(--color-eggshell);
+			--field-foreground: var(--color-ink);
+			--field-placeholder: var(--color-ash);
+			--segment: var(--color-eggshell);
+			--segment-foreground: var(--color-ink);
+			--border: var(--color-stone);
+			/* stone, 45% towards ash */
+			--separator: #ccc7c1;
+		}
+		@variant dark {
+			--surface-shadow: 0 0 0 0 transparent;
+
+			--accent: var(--color-ember-orange);
+			--accent-foreground: var(--color-eggshell);
+			/* violet-spark lifted towards eggshell so the ring reads on near-black */
+			--focus: #4f7dfe;
+
+			--background: #0c0b0a;
+			--foreground: var(--color-eggshell);
+			--surface: #171513;
+			--surface-secondary: #221f1c;
+			--surface-tertiary: #2c2925;
+			--overlay: #171513;
+			--muted: var(--color-ash);
+			--default: #2c2925;
+			--default-foreground: var(--color-eggshell);
+			--field-background: #171513;
+			--field-foreground: var(--color-eggshell);
+			--field-placeholder: var(--color-smoke);
+			--segment: var(--color-graphite);
+			--segment-foreground: var(--color-eggshell);
+			--border: #34302c;
+			--separator: #4a4640;
+		}
+	}
+}
+
+/*
+ * Google Sans, loaded in src/app/_layout.tsx with expo-font. HeroUI Native maps
  * font-normal/medium/semibold/bold to these families, so all four must be
  * defined together (see HeroUI Native "Theming → Custom Fonts").
  */
 @theme {
-	--font-normal: "Inter_400Regular";
-	--font-medium: "Inter_500Medium";
-	--font-semibold: "Inter_600SemiBold";
-	--font-bold: "Inter_700Bold";
+	--font-normal: "GoogleSans_400Regular";
+	--font-medium: "GoogleSans_500Medium";
+	--font-semibold: "GoogleSans_600SemiBold";
+	--font-bold: "GoogleSans_700Bold";
 }

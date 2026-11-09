@@ -1,5 +1,5 @@
 /**
- * Saved posts ("Tersimpan"), kept on the device only.
+ * Saved posts ("Saved"), kept on the device only.
  *
  * Stores the post summary (not just the slug) so the saved list renders
  * without a request, offline included. A tiny external store keeps every

@@ -23,10 +23,10 @@ const SPRING = { damping: 22, stiffness: 260, mass: 0.9 };
 
 /** Tab icon and label per route name in src/app/(tabs). */
 export const TABS: Record<string, { label: string; icon: IconSvgElement }> = {
-	index: { label: "Beranda", icon: HomeIcon },
-	explore: { label: "Jelajah", icon: CompassIcon },
-	search: { label: "Cari", icon: SearchIcon },
-	saved: { label: "Tersimpan", icon: BookmarkIcon },
+	index: { label: "Home", icon: HomeIcon },
+	explore: { label: "Explore", icon: CompassIcon },
+	search: { label: "Search", icon: SearchIcon },
+	saved: { label: "Saved", icon: BookmarkIcon },
 };
 
 /**

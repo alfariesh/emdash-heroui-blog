@@ -15,7 +15,7 @@ interface ResumeReadingProps {
 }
 
 /**
- * Floating "Lanjutkan membaca" pill at the bottom of the article: jumps back
+ * Floating "Continue reading" pill at the bottom of the article: jumps back
  * to where the last visit ended. Glass like the top bar's buttons; the
  * layout animations follow the system's reduced-motion setting.
  */
@@ -35,12 +35,12 @@ export function ResumeReading({ progress, onResume, onDismiss }: ResumeReadingPr
 				<PressableFeedback
 					onPress={onResume}
 					accessibilityRole="button"
-					accessibilityLabel={`Lanjutkan membaca dari ${percent}%`}
+					accessibilityLabel={`Continue reading from ${percent}%`}
 					className="flex-row items-center gap-2 py-2.5 ps-4 pe-1"
 				>
 					<Icon icon={BookOpenIcon} size={18} tone="accent" />
 					<Typography type="body-sm" weight="semibold">
-						Lanjutkan membaca
+						Continue reading
 					</Typography>
 					<Typography type="body-sm" color="muted" className="tabular-nums">
 						{`${percent}%`}
@@ -49,7 +49,7 @@ export function ResumeReading({ progress, onResume, onDismiss }: ResumeReadingPr
 				<PressableFeedback
 					onPress={onDismiss}
 					accessibilityRole="button"
-					accessibilityLabel="Tutup"
+					accessibilityLabel="Close"
 					hitSlop={6}
 					className="me-1 size-9 items-center justify-center rounded-full"
 				>

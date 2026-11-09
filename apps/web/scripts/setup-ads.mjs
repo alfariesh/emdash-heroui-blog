@@ -63,4 +63,4 @@ for (const [sortOrder, field] of fields.entries()) {
 	await client.createField("ads", { ...field, validation: field.validation ?? null, sortOrder });
 	console.log(`Added ads.${field.slug}`);
 }
-console.log("Ads schema is ready. Manage Iklan in the EmDash admin; publish entries after editing.");
+console.log("Ads schema is ready. Manage Ads in the EmDash admin; publish entries after editing.");

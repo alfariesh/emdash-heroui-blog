@@ -1,4 +1,4 @@
-import type { ApiTerm } from "@blog/shared";
+import { formatCount, type ApiTerm } from "@blog/shared";
 import { Typography } from "heroui-native/text";
 import { View } from "react-native";
 import { Icon } from "@/components/ui/icon";
@@ -21,7 +21,7 @@ export function TermHeader({ taxonomy, slug, term }: TermHeaderProps) {
 			</View>
 			<View className="gap-1">
 				<Typography type="body-xs" color="muted" weight="medium" className="uppercase tracking-wider">
-					{taxonomy === "category" ? "Kategori" : "Tag"}
+					{taxonomy === "category" ? "Category" : "Tag"}
 				</Typography>
 				<Typography.Heading type="h2" className="text-[30px] leading-9 tracking-tight">
 					{term?.label ?? slug}
@@ -30,7 +30,7 @@ export function TermHeader({ taxonomy, slug, term }: TermHeaderProps) {
 			{term?.description ? <Typography.Paragraph color="muted">{term.description}</Typography.Paragraph> : null}
 			{term ? (
 				<Typography type="body-sm" color="muted" className="tabular-nums">
-					{term.count} tulisan
+					{formatCount(term.count, "post")}
 				</Typography>
 			) : null}
 		</View>

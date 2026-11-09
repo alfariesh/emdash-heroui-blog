@@ -29,7 +29,7 @@ export const queryClient = new QueryClient({
 
 /**
  * Persist successful queries so the last-read feed and posts open instantly
- * on the next launch and work offline. Search results are not worth keeping.
+ * on the next launch and work offline. Search and short-lived ads are excluded.
  * Bumping the app version or the API prefix drops the old cache.
  */
 export const persistOptions: PersistQueryClientProviderProps["persistOptions"] = {
@@ -42,7 +42,9 @@ export const persistOptions: PersistQueryClientProviderProps["persistOptions"] =
 	buster: `${API_BASE_PATH}@${Constants.expoConfig?.version ?? "0"}`,
 	dehydrateOptions: {
 		shouldDehydrateQuery: (query) =>
-			query.state.status === "success" && query.queryKey[0] !== "search",
+			query.state.status === "success" &&
+			query.queryKey[0] !== "search" &&
+			query.queryKey[0] !== "ads",
 	},
 };
 

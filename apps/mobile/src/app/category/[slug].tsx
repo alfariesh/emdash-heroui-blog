@@ -9,7 +9,7 @@ import { categoriesQuery } from "@/lib/queries";
 export default function CategoryScreen() {
 	const { slug } = useLocalSearchParams<{ slug: string }>();
 	const { bottom } = useSafeAreaInsets();
-	// The term list is small and usually cached already (home rail, Jelajah).
+	// The term list is small and usually cached already (home rail, Explore).
 	const { data: categories } = useQuery(categoriesQuery());
 	const term = categories?.find((category) => category.slug === slug);
 
@@ -21,7 +21,7 @@ export default function CategoryScreen() {
 				hideCategory
 				bottomInset={bottom + 24}
 				header={<TermHeader taxonomy="category" slug={slug} term={term} />}
-				emptyTitle="Belum ada tulisan di kategori ini"
+				emptyTitle="No posts in this category yet"
 			/>
 		</View>
 	);

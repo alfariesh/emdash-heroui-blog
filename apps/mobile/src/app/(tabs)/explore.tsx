@@ -1,4 +1,4 @@
-import type { ApiTerm } from "@blog/shared";
+import { formatCount, type ApiTerm } from "@blog/shared";
 import { useQuery } from "@tanstack/react-query";
 import { router, useScrollToTop } from "expo-router";
 import { Card } from "heroui-native/card";
@@ -46,9 +46,9 @@ export default function ExploreScreen() {
 				<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={accent} colors={[accent]} />
 			}
 		>
-			<ScreenHeader title="Jelajah" description="Telusuri tulisan menurut kategori dan tag." />
+			<ScreenHeader title="Explore" description="Browse posts by category and tag." />
 
-			<Section title="Kategori">
+			<Section title="Categories">
 				{categories.isPending ? (
 					<CategoryGridSkeleton />
 				) : categories.isError ? (
@@ -96,7 +96,7 @@ function CategoryGrid({ categories }: { categories: ApiTerm[] }) {
 					key={category.slug}
 					className="basis-[47%] grow"
 					accessibilityRole="link"
-					accessibilityLabel={`${category.label}, ${category.count} tulisan`}
+					accessibilityLabel={`${category.label}, ${formatCount(category.count, "post")}`}
 					onPress={() => router.push({ pathname: "/category/[slug]", params: { slug: category.slug } })}
 				>
 					<Card className="h-full gap-3 p-4">
@@ -108,7 +108,7 @@ function CategoryGrid({ categories }: { categories: ApiTerm[] }) {
 								{category.label}
 							</Typography.Heading>
 							<Typography type="body-xs" color="muted" className="tabular-nums">
-								{category.count} tulisan
+								{formatCount(category.count, "post")}
 							</Typography>
 						</View>
 						{category.description ? (

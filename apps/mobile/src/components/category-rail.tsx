@@ -29,7 +29,7 @@ export function CategoryRail() {
 			horizontal
 			showsHorizontalScrollIndicator={false}
 			contentContainerClassName="gap-2 px-5"
-			accessibilityLabel="Kategori"
+			accessibilityLabel="Categories"
 		>
 			{categories.map((category) => (
 				<Chip

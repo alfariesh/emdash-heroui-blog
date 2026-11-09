@@ -10,11 +10,11 @@ export default function NotFoundScreen() {
 			<Stack.Screen options={{ title: "" }} />
 			<StateView
 				icon={FileNotFoundIcon}
-				title="Halaman tidak ditemukan"
-				description="Tautan ini tidak mengarah ke halaman mana pun di aplikasi."
+				title="Page not found"
+				description="This link does not open any page in the app."
 				action={
 					<Button variant="primary" onPress={() => router.replace("/")}>
-						<Button.Label>Kembali ke Beranda</Button.Label>
+						<Button.Label>Back to home</Button.Label>
 					</Button>
 				}
 			/>

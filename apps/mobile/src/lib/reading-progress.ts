@@ -1,5 +1,5 @@
 /**
- * "Lanjutkan membaca": where the reader left each article, on the device
+ * "Continue reading": where the reader left each article, on the device
  * only (like bookmarks). The article screen saves when it closes or the app
  * goes to the background, never per scroll frame. Rules: reading-positions.ts.
  */

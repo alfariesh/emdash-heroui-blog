@@ -1,6 +1,5 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { GlassView } from "heroui-native/glass-view";
 import { Typography } from "heroui-native/text";
 import { useState, type ReactNode } from "react";
 import { View } from "react-native";
@@ -15,9 +14,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnRN } from "react-native-worklets";
 import { useUniwind } from "uniwind";
 import { GlassIconButton } from "@/components/ui/glass-icon-button";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { ArrowLeftIcon } from "@/lib/icons";
 
 export const TOP_BAR_HEIGHT = 56;
+/** How far the blur dissolves below the bar. */
+const BLUR_TAIL = 32;
+/** Scroll distance before and after `titleAt` over which the bar's title arrives. */
+const TITLE_LEAD = 12;
+const TITLE_TRAIL = 24;
 
 interface ArticleTopBarProps {
 	title: string;
@@ -25,8 +30,8 @@ interface ArticleTopBarProps {
 	scrollY: DerivedValue<number>;
 	/** Offset at which the bar turns solid (the bottom of the hero image, or ~0). */
 	solidAt: number;
-	/** 0–1 share of the article read. */
-	progress: DerivedValue<number>;
+	/** Offset at which the article's own heading has slid under the bar; 0 until measured. */
+	titleAt: DerivedValue<number>;
 	/** The bar starts over a photo: light status bar until it turns solid. */
 	overImage?: boolean;
 	actions?: ReactNode;
@@ -34,15 +39,15 @@ interface ArticleTopBarProps {
 
 /**
  * Floating top bar for the article screen. Over the hero it is just three
- * glass buttons; as the hero scrolls away a frosted background and the title
- * fade in, with a reading-progress line along the bottom edge. All driven on
- * the UI thread from the scroll offset.
+ * glass buttons; as the hero scrolls away a progressive blur fades in, and the
+ * title rises into the bar as the article's heading disappears under it. All
+ * driven on the UI thread from the scroll offset.
  */
 export function ArticleTopBar({
 	title,
 	scrollY,
 	solidAt,
-	progress,
+	titleAt,
 	overImage = false,
 	actions,
 }: ArticleTopBarProps) {
@@ -65,32 +70,27 @@ export function ArticleTopBar({
 		opacity: interpolate(scrollY.get(), [fadeStart, solidAt], [0, 1], Extrapolation.CLAMP),
 	}));
 	const titleStyle = useAnimatedStyle(() => {
-		const visible = interpolate(scrollY.get(), [solidAt, solidAt + 40], [0, 1], Extrapolation.CLAMP);
-		return { opacity: visible, transform: [{ translateY: (1 - visible) * 6 }] };
+		const at = titleAt.get();
+		const visible =
+			at > 0 ? interpolate(scrollY.get(), [at - TITLE_LEAD, at + TITLE_TRAIL], [0, 1], Extrapolation.CLAMP) : 0;
+		return { opacity: visible, transform: [{ translateY: (1 - visible) * 10 }] };
 	});
-	const progressStyle = useAnimatedStyle(() => ({
-		transform: [{ scaleX: progress.get() }],
-	}));
 
 	return (
 		<View className="absolute inset-x-0 top-0" style={{ paddingTop: top }} pointerEvents="box-none">
 			<StatusBar style={statusBarStyle} animated />
 			<Animated.View
 				pointerEvents="none"
-				className="absolute inset-0 border-b border-border"
-				style={backgroundStyle}
+				className="absolute inset-x-0 top-0"
+				style={[{ height: top + TOP_BAR_HEIGHT + BLUR_TAIL }, backgroundStyle]}
 			>
-				<GlassView intensity={80} />
-				<Animated.View
-					className="absolute bottom-0 start-0 h-0.5 w-full bg-accent"
-					style={[{ transformOrigin: "left" }, progressStyle]}
-				/>
+				<ProgressiveBlur />
 			</Animated.View>
 
 			<View className="flex-row items-center gap-3 px-4" style={{ height: TOP_BAR_HEIGHT }} pointerEvents="box-none">
 				<GlassIconButton
 					icon={ArrowLeftIcon}
-					accessibilityLabel="Kembali"
+					accessibilityLabel="Back"
 					onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
 				/>
 				<Animated.View className="flex-1" style={titleStyle} pointerEvents="none">

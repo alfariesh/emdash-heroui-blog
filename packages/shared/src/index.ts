@@ -4,7 +4,7 @@
  * Keep this package framework-agnostic: no imports from astro, emdash,
  * react-dom or react-native, and no DOM/Node globals.
  */
-export { DEFAULT_LOCALE, formatDate } from "./locale";
+export { DEFAULT_LOCALE, formatCount, formatDate } from "./locale";
 export {
 	extractText,
 	formatReadingTime,

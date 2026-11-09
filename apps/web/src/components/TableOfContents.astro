@@ -1,0 +1,448 @@
+---
+/**
+ * Table of contents for an article. Built client-side from the body's h2/h3
+ * headings (the CMS gives them no ids), so it also feeds the site header's
+ * docked outline. Wide screens show a rail: a ruler of ticks that swells around
+ * the part being read while that section's title turns accent; hovering or
+ * focusing an entry moves a second, softer swell. See "Table of contents" in
+ * `styles/global.css` for the look and `lib/toc.ts` for the maths.
+ */
+import { LeftToRightListBulletIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
+interface Props {
+	/**
+	 * How many entries the server expects (headings, plus an intro when the body
+	 * starts with something else). Reserves their height so the rail below does
+	 * not jump when the script fills the list; 0 hides the rail.
+	 */
+	rows: number;
+	class?: string;
+}
+
+const { rows, class: className } = Astro.props;
+---
+
+<nav
+	class:list={["toc hidden lg:flex", className]}
+	aria-labelledby="toc-title"
+	hidden={rows === 0}
+	style={`--toc-rows: ${rows}`}
+	data-toc
+>
+	<h2 id="toc-title" class="toc__title">
+		<HugeiconsIcon icon={LeftToRightListBulletIcon} size={18} className="shrink-0 text-muted" aria-hidden="true" />
+		On this page
+	</h2>
+	<div class="toc__scroller" data-toc-scroller>
+		<div class="toc__track" data-toc-track>
+			<div class="toc__ruler" aria-hidden="true" data-toc-ruler></div>
+			<ol class="toc__list" data-toc-list></ol>
+		</div>
+	</div>
+</nav>
+
+<script>
+	import { publishActiveSection, publishSections } from "../lib/article-outline";
+	import {
+		TOC_LINE,
+		activeIndex,
+		ease,
+		labelWeight,
+		readingPosition,
+		slugifyHeading,
+		tickCenter,
+		tickCount,
+		tickWeight,
+		uniqueId,
+	} from "../lib/toc";
+
+	/** Height of the fixed header: the reading line always sits below it. */
+	const HEADER_HEIGHT = 96;
+	/** Where the reading line sits in the window, from the top. */
+	const LINE_RATIO = 0.25;
+	/** The line stays this far below where a followed link lands the heading. */
+	const LANDING_SLACK = 16;
+	/** Strength of the hover/focus swell next to the reading one. */
+	const HOVER_GAIN = 0.6;
+	/** In a list taller than the rail, the cursor rests this far down the rail. */
+	const FOLLOW_AT = 0.4;
+	/** Time constants (ms) of the cursor, the entries' text, the hover swell and its fade. */
+	const FOLLOW_MS = 90;
+	const LABEL_MS = 120;
+	const HOVER_FOLLOW_MS = 45;
+	const HOVER_FADE_MS = 100;
+	const INTRO_LABEL = "Introduction";
+
+	interface Entry {
+		id: string;
+		title: string;
+		level: 2 | 3;
+		/** Heading (or the body, for the intro) whose top starts the section. */
+		target: HTMLElement;
+		intro: boolean;
+		item: HTMLLIElement;
+		link: HTMLAnchorElement;
+		/** Document y of the section's start. */
+		top: number;
+		/** y of the entry's first line in the list: where the cursor rests on it. */
+		anchor: number;
+		/** y of the entry's middle: where the hover swell counts it. */
+		middle: number;
+		/** 1 while this is the section being read, easing back to 0 after. */
+		reading: number;
+		/** `--t` and `--h` as last written, to skip redundant style writes. */
+		shownReading: number;
+		shownHover: number;
+	}
+
+	function buildToc() {
+		const content = document.querySelector<HTMLElement>("[data-post-content]");
+		const toc = document.querySelector<HTMLElement>("[data-toc]");
+		const scroller = document.querySelector<HTMLElement>("[data-toc-scroller]");
+		const track = document.querySelector<HTMLElement>("[data-toc-track]");
+		const ruler = document.querySelector<HTMLElement>("[data-toc-ruler]");
+		const list = document.querySelector<HTMLElement>("[data-toc-list]");
+		if (!content || !toc || !scroller || !track || !ruler || !list) return;
+
+		const headings = [...content.querySelectorAll<HTMLHeadingElement>("h2, h3")].filter(
+			(heading) => heading.textContent?.trim(),
+		);
+		toc.hidden = headings.length === 0;
+		if (headings.length === 0) return;
+
+		const entries: Entry[] = [];
+		const taken = new Set([...document.querySelectorAll("[id]")].map((element) => element.id));
+		const claimId = (preferred: string, fallback: string) => {
+			const id = uniqueId(preferred || fallback, taken);
+			taken.add(id);
+			return id;
+		};
+
+		const addEntry = (
+			target: HTMLElement,
+			title: string,
+			level: 2 | 3,
+			id: string,
+			intro = false,
+		) => {
+			const item = document.createElement("li");
+			item.className = "toc__item";
+			if (level === 3) item.dataset.level = "3";
+			const link = document.createElement("a");
+			link.className = "toc__link";
+			link.href = `#${id}`;
+			link.textContent = title;
+			item.appendChild(link);
+			list.appendChild(item);
+			entries.push({
+				id,
+				title,
+				level,
+				target,
+				intro,
+				item,
+				link,
+				top: 0,
+				anchor: 0,
+				middle: 0,
+				reading: 0,
+				shownReading: 0,
+				shownHover: 0,
+			});
+		};
+
+		// Text before the first heading is the "intro" and gets an entry of its own, so
+		// the cursor has somewhere to rest at the top of the article.
+		if (content.firstElementChild !== headings[0]) {
+			if (!content.id) content.id = claimId("introduction", "introduction");
+			addEntry(content, INTRO_LABEL, 2, content.id, true);
+		}
+
+		headings.forEach((heading, index) => {
+			const title = heading.textContent!.trim();
+			if (!heading.id) heading.id = claimId(slugifyHeading(title), `section-${index + 1}`);
+			addEntry(heading, title, heading.tagName === "H3" ? 3 : 2, heading.id);
+		});
+
+		// The site header lists the headings in its docked-title menu, below lg too.
+		publishSections(
+			entries
+				.filter((entry) => !entry.intro)
+				.map((entry) => ({ id: entry.id, title: entry.title, nested: entry.level === 3 })),
+		);
+
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+		// -- Geometry ---------------------------------------------------------------
+		// Parallel arrays for the maths in lib/toc.ts.
+		let tops: number[] = [];
+		let anchors: number[] = [];
+		let ticks: HTMLElement[] = [];
+		/** `--w` last written per tick. */
+		let tickWeights: number[] = [];
+		let scrollable = false;
+		/** Distance from the window top at which following a link lands a heading. */
+		let landing = 0;
+
+		const buildTicks = (count: number) => {
+			const fragment = document.createDocumentFragment();
+			ticks = Array.from({ length: count }, () => {
+				const tick = document.createElement("i");
+				tick.className = "toc__tick";
+				fragment.appendChild(tick);
+				return tick;
+			});
+			tickWeights = new Array<number>(count).fill(0);
+			ruler.replaceChildren(fragment);
+		};
+
+		const updateFade = () => {
+			const max = scroller.scrollHeight - scroller.clientHeight;
+			scroller.style.setProperty("--fade-top", `${Math.min(scroller.scrollTop, 24)}px`);
+			scroller.style.setProperty("--fade-bottom", `${Math.max(Math.min(max - scroller.scrollTop, 24), 0)}px`);
+		};
+
+		const measure = () => {
+			const scrollY = window.scrollY;
+			// scroll-padding on <html> plus scroll-margin on the heading. A heading must count
+			// as reached once it lands, or following its link would leave the section before it current.
+			landing =
+				(parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0) +
+				(parseFloat(getComputedStyle(headings[0]!).scrollMarginTop) || 0);
+			for (const entry of entries) {
+				entry.top = entry.target.getBoundingClientRect().top + scrollY;
+				entry.anchor = entry.item.offsetTop + TOC_LINE / 2;
+				entry.middle = entry.item.offsetTop + entry.item.offsetHeight / 2;
+			}
+			tops = entries.map((entry) => entry.top);
+			anchors = entries.map((entry) => entry.anchor);
+
+			const count = tickCount(list.offsetHeight);
+			if (count !== ticks.length) buildTicks(count);
+			// The rail is not laid out below lg: nothing to place there.
+			scrollable = scroller.scrollHeight - scroller.clientHeight > 1;
+			updateFade();
+			place();
+			// Positions changed: redraw even if the cursor itself did not move.
+			for (const entry of entries) {
+				entry.shownReading = -1;
+				entry.shownHover = -1;
+			}
+			tickWeights.fill(-1);
+			kick();
+		};
+
+		// -- Cursor -----------------------------------------------------------------
+		/** Reading cursor, hover swell and its strength: shown value, then target. */
+		let y = 0;
+		let targetY = 0;
+		let hoverY = 0;
+		let targetHoverY = 0;
+		let hover = 0;
+		let targetHover = 0;
+		let hovering = false;
+		let focused = false;
+		let current = -2;
+		let frame = 0;
+		let lastFrame = 0;
+
+		const setCurrent = (index: number) => {
+			if (index === current) return;
+			if (current >= 0) entries[current]?.link.removeAttribute("aria-current");
+			current = index;
+			const entry = entries[index];
+			entry?.link.setAttribute("aria-current", "location");
+			publishActiveSection(entry && !entry.intro ? entry.id : null);
+		};
+
+		/** Reads the scroll position: which section is current and where the cursor goes. */
+		function place() {
+			const line =
+				window.scrollY +
+				Math.max(HEADER_HEIGHT + 24, landing + LANDING_SLACK, window.innerHeight * LINE_RATIO);
+			targetY = readingPosition(tops, anchors, line);
+			const index = activeIndex(tops, line);
+			// Above the body, the cursor rests on the intro: let its text say so too.
+			setCurrent(index < 0 && entries[0]?.intro ? 0 : index);
+		}
+
+		const render = () => {
+			for (const entry of entries) {
+				// The accent text follows the section being read; the ticks follow the cursor,
+				// which drifts between two entries, so the text never goes pale mid-section.
+				const reading = Math.round(entry.reading * 100) / 100;
+				if (reading !== entry.shownReading) {
+					entry.shownReading = reading;
+					entry.item.style.setProperty("--t", String(reading));
+				}
+				const hovered = Math.round(hover * labelWeight(hoverY - entry.middle) * 100) / 100;
+				if (hovered !== entry.shownHover) {
+					entry.shownHover = hovered;
+					entry.item.style.setProperty("--h", String(hovered));
+				}
+			}
+			for (let index = 0; index < ticks.length; index++) {
+				const center = tickCenter(index);
+				const weight = Math.min(
+					1,
+					tickWeight(y - center) + hover * HOVER_GAIN * tickWeight(hoverY - center),
+				);
+				const rounded = Math.round(weight * 100) / 100;
+				if (rounded !== tickWeights[index]) {
+					tickWeights[index] = rounded;
+					ticks[index]!.style.setProperty("--w", String(rounded));
+				}
+			}
+		};
+
+		/**
+		 * In a list taller than the rail, scrolls the rail so the cursor stays in view
+		 * (the list's own scroll is left alone while the pointer is over it or a link has keyboard focus). Returns
+		 * whether it is still moving.
+		 */
+		const follow = (dt: number, instant = reduceMotion.matches) => {
+			if (!scrollable || hovering || focused) return false;
+			const max = scroller.scrollHeight - scroller.clientHeight;
+			const goal = Math.min(Math.max(y - scroller.clientHeight * FOLLOW_AT, 0), max);
+			const gap = goal - scroller.scrollTop;
+			if (Math.abs(gap) < 0.5 || instant) {
+				scroller.scrollTop = goal;
+				return false;
+			}
+			// At least a whole pixel a frame: scrollTop would round a smaller step away.
+			const move = ease(0, gap, dt, FOLLOW_MS);
+			scroller.scrollTop += Math.abs(move) < 1 ? Math.sign(gap) : move;
+			return true;
+		};
+
+		const step = (now: number) => {
+			const dt = Math.min(now - lastFrame, 50);
+			lastFrame = now;
+			const instant = reduceMotion.matches;
+			y = instant ? targetY : ease(y, targetY, dt, FOLLOW_MS);
+			hoverY = instant ? targetHoverY : ease(hoverY, targetHoverY, dt, HOVER_FOLLOW_MS);
+			hover = instant ? targetHover : ease(hover, targetHover, dt, HOVER_FADE_MS);
+			let settled =
+				Math.abs(y - targetY) < 0.05 &&
+				Math.abs(hoverY - targetHoverY) < 0.05 &&
+				Math.abs(hover - targetHover) < 0.005;
+			entries.forEach((entry, index) => {
+				const goal = index === current ? 1 : 0;
+				entry.reading = instant ? goal : ease(entry.reading, goal, dt, LABEL_MS);
+				if (Math.abs(entry.reading - goal) < 0.005) entry.reading = goal;
+				else settled = false;
+			});
+			if (settled) {
+				y = targetY;
+				hoverY = targetHoverY;
+				hover = targetHover;
+			}
+			render();
+			const following = follow(dt);
+			frame = settled && !following ? 0 : requestAnimationFrame(step);
+		};
+
+		function kick() {
+			if (frame) return;
+			lastFrame = performance.now();
+			frame = requestAnimationFrame(step);
+		}
+
+		// -- Scroll, resize ---------------------------------------------------------
+		let scrollFrame = 0;
+		const onScroll = () => {
+			scrollFrame ||= requestAnimationFrame(() => {
+				scrollFrame = 0;
+				place();
+				kick();
+			});
+		};
+		window.addEventListener("scroll", onScroll, { passive: true });
+
+		let measureFrame = 0;
+		const scheduleMeasure = () => {
+			measureFrame ||= requestAnimationFrame(() => {
+				measureFrame = 0;
+				measure();
+			});
+		};
+		// Wrapped lines, late images and fonts, the rail showing at lg, a new window height.
+		const observer = new ResizeObserver(scheduleMeasure);
+		observer.observe(list);
+		observer.observe(content);
+		observer.observe(scroller);
+		window.addEventListener("resize", scheduleMeasure);
+		scroller.addEventListener("scroll", updateFade, { passive: true });
+
+		// -- Hover and keyboard focus -----------------------------------------------
+		scroller.addEventListener("pointermove", (event) => {
+			if (event.pointerType !== "mouse") return;
+			targetHoverY = event.clientY - track.getBoundingClientRect().top;
+			if (!hovering) {
+				hovering = true;
+				// Start under the pointer instead of sliding in from wherever it last was.
+				hoverY = targetHoverY;
+			}
+			targetHover = 1;
+			kick();
+		});
+		scroller.addEventListener("pointerleave", () => {
+			hovering = false;
+			targetHover = 0;
+			kick();
+		});
+		list.addEventListener("focusin", (event) => {
+			const link = (event.target as Element).closest<HTMLAnchorElement>(".toc__link");
+			const entry = entries.find((candidate) => candidate.link === link);
+			if (!entry || !link?.matches(":focus-visible")) return;
+			// The browser has just scrolled the link into view; do not pull it back out.
+			focused = true;
+			targetHoverY = entry.middle;
+			if (targetHover === 0) hoverY = entry.middle;
+			targetHover = 1;
+			kick();
+		});
+		list.addEventListener("focusout", () => {
+			focused = false;
+			if (hovering) return;
+			targetHover = 0;
+			kick();
+		});
+
+		// -- Navigation -------------------------------------------------------------
+		list.addEventListener("click", (event) => {
+			const link = (event.target as Element).closest<HTMLAnchorElement>(".toc__link");
+			const entry = entries.find((candidate) => candidate.link === link);
+			if (!entry || event.button !== 0) return;
+			if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+			event.preventDefault();
+			// detail is 0 when Enter/Space activated the link: no animation for keyboard use.
+			const keyboard = event.detail === 0;
+			entry.target.scrollIntoView({
+				behavior: reduceMotion.matches || keyboard ? "auto" : "smooth",
+				block: "start",
+			});
+			// replace, not push: Back should leave the article, not retrace every jump.
+			history.replaceState(null, "", `#${entry.id}`);
+			if (keyboard) {
+				// Keep keyboard users' place in the text.
+				entry.target.setAttribute("tabindex", "-1");
+				entry.target.focus({ preventScroll: true });
+			}
+		});
+
+		// -- Start ------------------------------------------------------------------
+		measure();
+		y = targetY;
+		hoverY = targetHoverY;
+		entries.forEach((entry, index) => (entry.reading = index === current ? 1 : 0));
+		render();
+		follow(0, true);
+		// Reveal only now: before this the list is empty, and without JS it never shows.
+		toc.setAttribute("data-ready", "");
+	}
+
+	buildToc();
+</script>

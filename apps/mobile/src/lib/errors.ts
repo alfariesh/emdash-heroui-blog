@@ -12,10 +12,10 @@ export function isRetryable(error: unknown): boolean {
 }
 
 /**
- * Visitor-facing message. API messages are already Indonesian and safe to
+ * Visitor-facing message. API messages are already English and safe to
  * show (see ApiErrorBody); anything else gets a generic one.
  */
 export function errorMessage(error: unknown): string {
 	if (error instanceof BlogApiError) return error.message;
-	return "Terjadi kesalahan. Silakan coba lagi.";
+	return "Something went wrong. Please try again.";
 }

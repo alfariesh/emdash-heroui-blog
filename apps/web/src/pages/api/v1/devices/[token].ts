@@ -7,15 +7,15 @@ import { handle, jsonError, jsonOk, NO_STORE, notFound, preflight } from "../../
 export const DELETE: APIRoute = (context) =>
 	handle(async () => {
 		if (await isRateLimited(context)) {
-			return jsonError("too_many_requests", "Terlalu banyak permintaan. Coba lagi sebentar lagi.");
+			return jsonError("too_many_requests", "Too many requests. Try again in a moment.");
 		}
 		const token = context.params.token;
-		if (!isExpoPushToken(token)) return jsonError("bad_request", "Token perangkat tidak valid.");
+		if (!isExpoPushToken(token)) return jsonError("bad_request", "The device token is invalid.");
 
 		const status = await callDeviceRoute(context, "unregister", { token });
-		return status ? jsonOk(status, NO_STORE) : notFound("Notifikasi belum tersedia.");
+		return status ? jsonOk(status, NO_STORE) : notFound("Notifications are not available yet.");
 	});
 
 export const OPTIONS: APIRoute = () => preflight("DELETE");
 
-export const ALL: APIRoute = () => notFound("Endpoint tidak ditemukan.");
+export const ALL: APIRoute = () => notFound("Endpoint not found.");

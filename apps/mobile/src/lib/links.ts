@@ -44,7 +44,12 @@ export function toAppHref(rawUrl: string): Href | null {
 	if (path === "/search" || path === "/search/") return "/search";
 	for (const [pattern, build] of ROUTES) {
 		const slug = pattern.exec(path)?.[1];
-		if (slug) return build(decodeURIComponent(slug));
+		if (!slug) continue;
+		try {
+			return build(decodeURIComponent(slug));
+		} catch {
+			return null; // a malformed escape such as %E0%A4%A: not an app route
+		}
 	}
 	return null;
 }

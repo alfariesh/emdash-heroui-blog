@@ -50,9 +50,9 @@ const filteredPosts = posts.map((post) => ({
 }));
 ---
 
-<Base title={`${term.label} — Kategori`} description={term.description ?? `Tulisan dengan kategori ${term.label}`}>
+<Base title={`${term.label} — Category`} description={term.description ?? `Posts in ${term.label}`}>
 	<TermArchive
-		eyebrow="Kategori"
+		eyebrow="Category"
 		title={term.label}
 		description={term.description}
 		icon={categoryIcon(term.slug)}

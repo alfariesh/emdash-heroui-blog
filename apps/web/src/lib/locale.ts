@@ -24,7 +24,7 @@ export function getLocale(): string {
 	return getSiteLocale() ?? DEFAULT_LOCALE;
 }
 
-/** Formats a date in the site's locale (Indonesian by default). */
+/** Formats a date in the site's locale (English by default). */
 export function formatDate(date: Date, month: "long" | "short"): string {
 	return formatDateIn(date, month, getLocale());
 }

@@ -18,7 +18,7 @@ import { NEW_POSTS_CHANNEL_ID } from "../../packages/shared/src/push.ts";
  *   APP_ID               iOS bundle identifier and Android package.
  *   APP_SCHEME           Deep-link scheme, e.g. blog://posts/slug.
  *   EAS_PROJECT_ID       EAS project (`eas init` prints it). Push notifications need it to
- *                        get an Expo push token; without it the switch in Pengaturan is off.
+ *                        get an Expo push token; without it the switch in Settings is off.
  *   GOOGLE_SERVICES_JSON Path to google-services.json (an EAS "file" variable): Firebase
  *                        Cloud Messaging, which Android push goes through.
  */
@@ -45,11 +45,11 @@ function appLinkHost(): string | null {
 }
 const APP_LINK_HOST = appLinkHost();
 
-/** Splash backgrounds: HeroUI `--background` in light (oklch 0.9702 0 0) and dark (oklch 12% …). */
-const SPLASH_LIGHT = "#f5f5f5";
-const SPLASH_DARK = "#060607";
-/** HeroUI default accent, oklch(0.6204 0.195 253.83), as sRGB. */
-const ACCENT = "#0485f7";
+/** Splash backgrounds: the theme's `--background` (warm-taupe in light, near-black in dark), see src/global.css. */
+const SPLASH_LIGHT = "#f5f3f1";
+const SPLASH_DARK = "#0c0b0a";
+/** Logo red: the adaptive-icon background and the notification tint. */
+const BRAND = "#F14422";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
 	...config,
@@ -70,7 +70,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		package: APP_ID,
 		...(GOOGLE_SERVICES_JSON ? { googleServicesFile: GOOGLE_SERVICES_JSON } : {}),
 		adaptiveIcon: {
-			backgroundColor: ACCENT,
+			backgroundColor: BRAND,
 			foregroundImage: "./assets/images/android-icon-foreground.png",
 			monochromeImage: "./assets/images/android-icon-monochrome.png",
 		},
@@ -105,7 +105,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 			{
 				// Android draws the small icon as a white silhouette: the monochrome launcher layer fits.
 				icon: "./assets/images/android-icon-monochrome.png",
-				color: ACCENT,
+				color: BRAND,
 				defaultChannel: NEW_POSTS_CHANNEL_ID,
 			},
 		],

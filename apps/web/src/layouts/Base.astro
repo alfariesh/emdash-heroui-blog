@@ -30,6 +30,8 @@ interface Props {
 	author?: string | null;
 	/** Pass content reference for plugin page contributions on content pages */
 	content?: { collection: string; id: string; slug?: string | null };
+	/** Articles: shown in the header once the page's H1 has scrolled away */
+	headerTitle?: string;
 }
 
 const {
@@ -44,6 +46,7 @@ const {
 	modifiedTime,
 	author,
 	content,
+	headerTitle,
 } = Astro.props;
 
 const [settingsResult, menuResult] = await Promise.all([
@@ -136,6 +139,7 @@ const year = new Date().getFullYear();
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		{appBanner && <meta name="apple-itunes-app" content={appBanner} />}
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<Font cssVariable="--font-body" preload />
 		<Font cssVariable="--font-code" />
 		<title>{fullTitle}</title>
@@ -246,7 +250,7 @@ const year = new Date().getFullYear();
 	</head>
 	<body>
 		<EmDashBodyStart page={pageCtx} />
-		<a href="#main" class="skip-link">Langsung ke konten</a>
+		<a href="#main" class="skip-link">Skip to content</a>
 
 		<SiteHeader
 			client:load
@@ -256,6 +260,7 @@ const year = new Date().getFullYear();
 			isLoggedIn={isLoggedIn}
 			searchQuery={searchQuery}
 			themePreference={themePreference}
+			articleTitle={headerTitle}
 		/>
 
 		<main id="main" tabindex="-1">
@@ -265,11 +270,11 @@ const year = new Date().getFullYear();
 		<footer class="mt-24 border-t border-separator/70">
 			<div class="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
 				<div class="flex max-w-sm flex-col gap-3">
-					<a href="/" class="text-[0.9375rem] font-semibold tracking-tight text-foreground">
+					<a href="/" class="typography--h6 text-foreground">
 						{siteTitle}
 					</a>
-					{siteTagline && <p class="text-sm leading-6 text-muted">{siteTagline}</p>}
-					<div class="footer-widgets mt-2 text-sm text-muted">
+					{siteTagline && <p class="typography--body-sm text-muted">{siteTagline}</p>}
+					<div class="mt-2 typography--body-sm text-muted">
 						<WidgetArea name="footer" />
 					</div>
 				</div>
@@ -277,10 +282,10 @@ const year = new Date().getFullYear();
 				{
 					navItems.length > 0 && (
 						<nav aria-labelledby="footer-nav" class="flex flex-col gap-3">
-							<h2 id="footer-nav" class="text-sm font-semibold text-foreground">
-								Jelajahi
+							<h2 id="footer-nav" class="typography--body-sm typography--weight-semibold text-foreground">
+								Explore
 							</h2>
-							<ul class="flex flex-col gap-2 text-sm">
+							<ul class="flex flex-col gap-2 typography--body-sm">
 								{navItems.map((item) => (
 									<li>
 										<a
@@ -299,24 +304,24 @@ const year = new Date().getFullYear();
 				}
 
 				<div class="flex flex-col gap-3">
-					<h2 class="text-sm font-semibold text-foreground">Ikuti</h2>
-					<ul class="flex flex-col gap-2 text-sm">
+					<h2 class="typography--body-sm typography--weight-semibold text-foreground">Follow</h2>
+					<ul class="flex flex-col gap-2 typography--body-sm">
 						<li>
-							<a href="/rss.xml" class="link-fade text-muted hover:text-foreground">Feed RSS</a>
+							<a href="/rss.xml" class="link-fade text-muted hover:text-foreground">RSS feed</a>
 						</li>
 						<li>
-							<a href="/search" class="link-fade text-muted hover:text-foreground">Cari tulisan</a>
+							<a href="/search" class="link-fade text-muted hover:text-foreground">Search posts</a>
 						</li>
 					</ul>
 				</div>
 			</div>
 
-			<div class="border-t border-separator/70">
+			<div class="border-t border-separator/70" data-footer-legal>
 				<div class="container-page flex flex-col-reverse items-start justify-between gap-4 py-6 sm:flex-row sm:items-center">
-					<p class="text-xs text-muted">
-						© {year} {siteTitle}. Dibangun dengan{" "}
+					<p class="typography--body-xs text-muted">
+						© {year} {siteTitle}. Built with{" "}
 						<a href="https://emdashcms.com" class="text-foreground hover:underline">EmDash</a>{" "}
-						dan{" "}
+						and{" "}
 						<a href="https://heroui.com" class="text-foreground hover:underline">HeroUI</a>.
 					</p>
 					<ThemeSwitcher client:visible initialPreference={themePreference} />

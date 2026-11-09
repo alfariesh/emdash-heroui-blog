@@ -27,6 +27,7 @@ export type { IconSvgElement };
 export { default as AlertIcon } from "@hugeicons/core-free-icons/Alert02Icon";
 export { default as ArrowLeftIcon } from "@hugeicons/core-free-icons/ArrowLeft01Icon";
 export { default as ArrowRightIcon } from "@hugeicons/core-free-icons/ArrowRight01Icon";
+export { default as ArrowUpIcon } from "@hugeicons/core-free-icons/ArrowUp01Icon";
 export { default as ArrowUpRightIcon } from "@hugeicons/core-free-icons/ArrowUpRight01Icon";
 export { default as BookmarkIcon } from "@hugeicons/core-free-icons/Bookmark02Icon";
 export { default as BookOpenIcon } from "@hugeicons/core-free-icons/BookOpen01Icon";

@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import { formatCount } from "@blog/shared";
 import { search } from "emdash";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -30,7 +31,7 @@ function escapeHtml(text: string) {
 // title. When it is the whole title, show its highlights in the heading
 // instead of repeating the title underneath.
 const rows = results.map((result) => {
-	const title = result.title ?? "Tanpa judul";
+	const title = result.title ?? "Untitled";
 	const snippetIsTitle =
 		result.snippet?.replaceAll("<mark>", "").replaceAll("</mark>", "") === escapeHtml(title);
 	return {
@@ -41,15 +42,15 @@ const rows = results.map((result) => {
 	};
 });
 
-const countLabel = nextCursor ? `${rows.length} hasil teratas` : `${rows.length} hasil`;
+const countLabel = formatCount(rows.length, nextCursor ? "top result" : "result");
 const card = cardVariants();
 ---
 
-<Base title={query ? `Cari: ${query}` : "Cari"} description="Cari tulisan di blog ini">
+<Base title={query ? `Search: ${query}` : "Search"} description="Search posts on this blog">
 	<PageIntro
-		eyebrow="Pencarian"
-		title={query ? `Hasil untuk “${query}”` : "Cari tulisan"}
-		description={query ? null : "Telusuri judul dan isi seluruh tulisan."}
+		eyebrow="Search"
+		title={query ? `Results for “${query}”` : "Search posts"}
+		description={query ? null : "Search titles and the body of every post."}
 	>
 		<SearchForm
 			client:load
@@ -64,7 +65,7 @@ const card = cardVariants();
 			<section class="container-page" aria-live="polite">
 				{rows.length > 0 ? (
 					<>
-						<p class="mb-4 text-sm text-muted tabular-nums">{countLabel}</p>
+						<p class="mb-4 typography--body-sm text-muted tabular-nums">{countLabel}</p>
 						<ol class="flex max-w-3xl flex-col gap-3">
 							{rows.map((row) => (
 								<li>
@@ -76,11 +77,11 @@ const card = cardVariants();
 										)}
 									>
 										<div class="flex min-w-0 flex-1 flex-col gap-1.5">
-											<h2 class="search-result text-base font-semibold text-foreground">
+											<h2 class="search-result typography--h6 text-foreground">
 												{row.titleHtml ? <Fragment set:html={row.titleHtml} /> : row.title}
 											</h2>
 											{row.snippet && (
-												<p class="search-result line-clamp-2 text-sm leading-6 text-muted">
+												<p class="search-result line-clamp-2 typography--body-sm text-muted">
 													<Fragment set:html={row.snippet} />
 												</p>
 											)}
@@ -93,12 +94,12 @@ const card = cardVariants();
 					</>
 				) : (
 					<div class="flex max-w-3xl flex-col items-start gap-3 rounded-3xl bg-surface p-8 shadow-surface">
-						<h2 class="text-lg font-semibold">Tidak ada hasil</h2>
-						<p class="text-sm text-muted">
-							Coba kata kunci lain yang lebih umum, atau jelajahi semua tulisan.
+						<h2 class="typography--h5">No results</h2>
+						<p class="typography--body-sm text-muted">
+							Try a broader query, or browse every post.
 						</p>
 						<a href="/posts" class={cn(buttonVariants({ variant: "secondary" }), "mt-1")}>
-							Lihat semua tulisan
+							View all posts
 						</a>
 					</div>
 				)}

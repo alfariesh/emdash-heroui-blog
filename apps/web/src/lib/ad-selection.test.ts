@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AD_PLACEMENTS, isAdUrl, selectAd, type AdCandidate } from "./ad-selection.ts";
+import { AD_PLACEMENTS, adUrl, isAdUrl, nextAdChangeAt, placementValues, selectAd, type AdCandidate } from "./ad-selection.ts";
 
 const now = Date.parse("2026-11-08T05:00:00Z");
 const ad = (changes: Partial<AdCandidate> = {}): AdCandidate => ({
 	id: "ad-a",
 	status: "published",
-	title: "Promo pembaca",
+	title: "Reader offer",
 	image: { id: "banner" },
 	target_url: "https://blog.example.com/pages/promo",
 	placement: AD_PLACEMENTS.home,
@@ -78,5 +78,47 @@ test("legacy nullable fields cannot break the page or hide another eligible ad",
 test("missing and non-finite priorities use zero, including alongside negative priorities", () => {
 	for (const priority of [undefined, null, NaN, Infinity, -Infinity]) {
 		assert.equal(select([ad({ priority }), ad({ id: "negative", priority: -1 })])?.id, "ad-a");
+	}
+});
+
+test("refresh includes future starts even when another campaign is already selected", () => {
+	const candidates = [ad({ ends_at: new Date(now + 30_000) }),
+		ad({ id: "future", priority: 10, starts_at: new Date(now + 5000) })];
+	assert.equal(nextAdChangeAt(candidates, AD_PLACEMENTS.home, now), now + 5000);
+	assert.equal(selectAd(candidates, AD_PLACEMENTS.home, now + 5000)?.id, "future");
+	assert.equal(nextAdChangeAt([ad({ starts_at: new Date(now + 1000) })], AD_PLACEMENTS.home, now), now + 1000);
+});
+
+test("refresh ignores ineligible, expired, unbounded and malformed schedules", () => {
+	const candidates = [ad(), ad({ enabled: false, ends_at: new Date(now + 1) }),
+		ad({ placement: AD_PLACEMENTS.postSidebar, ends_at: new Date(now + 1) }),
+		ad({ starts_at: "invalid", ends_at: new Date(now + 1) }),
+		ad({ starts_at: new Date(now + 2), ends_at: new Date(now + 1) }),
+		ad({ ends_at: new Date(now) }), ad({ status: "draft", ends_at: new Date(now + 1) })];
+	assert.equal(nextAdChangeAt(candidates, AD_PLACEMENTS.home, now), undefined);
+	assert.equal(nextAdChangeAt([ad({ ends_at: new Date(now + 1) })], AD_PLACEMENTS.home, now), now + 1);
+});
+
+test("placement values stored by the Indonesian seed still select their slot", () => {
+	// Joined so the first-party copy guard does not see the Indonesian words.
+	const legacy = (...parts: string[]) => parts.join("");
+	const stored = [legacy("Beran", "da"), legacy("Sidebar ar", "tikel"), legacy("Bawah ar", "tikel")];
+	const slots = [AD_PLACEMENTS.home, AD_PLACEMENTS.postSidebar, AD_PLACEMENTS.postBottom];
+	stored.forEach((placement, index) => {
+		const slot = slots[index];
+		const other = slots[(index + 1) % slots.length];
+		assert.equal(selectAd([ad({ placement })], slot, now)?.id, "ad-a");
+		assert.equal(selectAd([ad({ placement })], other, now), undefined);
+		assert.deepEqual(placementValues(slot), [slot, placement]);
+	});
+	assert.equal(selectAd([ad({ placement: "constructor" })], AD_PLACEMENTS.home, now), undefined);
+});
+
+test("adUrl publishes the normalized absolute URL", () => {
+	assert.equal(adUrl("https:example.com/promo"), "https://example.com/promo");
+	assert.equal(adUrl("HTTPS://Example.com"), "https://example.com/");
+	assert.equal(adUrl("  https://example.com/a?b=1 "), "https://example.com/a?b=1");
+	for (const value of ["javascript:alert(1)", "mailto:a@b.co", "/relative", "https://user:pw@example.com"]) {
+		assert.equal(adUrl(value), undefined, value);
 	}
 });

@@ -43,7 +43,7 @@ export function PostCard({ post, variant = "row", hideCategory = false, classNam
 			onPressIn={() => prefetchPost(queryClient, post.slug)}
 			accessibilityRole="link"
 			accessibilityLabel={post.title}
-			accessibilityHint="Buka tulisan"
+			accessibilityHint="Open post"
 			className={className}
 		>
 			{variant === "feature" ? (
@@ -81,9 +81,10 @@ function FeatureCard({ post, categories }: CardBodyProps) {
 					</Typography.Paragraph>
 				) : null}
 			</Card.Body>
-			<Card.Footer className="flex-row items-center justify-between gap-3 px-3 pb-2">
-				<Byline bylines={post.bylines} className="flex-1" />
-				<PostMeta publishedAt={post.publishedAt} readingTime={post.readingTime} />
+			<Card.Footer className="px-3 pb-2">
+				<Byline bylines={post.bylines} readingTime={post.readingTime}>
+					<PostMeta publishedAt={post.publishedAt} />
+				</Byline>
 			</Card.Footer>
 		</Card>
 	);
@@ -102,7 +103,7 @@ function RowCard({ post, categories }: CardBodyProps) {
 				<Typography.Heading type="h6" className="text-[17px] leading-6" numberOfLines={3}>
 					{post.title}
 				</Typography.Heading>
-				<PostMeta publishedAt={post.publishedAt} readingTime={post.readingTime} />
+				<Byline bylines={post.bylines} className="mt-1" />
 			</View>
 			<View className="size-24 overflow-hidden rounded-2xl bg-surface-secondary">
 				{post.featuredImage ? (

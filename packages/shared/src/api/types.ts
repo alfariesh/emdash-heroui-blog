@@ -20,7 +20,7 @@ export interface ApiErrorBody {
 	status: number;
 	/** Machine-readable code, e.g. "not_found", "bad_request". */
 	code: ApiErrorCode;
-	/** Human-readable message (Indonesian, safe to show to visitors). */
+	/** Human-readable message in English, safe to show to visitors. */
 	message: string;
 }
 
@@ -60,11 +60,31 @@ export interface ApiImage {
 	height: number | null;
 }
 
+/** Native placements use a 3:1 image frame; sidebar campaigns stay on the web. */
+export type ApiAdPlacement = "home" | "post_bottom";
+
+export interface ApiAd {
+	id: string;
+	title: string;
+	image: ApiImage;
+	/** Validated absolute HTTP(S) destination. */
+	targetUrl: string;
+}
+
+/** A short-lived selection, including when no campaign is currently eligible. */
+export interface ApiAdSlot {
+	ad: ApiAd | null;
+	/** Selection time, used to avoid relying on the device's clock matching the server. */
+	serverTime: string;
+	/** Revalidate by this time (at most 60 seconds, or the next schedule boundary). */
+	validUntil: string;
+}
+
 export interface ApiByline {
 	name: string;
 	/** Absolute URL, or null when the byline has no avatar. */
 	avatarUrl: string | null;
-	/** Role label such as "Kontributor tamu", or null for a plain author credit. */
+	/** Role label such as "Guest contributor", or null for a plain author credit. */
 	role: string | null;
 }
 
@@ -215,7 +235,7 @@ export interface ApiComment {
 	id: string;
 	/** Name the commenter entered. */
 	authorName: string;
-	/** Written by someone with an account on the site (the web marks it "Penulis"). */
+	/** Written by someone with an account on the site (the web marks it "Author"). */
 	isMember: boolean;
 	/** Plain text as submitted: may contain line breaks and bare URLs, never HTML. */
 	body: string;

@@ -62,13 +62,13 @@ const chip = chipVariants({ variant: "secondary" });
 <Base title={siteTitle} description={siteTagline}>
 	<section class="container-page pt-14 pb-10 sm:pt-20 sm:pb-14">
 		<div class="flex max-w-3xl flex-col gap-5">
-			<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-6xl" data-enter="lead">
+			<h1 class="typography--display" data-enter="lead">
 				{siteTitle}
 			</h1>
 			{
 				siteTagline && (
 					<p
-						class="max-w-2xl text-lg leading-8 text-muted text-pretty sm:text-xl"
+						class="max-w-2xl typography--lead"
 						data-enter="support"
 						style={enterDelay(80)}
 					>
@@ -78,7 +78,7 @@ const chip = chipVariants({ variant: "secondary" });
 			}
 			{
 				categories.length > 0 && (
-					<nav aria-label="Kategori" class="pt-2">
+					<nav aria-label="Categories" class="pt-2">
 						<ul class="flex flex-wrap gap-2">
 							{categories.map((category, index) => (
 								<li data-enter="decoration" style={enterDelay(140, index)}>
@@ -94,7 +94,7 @@ const chip = chipVariants({ variant: "secondary" });
 										/>
 										<span class={chip.label()}>{category.label}</span>
 										{category.count !== undefined && (
-											<span class="text-xs text-muted tabular-nums">{category.count}</span>
+											<span class="typography--body-xs text-muted tabular-nums">{category.count}</span>
 										)}
 									</a>
 								</li>
@@ -110,19 +110,19 @@ const chip = chipVariants({ variant: "secondary" });
 		visiblePosts.length === 0 ? (
 			<section class="container-page">
 				<div class="flex flex-col items-center gap-3 rounded-3xl bg-surface px-6 py-16 text-center shadow-surface">
-					<h2 class="text-lg font-semibold">Belum ada tulisan</h2>
-					<p class="max-w-sm text-sm text-muted">
-						Tulisan yang dipublikasikan dari panel admin akan muncul di sini.
+					<h2 class="typography--h5">No posts yet</h2>
+					<p class="max-w-sm typography--body-sm text-muted">
+						Posts published from the admin will show up here.
 					</p>
 					<a href="/_emdash/admin" class={cn(buttonVariants({ variant: "primary" }), "mt-2")}>
-						Tulis tulisan pertama
+						Write the first post
 					</a>
 				</div>
 			</section>
 		) : (
 			<>
 				{featuredPost && (
-					<section class="container-page" aria-label="Tulisan unggulan">
+					<section class="container-page" aria-label="Featured post">
 						<PostCard
 							post={featuredPost}
 							{...termsFor(featuredPost.data.id)}
@@ -135,12 +135,12 @@ const chip = chipVariants({ variant: "secondary" });
 				{gridPosts.length > 0 && (
 					<section class="container-page mt-16" aria-labelledby="latest-title">
 						<div class="mb-6 flex items-end justify-between gap-4">
-							<h2 id="latest-title" class="text-2xl font-semibold tracking-tight">
-								Tulisan Terbaru
+							<h2 id="latest-title" class="typography--h3">
+								Latest posts
 							</h2>
 							{hasMorePosts && (
 								<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
-									Lihat semua
+									View all
 									<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 								</a>
 							)}

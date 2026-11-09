@@ -33,7 +33,7 @@ const INTERNAL_MEDIA_PREFIX = "/_emdash/api/media/file/";
 
 const CACHE_OK = "public, max-age=60, stale-while-revalidate=300";
 const CACHE_ERROR = "no-store";
-/** For responses to writes (device registration): never cached. */
+/** For writes and schedule-sensitive selections: never cached. */
 export const NO_STORE = "no-store";
 
 const BASE_HEADERS = {
@@ -93,7 +93,7 @@ export function jsonError(code: ApiErrorCode, message: string): Response {
 	});
 }
 
-export const notFound = (message = "Konten tidak ditemukan.") => jsonError("not_found", message);
+export const notFound = (message = "Content not found.") => jsonError("not_found", message);
 
 const INVALID_CURSOR_MESSAGE = /invalid (pagination )?cursor/i;
 
@@ -120,10 +120,10 @@ export async function handle(run: () => Promise<Response>): Promise<Response> {
 		return await run();
 	} catch (error) {
 		if (isInvalidCursor(error)) {
-			return jsonError("bad_request", "Parameter cursor tidak valid.");
+			return jsonError("bad_request", "The cursor parameter is invalid.");
 		}
 		console.error("[api/v1]", error);
-		return jsonError("internal_error", "Terjadi kesalahan pada server.");
+		return jsonError("internal_error", "Something went wrong on the server.");
 	}
 }
 

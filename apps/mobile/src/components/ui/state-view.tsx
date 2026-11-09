@@ -48,8 +48,8 @@ export function ErrorView({ error, onRetry, className }: ErrorViewProps) {
 		return (
 			<StateView
 				icon={FileNotFoundIcon}
-				title="Tidak ditemukan"
-				description="Konten ini tidak ada atau belum diterbitkan."
+				title="Not found"
+				description="This content does not exist or has not been published."
 				className={className}
 			/>
 		);
@@ -59,15 +59,15 @@ export function ErrorView({ error, onRetry, className }: ErrorViewProps) {
 	return (
 		<StateView
 			icon={offline ? WifiOffIcon : AlertIcon}
-			title={offline ? "Anda sedang offline" : "Gagal memuat"}
+			title={offline ? "You are offline" : "Could not load"}
 			description={
-				offline ? "Sambungkan perangkat ke internet, lalu coba lagi." : errorMessage(error)
+				offline ? "Connect this device to the internet, then try again." : errorMessage(error)
 			}
 			action={
 				onRetry ? (
 					<Button variant="secondary" size="sm" onPress={onRetry}>
 						<Icon icon={RefreshIcon} size={16} />
-						<Button.Label>Coba lagi</Button.Label>
+						<Button.Label>Try again</Button.Label>
 					</Button>
 				) : null
 			}
