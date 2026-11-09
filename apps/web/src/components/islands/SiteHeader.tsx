@@ -4,6 +4,7 @@ import { Button, Drawer, Separator, Tooltip, type PressEvent } from "@heroui/rea
 import { buttonVariants, cn } from "@heroui/styles";
 
 import { getResolvedTheme, setThemePreference, themeOrigin } from "../../lib/theme";
+import BrandLogo, { BrandWordmark } from "./BrandLogo";
 import SearchForm from "./SearchForm";
 import ThemeSwitcher from "./ThemeSwitcher";
 import type { ThemePreference } from "../../lib/theme";
@@ -26,26 +27,21 @@ interface Props {
 }
 
 function Brand({ siteTitle, logo }: Pick<Props, "siteTitle" | "logo">) {
-	const monogram = [...siteTitle.trim()][0]?.toUpperCase() ?? "";
 	return (
 		<a
 			href="/"
-			className="pressable flex min-w-0 items-center gap-2.5 rounded-xl text-foreground"
+			className="pressable flex min-w-0 items-center rounded-xl text-foreground"
 		>
 			{logo ? (
 				<img src={logo.url} alt={logo.alt || siteTitle} className="h-8 w-auto" />
 			) : (
 				<>
-					{monogram && (
-						<span
-							aria-hidden="true"
-							className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-accent text-sm font-semibold text-accent-foreground"
-						>
-							{monogram}
+					<BrandLogo title={siteTitle} className="h-8 w-auto shrink-0" />
+					{/* Two layers so the wordmark, its gap and all, can collapse to zero width. */}
+					<span className="header-brand-name">
+						<span className="min-w-0 overflow-hidden">
+							<BrandWordmark className="block h-8 w-auto max-w-none" />
 						</span>
-					)}
-					<span className="truncate text-[0.9375rem] font-semibold tracking-tight">
-						{siteTitle}
 					</span>
 				</>
 			)}

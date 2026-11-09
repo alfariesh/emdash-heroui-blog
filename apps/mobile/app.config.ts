@@ -50,6 +50,8 @@ const SPLASH_LIGHT = "#f5f5f5";
 const SPLASH_DARK = "#060607";
 /** HeroUI default accent, oklch(0.6204 0.195 253.83), as sRGB. */
 const ACCENT = "#0485f7";
+/** Logo red: the adaptive-icon background and the notification tint. */
+const BRAND = "#F14422";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
 	...config,
@@ -70,7 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		package: APP_ID,
 		...(GOOGLE_SERVICES_JSON ? { googleServicesFile: GOOGLE_SERVICES_JSON } : {}),
 		adaptiveIcon: {
-			backgroundColor: ACCENT,
+			backgroundColor: BRAND,
 			foregroundImage: "./assets/images/android-icon-foreground.png",
 			monochromeImage: "./assets/images/android-icon-monochrome.png",
 		},
@@ -105,7 +107,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 			{
 				// Android draws the small icon as a white silhouette: the monochrome launcher layer fits.
 				icon: "./assets/images/android-icon-monochrome.png",
-				color: ACCENT,
+				color: BRAND,
 				defaultChannel: NEW_POSTS_CHANNEL_ID,
 			},
 		],

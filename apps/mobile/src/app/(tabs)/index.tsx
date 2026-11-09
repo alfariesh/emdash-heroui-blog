@@ -9,6 +9,7 @@ import { AdSlot } from "@/components/ad-slot";
 import { CategoryRail } from "@/components/category-rail";
 import { PostList } from "@/components/post/post-list";
 import { useTabBarInset } from "@/components/tab-bar";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { Icon } from "@/components/ui/icon";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { SettingsIcon } from "@/lib/icons";
@@ -46,6 +47,7 @@ function HomeHeader() {
 			<ScreenHeader
 				overline={today()}
 				title={site?.title ?? "Blog"}
+				titleContent={<BrandLogo height={40} />}
 				description={site?.tagline}
 				actions={
 					<Button

@@ -5,6 +5,8 @@ import { View } from "react-native";
 
 interface ScreenHeaderProps {
 	title: string;
+	/** Replaces the text title, e.g. with a logo. `title` stays the accessible name. */
+	titleContent?: ReactNode;
 	/** Small line above the title, e.g. today's date. */
 	overline?: string;
 	description?: string | null;
@@ -14,7 +16,7 @@ interface ScreenHeaderProps {
 }
 
 /** Editorial large-title header for the top of a tab screen (inside its scroll view). */
-export function ScreenHeader({ title, overline, description, actions, className }: ScreenHeaderProps) {
+export function ScreenHeader({ title, titleContent, overline, description, actions, className }: ScreenHeaderProps) {
 	return (
 		<View className={cn("gap-2 px-5 pt-4 pb-6", className)}>
 			<View className="flex-row items-start justify-between gap-4">
@@ -24,9 +26,15 @@ export function ScreenHeader({ title, overline, description, actions, className 
 							{overline}
 						</Typography>
 					) : null}
-					<Typography.Heading type="h2" className="text-[32px] leading-10 tracking-tight">
-						{title}
-					</Typography.Heading>
+					{titleContent ? (
+						<View accessible accessibilityRole="header" accessibilityLabel={title}>
+							{titleContent}
+						</View>
+					) : (
+						<Typography.Heading type="h2" className="text-[32px] leading-10 tracking-tight">
+							{title}
+						</Typography.Heading>
+					)}
 				</View>
 				{actions ? <View className="flex-row items-center gap-1 pt-1">{actions}</View> : null}
 			</View>
