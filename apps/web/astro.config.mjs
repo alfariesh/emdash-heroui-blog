@@ -45,7 +45,7 @@ const pushNotificationsPlugin = {
 
 const adsEditorPlugin = {
 	id: "ads-editor",
-	version: "1.0.0",
+	version: "1.1.0",
 	format: "native",
 	entrypoint: "/src/plugins/ads-editor/index.ts",
 	adminEntry: "/src/plugins/ads-editor/admin.tsx",

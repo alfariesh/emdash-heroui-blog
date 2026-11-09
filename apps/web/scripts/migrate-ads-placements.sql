@@ -59,6 +59,6 @@ UPDATE _emdash_fields SET type = 'multiSelect', column_type = 'JSON',
   validation = json_set(COALESCE(validation, '{}'), '$.options', json('["Home","Article sidebar","Below the article"]'))
 WHERE slug = 'placement' AND collection_id = (SELECT id FROM _emdash_collections WHERE slug = 'ads');
 
-UPDATE _emdash_fields SET widget = 'ads-editor:wib-datetime'
+UPDATE _emdash_fields SET widget = 'ads-editor:datetime'
 WHERE slug IN ('starts_at', 'ends_at') AND type = 'datetime'
   AND collection_id = (SELECT id FROM _emdash_collections WHERE slug = 'ads');

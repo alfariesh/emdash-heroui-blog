@@ -123,15 +123,15 @@
 				},
 				{
 					"slug": "starts_at",
-					"label": "Starts (WIB, optional)",
+					"label": "Starts (optional)",
 					"type": "datetime",
-					"widget": "ads-editor:wib-datetime"
+					"widget": "ads-editor:datetime"
 				},
 				{
 					"slug": "ends_at",
-					"label": "Ends (WIB, optional)",
+					"label": "Ends (optional)",
 					"type": "datetime",
-					"widget": "ads-editor:wib-datetime"
+					"widget": "ads-editor:datetime"
 				},
 				{
 					"slug": "priority",

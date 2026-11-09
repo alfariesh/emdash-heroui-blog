@@ -138,10 +138,24 @@ test("setup replaces native schedule inputs and remains idempotent", async (t) =
 	assert.equal(result.code, 0, result.output);
 	assert.equal(state.writes.length, 2);
 	for (const slug of ["starts_at", "ends_at"]) {
-		assert.equal(state.fields.find((field) => field.slug === slug).widget, "ads-editor:wib-datetime");
+		assert.equal(state.fields.find((field) => field.slug === slug).widget, "ads-editor:datetime");
 	}
 	assert.equal(state.fields.find((field) => field.slug === "starts_at").label, "Campaign goes live");
 	assert.equal((await run(url)).code, 0);
+	assert.equal(state.writes.length, 2);
+});
+
+test("setup upgrades the legacy WIB widget and only its stock labels", async (t) => {
+	const fields = existingFields();
+	for (const field of fields.filter((field) => field.widget)) {
+		field.widget = "ads-editor:wib-datetime";
+		field.label = field.slug === "starts_at" ? "Starts (WIB, optional)" : "Ends (WIB, optional)";
+	}
+	const { state, url } = await fixture(t, fields);
+	const result = await run(url);
+	assert.equal(result.code, 0, result.output);
+	assert.equal(state.fields.find((field) => field.slug === "starts_at").label, "Starts (optional)");
+	assert.equal(state.fields.find((field) => field.slug === "ends_at").label, "Ends (optional)");
 	assert.equal(state.writes.length, 2);
 });
 

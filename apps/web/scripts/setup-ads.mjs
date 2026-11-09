@@ -59,11 +59,13 @@ if (!existing) {
 for (const [sortOrder, field] of fields.entries()) {
 	const current = currentFields.find((item) => item.slug === field.slug);
 	if (current) {
-		if (field.widget && current.widget !== field.widget) {
+		const oldScheduleLabel = field.slug === "starts_at" ? "Starts (WIB, optional)" : "Ends (WIB, optional)";
+		const relabel = Boolean(field.widget) && current.label === oldScheduleLabel;
+		if (field.widget && (current.widget !== field.widget || relabel)) {
 			const response = await transport.fetch(new Request(`${url.origin}/_emdash/api/schema/collections/ads/fields/${field.slug}`, {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ widget: field.widget }),
+				body: JSON.stringify({ widget: field.widget, ...(relabel ? { label: field.label } : {}) }),
 			}));
 			if (!response.ok) throw new Error(`Could not update ads.${field.slug} widget (${response.status}).`);
 			console.log(`Updated ads.${field.slug} editor`);
