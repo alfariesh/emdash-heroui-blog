@@ -1,11 +1,11 @@
 import { getEmDashCollection } from "emdash";
-import { nextAdChangeAt, selectAd, type AdPlacement } from "./ad-selection";
+import { nextAdChangeAt, placementValues, selectAd, type AdPlacement } from "./ad-selection";
 
 /** Fetch every matching candidate so expired high-priority ads cannot hide an active one. */
 export async function getAds(placements: AdPlacement[]) {
 	const { entries, error, cacheHint } = await getEmDashCollection("ads", {
 		status: "published",
-		where: { placement: placements },
+		where: { placement: placements.flatMap(placementValues) },
 	});
 	if (error) console.error("Failed to load ads:", error);
 	const candidates = error ? [] : entries.map((entry) => entry.data);

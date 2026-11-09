@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { ApiAdSlot } from "@blog/shared";
-import { adRefreshDelay, createAdSnapshot, MAX_AD_LEASE_MS } from "./ad-snapshot.ts";
+import { AD_REFRESH_LEAD_MS, adRefreshDelay, createAdSnapshot, MAX_AD_LEASE_MS } from "./ad-snapshot.ts";
 
 const serverTime = Date.parse("2026-11-08T05:00:00Z");
 const slot = (ttl: number, ad: ApiAdSlot["ad"] = {
@@ -18,7 +18,7 @@ test("leases work with skewed device clocks and include time spent waiting for t
 		const snapshot = createAdSnapshot(slot(5000), deviceTime, deviceTime + 1200);
 		assert.equal(snapshot.expiresAt, deviceTime + 5000);
 		assert.equal(snapshot.ad?.id, "campaign");
-		assert.equal(adRefreshDelay(snapshot, deviceTime + 1200), 3800);
+		assert.equal(adRefreshDelay(snapshot, deviceTime + 1200), 1000);
 	}
 });
 
@@ -41,4 +41,13 @@ test("empty selections refresh for upcoming campaigns and expired leases cannot 
 	assert.equal(adRefreshDelay(snapshot, 11_000), 4000);
 	assert.equal(adRefreshDelay(snapshot, 20_000), 1000);
 	assert.equal(adRefreshDelay(undefined, 20_000), MAX_AD_LEASE_MS);
+});
+
+test("a visible ad is refreshed before its lease ends; an empty slot waits for the boundary", () => {
+	const showing = createAdSnapshot(slot(MAX_AD_LEASE_MS), 10_000, 10_000);
+	assert.equal(adRefreshDelay(showing, 10_000), MAX_AD_LEASE_MS - AD_REFRESH_LEAD_MS);
+	assert.ok(10_000 + adRefreshDelay(showing, 10_000) < showing.expiresAt);
+	const empty = createAdSnapshot(slot(MAX_AD_LEASE_MS, null), 10_000, 10_000);
+	assert.equal(adRefreshDelay(empty, 10_000), MAX_AD_LEASE_MS);
+	assert.equal(adRefreshDelay(empty, 10_000 + MAX_AD_LEASE_MS - 3000), 3000);
 });

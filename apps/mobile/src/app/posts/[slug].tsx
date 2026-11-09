@@ -141,11 +141,12 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 		scrollRef.current?.scrollTo({ y: target, animated: !reduceMotion });
 	};
 
-	// The card mounts only after the body has rendered, so its y is final here.
+	// The card mounts only after the body has rendered, and it moves when the banner above it
+	// loads, so every layout inside the window re-aims. The window opens on the first layout.
 	const onCommentsLayout = (event: LayoutChangeEvent) => {
-		if (!openAtComments || commentsTarget.current !== null) return;
+		if (!openAtComments) return;
+		if (commentsTarget.current === null) commentsDeadline.current = Date.now() + COMMENTS_SCROLL_MS;
 		commentsTarget.current = Math.max(0, event.nativeEvent.layout.y - barHeight - 12);
-		commentsDeadline.current = Date.now() + COMMENTS_SCROLL_MS;
 		scrollToComments();
 	};
 

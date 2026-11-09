@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AD_PLACEMENTS, isAdUrl, nextAdChangeAt, selectAd, type AdCandidate } from "./ad-selection.ts";
+import { AD_PLACEMENTS, adUrl, isAdUrl, nextAdChangeAt, placementValues, selectAd, type AdCandidate } from "./ad-selection.ts";
 
 const now = Date.parse("2026-11-08T05:00:00Z");
 const ad = (changes: Partial<AdCandidate> = {}): AdCandidate => ({
@@ -97,4 +97,28 @@ test("refresh ignores ineligible, expired, unbounded and malformed schedules", (
 		ad({ ends_at: new Date(now) }), ad({ status: "draft", ends_at: new Date(now + 1) })];
 	assert.equal(nextAdChangeAt(candidates, AD_PLACEMENTS.home, now), undefined);
 	assert.equal(nextAdChangeAt([ad({ ends_at: new Date(now + 1) })], AD_PLACEMENTS.home, now), now + 1);
+});
+
+test("placement values stored by the Indonesian seed still select their slot", () => {
+	// Joined so the first-party copy guard does not see the Indonesian words.
+	const legacy = (...parts: string[]) => parts.join("");
+	const stored = [legacy("Beran", "da"), legacy("Sidebar ar", "tikel"), legacy("Bawah ar", "tikel")];
+	const slots = [AD_PLACEMENTS.home, AD_PLACEMENTS.postSidebar, AD_PLACEMENTS.postBottom];
+	stored.forEach((placement, index) => {
+		const slot = slots[index];
+		const other = slots[(index + 1) % slots.length];
+		assert.equal(selectAd([ad({ placement })], slot, now)?.id, "ad-a");
+		assert.equal(selectAd([ad({ placement })], other, now), undefined);
+		assert.deepEqual(placementValues(slot), [slot, placement]);
+	});
+	assert.equal(selectAd([ad({ placement: "constructor" })], AD_PLACEMENTS.home, now), undefined);
+});
+
+test("adUrl publishes the normalized absolute URL", () => {
+	assert.equal(adUrl("https:example.com/promo"), "https://example.com/promo");
+	assert.equal(adUrl("HTTPS://Example.com"), "https://example.com/");
+	assert.equal(adUrl("  https://example.com/a?b=1 "), "https://example.com/a?b=1");
+	for (const value of ["javascript:alert(1)", "mailto:a@b.co", "/relative", "https://user:pw@example.com"]) {
+		assert.equal(adUrl(value), undefined, value);
+	}
 });

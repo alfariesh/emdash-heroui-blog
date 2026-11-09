@@ -16,9 +16,15 @@ export function createAdSnapshot(slot: ApiAdSlot, requestedAt: number, receivedA
 	return { ad: expiresAt > receivedAt ? slot.ad : null, expiresAt };
 }
 
-/** Refresh at the next boundary with a minimum delay to avoid tight polling loops. */
+/** A visible ad is replaced this long before its lease ends, so the slot never goes blank between leases. */
+export const AD_REFRESH_LEAD_MS = 5000;
+
+/**
+ * Refresh at the next boundary, a little early while an ad is showing, with a
+ * minimum delay to avoid tight polling loops.
+ */
 export function adRefreshDelay(snapshot: AdSnapshot | undefined, now: number): number {
-	return snapshot
-		? Math.max(1000, Math.min(MAX_AD_LEASE_MS, snapshot.expiresAt - now))
-		: MAX_AD_LEASE_MS;
+	if (!snapshot) return MAX_AD_LEASE_MS;
+	const lead = snapshot.ad ? AD_REFRESH_LEAD_MS : 0;
+	return Math.max(1000, Math.min(MAX_AD_LEASE_MS, snapshot.expiresAt - now - lead));
 }

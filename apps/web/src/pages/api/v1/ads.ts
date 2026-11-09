@@ -1,6 +1,6 @@
 import type { ApiAdPlacement, ApiAdSlot } from "@blog/shared";
 import type { APIRoute } from "astro";
-import { AD_PLACEMENTS, type AdPlacement } from "../../../lib/ad-selection";
+import { AD_PLACEMENTS, adUrl, type AdPlacement } from "../../../lib/ad-selection";
 import { getAds } from "../../../lib/ads";
 import { handle, jsonError, jsonOk, NO_STORE, toApiImage } from "../../../lib/public-api";
 
@@ -21,12 +21,13 @@ export const GET: APIRoute = (context) =>
 		if (ads.error) throw ads.error;
 		const ad = ads.forPlacement(placement);
 		const image = ad ? toApiImage(context, ad.image) : null;
+		const targetUrl = ad ? adUrl(ad.target_url) : undefined;
 		const slot: ApiAdSlot = {
-			ad: ad && image ? {
+			ad: ad && image && targetUrl ? {
 				id: ad.id,
 				title: ad.title,
 				image,
-				targetUrl: ad.target_url,
+				targetUrl,
 			} : null,
 			serverTime: new Date(ads.now).toISOString(),
 			validUntil: new Date(ads.validUntil(placement)).toISOString(),
