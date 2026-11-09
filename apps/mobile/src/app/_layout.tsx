@@ -1,11 +1,5 @@
 import "@/global.css";
 
-// One subpath per face: the package root requires every Google Sans file.
-import { GoogleSans_400Regular } from "@expo-google-fonts/google-sans/400Regular";
-import { GoogleSans_400Regular_Italic } from "@expo-google-fonts/google-sans/400Regular_Italic";
-import { GoogleSans_500Medium } from "@expo-google-fonts/google-sans/500Medium";
-import { GoogleSans_600SemiBold } from "@expo-google-fonts/google-sans/600SemiBold";
-import { GoogleSans_700Bold } from "@expo-google-fonts/google-sans/700Bold";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -39,19 +33,24 @@ const HEROUI_CONFIG: HeroUINativeConfig = {
 	toast: { defaultProps: { placement: "bottom" } },
 };
 
+// Google Sans cut down to Latin, Greek, Cyrillic and Arabic (assets/fonts, scripts/subset-fonts.sh):
+// the full faces are 2.1 MB each. The family names are what global.css and the
+// italic styles refer to.
+const FONTS = {
+	GoogleSans_400Regular: require("../../assets/fonts/google-sans-regular.ttf"),
+	GoogleSans_400Regular_Italic: require("../../assets/fonts/google-sans-italic.ttf"),
+	GoogleSans_500Medium: require("../../assets/fonts/google-sans-medium.ttf"),
+	GoogleSans_600SemiBold: require("../../assets/fonts/google-sans-semibold.ttf"),
+	GoogleSans_700Bold: require("../../assets/fonts/google-sans-bold.ttf"),
+};
+
 export const unstable_settings = {
 	// Deep links into /posts/… still get the tabs underneath for "back".
 	anchor: "(tabs)",
 };
 
 export default function RootLayout() {
-	const [fontsLoaded, fontError] = useFonts({
-		GoogleSans_400Regular,
-		GoogleSans_400Regular_Italic,
-		GoogleSans_500Medium,
-		GoogleSans_600SemiBold,
-		GoogleSans_700Bold,
-	});
+	const [fontsLoaded, fontError] = useFonts(FONTS);
 	// A font that fails to load falls back to the system font; never block the app on it.
 	const ready = fontsLoaded || fontError !== null;
 

@@ -87,6 +87,6 @@ A category with no entry uses the folder icon. An icon key outside `CATEGORY_ICO
 - [EmDash](https://emdashcms.com) and [Astro](https://astro.build) — MIT.
 - [HeroUI](https://heroui.com) (`@heroui/react`, `@heroui/styles`, `heroui-native`) — Apache-2.0.
 - [Expo](https://expo.dev), [React Native](https://reactnative.dev), [Uniwind](https://uniwind.dev), [TanStack Query](https://tanstack.com/query), [FlashList](https://shopify.github.io/flash-list/) — MIT.
-- The [Google Sans](https://fonts.google.com/specimen/Google+Sans) font (`@expo-google-fonts/google-sans` in the app, Google Fonts on the web) — SIL Open Font License 1.1.
+- The [Google Sans](https://fonts.google.com/specimen/Google+Sans) font (subset files in `apps/mobile/assets/fonts` for the app, Google Fonts on the web) — SIL Open Font License 1.1.
 - The free [Hugeicons](https://hugeicons.com) set (`@hugeicons/core-free-icons`, `@hugeicons/react`, `@hugeicons/react-native`) — MIT.
 - Sample photos in `apps/web/seed/seed.json` are downloaded from [Unsplash](https://unsplash.com) during seeding (Unsplash License) and are not stored in the repo.
