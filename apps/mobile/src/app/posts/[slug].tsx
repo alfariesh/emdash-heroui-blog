@@ -28,6 +28,7 @@ import { BackToTop } from "@/components/post/back-to-top";
 import { Byline } from "@/components/post/byline";
 import { PostCard } from "@/components/post/post-card";
 import { PostComments } from "@/components/post/post-comments";
+import { PostMeta } from "@/components/post/post-meta";
 import { ResumeReading } from "@/components/post/resume-reading";
 import { TermChips } from "@/components/post/term-chips";
 import { PortableText } from "@/components/portable-text/portable-text";
@@ -292,7 +293,9 @@ function ArticleHeader({ post, onLayout, onTitleLayout }: ArticleHeaderProps) {
 				</Typography>
 			) : null}
 			<View className="gap-3 pt-1">
-				<Byline bylines={post.bylines} max={2} size="md" />
+				<Byline bylines={post.bylines} max={2} size="md" showRole readingTime={post.readingTime}>
+					<PostMeta publishedAt={post.publishedAt} dateStyle="long" />
+				</Byline>
 			</View>
 		</View>
 	);

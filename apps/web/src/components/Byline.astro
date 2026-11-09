@@ -12,6 +12,8 @@ interface Props {
 	avatars?: number;
 	size?: "sm" | "md" | "lg";
 	class?: string;
+	/** Full-size cards and article headers place this beside the author names. */
+	readingTime?: string;
 }
 
 const {
@@ -21,6 +23,7 @@ const {
 	avatars = 3,
 	size = "sm",
 	class: className,
+	readingTime,
 } = Astro.props;
 
 const WHITESPACE = /\s+/;
@@ -47,7 +50,7 @@ const avatar = avatarVariants({ size, variant: "soft", color: "accent" });
 
 {
 	people.length > 0 && layout === "inline" && (
-		<div class={cn("flex min-w-0 items-center gap-2.5", className)}>
+		<div class={cn("flex w-full min-w-0 items-center gap-2.5", className)}>
 			<span class="flex shrink-0 -space-x-2">
 				{people.slice(0, Math.max(1, avatars)).map((person) => (
 					<span class={cn(avatar.base(), "ring-2 ring-surface")} aria-hidden="true">
@@ -59,11 +62,26 @@ const avatar = avatarVariants({ size, variant: "soft", color: "accent" });
 					</span>
 				))}
 			</span>
-			<span class="min-w-0 truncate text-sm font-medium text-foreground">
-				{shown.join(", ")}
-				{hiddenCount > 0 && <span class="text-muted"> +{hiddenCount}</span>}
-			</span>
+			<div class="min-w-0 flex-1">
+				<div class="flex items-center justify-between gap-3">
+					<p class="min-w-0 truncate text-sm font-medium text-foreground">
+						{shown.join(", ")}
+						{hiddenCount > 0 && <span class="text-muted"> +{hiddenCount}</span>}
+					</p>
+					{readingTime && <span class="shrink-0 text-xs text-muted tabular-nums">{readingTime}</span>}
+				</div>
+				<slot />
+			</div>
 		</div>
+	)
+}
+
+{
+	people.length === 0 && (
+		<>
+			{readingTime && <p class="text-xs text-muted tabular-nums">{readingTime}</p>}
+			<slot />
+		</>
 	)
 }
 

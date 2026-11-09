@@ -150,7 +150,7 @@ Motion follows Emil Kowalski's design-engineering rules (skills.sh/emilkowalski/
 
 `src/pages/.well-known/apple-app-site-association.ts` and `assetlinks.json.ts` let `https://<domain>/posts/…` (and `/pages/…`, `/category/…`, `/tag/…`, see `APP_LINK_PATH_PREFIXES` in `@blog/shared`) open the mobile app. They read Worker vars through `cloudflare:workers` `env`: `APP_LINKS_IOS_APP_IDS` (`<Team ID>.<bundle id>`, comma-separated), `APP_LINKS_ANDROID_PACKAGE` and `APP_LINKS_ANDROID_SHA256` (signing-cert fingerprints, comma-separated). Empty vars → plain 404, invalid entries are dropped with a warning. `APP_LINKS_IOS_STORE_ID` (numeric App Store ID) adds `<meta name="apple-itunes-app">` in `Base.astro` (Safari's Smart App Banner) with the page's public URL, without its query, as `app-argument`. Both files must answer 200 with `application/json` and no redirect, so keep them out of any redirect, auth or bot-challenge rule on the domain.
 
-Post cards and article headers show only avatars and author names. Keep publication dates in SEO metadata and the public API.
+Only compact horizontal post cards (`variant="row"`) omit publication dates and reading time. Featured/grid cards and article headers align reading time to the right on the author-name row, with the publication date directly below the names (no extra vertical gap). Keep publication dates in SEO metadata and the public API.
 
 ## Internal ads (`src/lib/ads.ts`, `src/components/AdSlot.astro`)
 

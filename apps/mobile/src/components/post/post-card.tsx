@@ -11,6 +11,7 @@ import { Image } from "@/components/ui/image";
 import { categoryIcon } from "@/lib/icons";
 import { prefetchPost } from "@/lib/queries";
 import { Byline } from "./byline";
+import { PostMeta } from "./post-meta";
 import { TermChips } from "./term-chips";
 
 export type PostCardVariant = "feature" | "row";
@@ -81,7 +82,9 @@ function FeatureCard({ post, categories }: CardBodyProps) {
 				) : null}
 			</Card.Body>
 			<Card.Footer className="px-3 pb-2">
-				<Byline bylines={post.bylines} />
+				<Byline bylines={post.bylines} readingTime={post.readingTime}>
+					<PostMeta publishedAt={post.publishedAt} />
+				</Byline>
 			</Card.Footer>
 		</Card>
 	);

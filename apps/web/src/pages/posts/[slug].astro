@@ -23,7 +23,7 @@ import { getAds } from "../../lib/ads";
 import { AD_PLACEMENTS } from "../../lib/ad-selection";
 import { getLocale } from "../../lib/locale";
 import { enterDelay } from "../../lib/motion";
-import { resolveBlogSiteIdentity } from "@blog/shared";
+import { formatDate, formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
 
 const origin = publicOrigin(Astro);
 const slug = decodeSlug(Astro.params.slug);
@@ -70,6 +70,8 @@ const seo = getSeoMeta(post, {
 
 // Bylines and terms are already hydrated by getEmDashEntry
 const bylines = post.data.bylines ?? [];
+const publishedAt = post.data.publishedAt ?? null;
+const readingTime = formatReadingTime(getReadingTime(post.data.content));
 const tags = post.data.terms?.tag ?? [];
 const categories = post.data.terms?.category ?? [];
 
@@ -182,7 +184,13 @@ const commentListLabels = {
 				}
 
 				<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1" data-enter="support" style={enterDelay(140)}>
-					<Byline bylines={bylines} max={2} size="md" />
+					<Byline bylines={bylines} max={2} size="md" readingTime={readingTime}>
+						{publishedAt && (
+							<p class="text-sm text-muted tabular-nums">
+								<time datetime={publishedAt.toISOString()}>{formatDate(publishedAt, "long")}</time>
+							</p>
+						)}
+					</Byline>
 				</div>
 			</div>
 		</header>
