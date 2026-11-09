@@ -30,6 +30,8 @@ interface Props {
 	author?: string | null;
 	/** Pass content reference for plugin page contributions on content pages */
 	content?: { collection: string; id: string; slug?: string | null };
+	/** Articles: shown in the header once the page's H1 has scrolled away */
+	headerTitle?: string;
 }
 
 const {
@@ -44,6 +46,7 @@ const {
 	modifiedTime,
 	author,
 	content,
+	headerTitle,
 } = Astro.props;
 
 const [settingsResult, menuResult] = await Promise.all([
@@ -257,6 +260,7 @@ const year = new Date().getFullYear();
 			isLoggedIn={isLoggedIn}
 			searchQuery={searchQuery}
 			themePreference={themePreference}
+			articleTitle={headerTitle}
 		/>
 
 		<main id="main" tabindex="-1">
@@ -312,7 +316,7 @@ const year = new Date().getFullYear();
 				</div>
 			</div>
 
-			<div class="border-t border-separator/70">
+			<div class="border-t border-separator/70" data-footer-legal>
 				<div class="container-page flex flex-col-reverse items-start justify-between gap-4 py-6 sm:flex-row sm:items-center">
 					<p class="text-xs text-muted">
 						© {year} {siteTitle}. Dibangun dengan{" "}

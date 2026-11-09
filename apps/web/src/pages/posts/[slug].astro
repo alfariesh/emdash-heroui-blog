@@ -18,6 +18,7 @@ import { publicOrigin } from "../../lib/site-url";
 import Byline from "../../components/Byline.astro";
 import PostCard from "../../components/PostCard.astro";
 import AdSlot from "../../components/AdSlot.astro";
+import BackToTop from "../../components/BackToTop.astro";
 import { getAds } from "../../lib/ads";
 import { AD_PLACEMENTS } from "../../lib/ad-selection";
 import { getLocale } from "../../lib/locale";
@@ -131,6 +132,7 @@ const commentListLabels = {
 	publishedTime={post.data.publishedAt?.toISOString() ?? null}
 	modifiedTime={post.data.updatedAt.toISOString()}
 	content={{ collection: "posts", id: post.data.id, slug }}
+	headerTitle={post.data.title}
 >
 	<article>
 		<header class="container-page pt-10 sm:pt-14">
@@ -160,6 +162,7 @@ const commentListLabels = {
 				<h1
 					class="text-4xl leading-[1.1] font-semibold tracking-tight text-balance text-foreground sm:text-5xl"
 					data-enter="lead"
+					data-post-title
 					{...post.edit.title}
 				>
 					{post.data.title}
@@ -206,12 +209,8 @@ const commentListLabels = {
 		<div class="container-page mt-12">
 			<div class="mx-auto grid max-w-5xl gap-12 lg:grid-cols-[minmax(0,1fr)_17rem]">
 				<div class="min-w-0">
-					{/* Defines the scroll timeline the reading-progress hairline follows. */}
-					<div class="reading-scope">
-						<div class="reading-progress" aria-hidden="true"></div>
-						<div class="typography-prose article-prose" data-post-content>
-							<PortableText value={post.data.content} />
-						</div>
+					<div class="typography-prose article-prose" data-post-content>
+						<PortableText value={post.data.content} />
 					</div>
 
 					{
@@ -324,7 +323,14 @@ const commentListLabels = {
 		)
 	}
 
+	<BackToTop />
+
 	<script>
+		import { publishActiveSection, publishSections } from "../../lib/article-outline";
+
+		/** Where a heading counts as the section being read, from the top of the viewport. */
+		const SECTION_LINE = 96;
+
 		// Build the table of contents from the body's h2/h3 headings
 		function buildToc() {
 			const content = document.querySelector("[data-post-content]");
@@ -389,6 +395,14 @@ const commentListLabels = {
 				current = link;
 				place();
 			};
+			publishSections(
+				headings.map((heading) => ({
+					id: heading.id,
+					title: heading.textContent ?? "",
+					nested: heading.tagName === "H3",
+				})),
+			);
+
 			const first = links.values().next().value;
 			if (first) setCurrent(first);
 
@@ -399,14 +413,60 @@ const commentListLabels = {
 				(entries) => {
 					for (const entry of entries) {
 						const link = links.get(entry.target);
-						if (link && entry.isIntersecting) setCurrent(link);
+						if (link && entry.isIntersecting) {
+							setCurrent(link);
+							publishActiveSection(entry.target.id);
+						} else if (entry.target === headings[0] && entry.boundingClientRect.top > SECTION_LINE) {
+							// Back above the first heading: the intro belongs to no section.
+							publishActiveSection(null);
+						}
 					}
 				},
-				{ rootMargin: "-96px 0px -75% 0px" },
+				{ rootMargin: `-${SECTION_LINE}px 0px -75% 0px` },
 			);
 			headings.forEach((heading) => observer.observe(heading));
 		}
 
 		buildToc();
+
+		// Past the H1 the header shows the article title while reading down and the
+		// navigation as soon as the reader scrolls back up. The flag lives on <html>
+		// because React owns the header's own attributes.
+		const HEADER_HEIGHT = 64;
+		/** Ignores small scroll wobbles, so the header doesn't flicker. */
+		const SCROLL_DEADZONE = 8;
+		const postTitle = document.querySelector("[data-post-title]");
+		if (postTitle) {
+			let passed = false;
+			let scrollingUp = false;
+			let lastY = window.scrollY;
+
+			const syncDock = () => {
+				document.documentElement.toggleAttribute("data-title-docked", passed && !scrollingUp);
+			};
+
+			new IntersectionObserver(
+				([entry]) => {
+					if (!entry) return;
+					passed = !entry.isIntersecting && entry.boundingClientRect.top < HEADER_HEIGHT;
+					syncDock();
+				},
+				{ rootMargin: `-${HEADER_HEIGHT}px 0px 0px 0px` },
+			).observe(postTitle);
+
+			window.addEventListener(
+				"scroll",
+				() => {
+					// Clamped: Safari's bounce at the page end would read as scrolling up.
+					const maxY = document.documentElement.scrollHeight - window.innerHeight;
+					const y = Math.min(window.scrollY, maxY);
+					if (Math.abs(y - lastY) < SCROLL_DEADZONE) return;
+					scrollingUp = y < lastY;
+					lastY = y;
+					syncDock();
+				},
+				{ passive: true },
+			);
+		}
 	</script>
 </Base>

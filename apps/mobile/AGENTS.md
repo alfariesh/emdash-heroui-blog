@@ -21,10 +21,10 @@ src/
 ├── app/                    Expo Router routes (files = screens; default export only here)
 │   ├── _layout.tsx         Root: fonts, splash, providers, native stack
 │   ├── (tabs)/             Floating tab bar: index (Beranda), explore, search, saved
-│   ├── posts/[slug].tsx    Article: parallax hero, glass top bar, reading progress, resume offer, #komentar
+│   ├── posts/[slug].tsx    Article: parallax hero, progressive-blur top bar, back-to-top progress ring, resume offer, #komentar
 │   ├── category/[slug].tsx, tag/[slug].tsx, pages/[slug].tsx, settings.tsx, +not-found.tsx
 ├── components/
-│   ├── ui/                 App primitives on top of HeroUI (Icon, Image, StateView, ScreenHeader, GlassIconButton)
+│   ├── ui/                 App primitives on top of HeroUI (Icon, Image, StateView, ScreenHeader, GlassIconButton, ProgressiveBlur)
 │   ├── post/               Post cards, list, byline, meta, chips, article top bar
 │   ├── portable-text/      Native Portable Text renderer (no WebView, no HTML)
 │   └── …                   Screen-level pieces (tab-bar, category-rail, term-header, navigation theme)

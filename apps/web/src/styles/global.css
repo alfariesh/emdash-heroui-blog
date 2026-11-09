@@ -395,36 +395,119 @@
 }
 
 /*
- * Reading progress on articles: a hairline that fills as the body is read.
- * Scroll-driven, so it runs on the compositor with no script. Browsers
- * without view timelines don't show it.
+ * Site header. A tint plus three masked backdrop blurs that add up towards
+ * the top edge, dissolving below the bar. Radii stay small because the blur is
+ * redrawn under every scrolled frame.
  */
-.reading-progress {
-	display: none;
+.header-progressive-blur {
+	position: absolute;
+	inset: 0 0 auto;
+	z-index: -1;
+	height: calc(100% + 2rem);
+	pointer-events: none;
+	background: linear-gradient(
+		to bottom,
+		color-mix(in oklab, var(--background) 88%, transparent) 0%,
+		color-mix(in oklab, var(--background) 80%, transparent) 55%,
+		color-mix(in oklab, var(--background) 45%, transparent) 75%,
+		color-mix(in oklab, var(--background) 12%, transparent) 90%,
+		transparent 100%
+	);
+
+	& > span {
+		position: absolute;
+		inset: 0;
+		--mask: linear-gradient(to bottom, #000 var(--solid), transparent var(--end));
+		-webkit-backdrop-filter: blur(var(--blur));
+		backdrop-filter: blur(var(--blur));
+		-webkit-mask-image: var(--mask);
+		mask-image: var(--mask);
+	}
+
+	& > span:nth-child(1) {
+		--blur: 1px;
+		--solid: 62%;
+		--end: 100%;
+	}
+
+	& > span:nth-child(2) {
+		--blur: 3px;
+		--solid: 48%;
+		--end: 84%;
+	}
+
+	& > span:nth-child(3) {
+		--blur: 6px;
+		--solid: 32%;
+		--end: 68%;
+	}
 }
 
-@supports (animation-timeline: view()) {
-	.reading-scope {
-		view-timeline: --post-body block;
-	}
+/*
+ * While reading down past the H1 (data-title-docked, set by the article page),
+ * the site name and navigation give way to the article title. Scrolling back
+ * up, or tabbing into the navigation, brings them back.
+ */
+.header-brand-name {
+	display: grid;
+	grid-template-columns: 1fr;
+	transition:
+		grid-template-columns 280ms var(--ease-out),
+		opacity 160ms ease;
+}
 
-	.reading-progress {
-		@apply pointer-events-none fixed inset-x-0 top-0 z-[60] block h-0.5 bg-accent;
-		transform-origin: 0 50%;
-		/* Empty if the timeline is inactive */
-		scale: 0 1;
-		animation: reading-progress linear both;
-		animation-timeline: --post-body;
-		animation-range: contain 0% contain 100%;
+.header-nav {
+	transition: opacity 160ms ease;
+}
+
+.header-title {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	opacity: 0;
+	translate: 0 8px;
+	visibility: hidden;
+	transition:
+		opacity 200ms ease,
+		translate 280ms var(--ease-out),
+		visibility 200ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.header-section {
+		animation: enter-fade 200ms ease;
 	}
 }
 
-@keyframes reading-progress {
-	from {
-		scale: 0 1;
+:root[data-title-docked] .header-swap:not(:has(> a:focus-visible, .header-nav a:focus-visible)) {
+	.header-brand-name {
+		grid-template-columns: 0fr;
+		opacity: 0;
 	}
-	to {
-		scale: 1 1;
+
+	.header-nav {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.header-title {
+		opacity: 1;
+		translate: 0;
+		visibility: visible;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.header-brand-name {
+		transition: opacity 160ms ease;
+	}
+
+	.header-title {
+		translate: 0;
+		transition:
+			opacity 200ms ease,
+			visibility 200ms;
 	}
 }
 

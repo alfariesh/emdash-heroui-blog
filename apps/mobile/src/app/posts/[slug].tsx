@@ -24,6 +24,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdSlot } from "@/components/ad-slot";
 import { ArticleTopBar, TOP_BAR_HEIGHT } from "@/components/post/article-top-bar";
+import { BackToTop } from "@/components/post/back-to-top";
 import { Byline } from "@/components/post/byline";
 import { PostCard } from "@/components/post/post-card";
 import { PostComments } from "@/components/post/post-comments";
@@ -96,11 +97,10 @@ interface ArticleProps {
 }
 
 function Article({ post, contentLoading, contentError, onRetry, openAtComments = false }: ArticleProps) {
-	const { width } = useWindowDimensions();
+	const { width, height: windowHeight } = useWindowDimensions();
 	const { top, bottom } = useSafeAreaInsets();
 	const scrollRef = useAnimatedRef<Animated.ScrollView>();
 	const scrollY = useScrollOffset(scrollRef);
-	const contentHeight = useSharedValue(1);
 	const viewportHeight = useSharedValue(1);
 	const reduceMotion = useReducedMotion();
 	const commentsTarget = useRef<number | null>(null);
@@ -120,6 +120,16 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 		viewportHeight,
 	});
 	const resume = reading.resume;
+	const bodyEnd = reading.bodyEnd;
+
+	// Where the H1 ends, from nested layouts: the bar's title takes over once it has slid under.
+	const titleLayout = useRef({ body: 0, header: 0, title: 0 });
+	const titleAt = useSharedValue(0);
+	const placeTitle = (part: "body" | "header" | "title", value: number) => {
+		titleLayout.current[part] = value;
+		const { body, header, title } = titleLayout.current;
+		titleAt.set(title > 0 ? body + header + title - barHeight : 0);
+	};
 
 	// While the page below the card is still loading it can be too short to
 	// scroll the card to the top, so the scroll is retried as the content grows
@@ -138,11 +148,19 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 		scrollToComments();
 	};
 
-	// Share of the article read, for the progress line in the top bar (UI thread).
+	// Share of the body read (UI thread): comments and "Baca Juga" below count as finished.
 	const progress = useDerivedValue(() => {
-		const max = contentHeight.get() - viewportHeight.get();
-		return max > 0 ? clamp(scrollY.get() / max, 0, 1) : 0;
+		const end = bodyEnd.get();
+		if (end <= 0) return 0;
+		const max = end - viewportHeight.get();
+		return max > 0 ? clamp(scrollY.get() / max, 0, 1) : 1;
 	});
+
+	const scrollToTop = () => {
+		commentsDeadline.current = 0;
+		void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		scrollRef.current?.scrollTo({ y: 0, animated: !reduceMotion });
+	};
 
 	// Parallax: the hero drifts at half speed and stretches on iOS overscroll.
 	const heroStyle = useAnimatedStyle(() => {
@@ -161,10 +179,7 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 				ref={scrollRef}
 				scrollEventThrottle={16}
 				onLayout={(event) => viewportHeight.set(event.nativeEvent.layout.height)}
-				onContentSizeChange={(_, height) => {
-					contentHeight.set(height);
-					scrollToComments();
-				}}
+				onContentSizeChange={scrollToComments}
 				onScrollBeginDrag={() => {
 					commentsDeadline.current = 0;
 				}}
@@ -185,9 +200,18 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 
 				<View
 					className={cn("gap-6 bg-background px-5", hasHero ? "-mt-8 rounded-t-[32px] pt-7" : "pt-2")}
-					onLayout={reading.onBodyLayout}
+					onLayout={(event) => {
+						reading.onBodyLayout(event);
+						placeTitle("body", event.nativeEvent.layout.y);
+					}}
 				>
-					<ArticleHeader post={post} />
+					<ArticleHeader
+						post={post}
+						onLayout={(event) => placeTitle("header", event.nativeEvent.layout.y)}
+						onTitleLayout={(event) =>
+							placeTitle("title", event.nativeEvent.layout.y + event.nativeEvent.layout.height)
+						}
+					/>
 					<Separator />
 					{contentLoading ? (
 						<BodySkeleton />
@@ -219,9 +243,18 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 				title={post.title}
 				scrollY={scrollY}
 				solidAt={solidAt}
-				progress={progress}
+				titleAt={titleAt}
 				overImage={hasHero}
 				actions={<ArticleActions post={post} webUrl={webUrl} />}
+			/>
+
+			{/* Waits for the resume pill: on a phone-width screen the two would overlap. */}
+			<BackToTop
+				scrollY={scrollY}
+				progress={progress}
+				showAfter={windowHeight / 2}
+				suspended={resume !== null}
+				onPress={scrollToTop}
 			/>
 
 			{resume ? (
@@ -238,13 +271,21 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 	);
 }
 
-function ArticleHeader({ post }: { post: ApiPost }) {
+interface ArticleHeaderProps {
+	post: ApiPost;
+	onLayout: (event: LayoutChangeEvent) => void;
+	onTitleLayout: (event: LayoutChangeEvent) => void;
+}
+
+function ArticleHeader({ post, onLayout, onTitleLayout }: ArticleHeaderProps) {
 	return (
-		<View className="gap-4">
+		<View className="gap-4" onLayout={onLayout}>
 			<TermChips categories={post.categories} tags={[]} interactive size="md" />
-			<Typography.Heading type="h1" selectable className="text-[30px] leading-[38px] tracking-tight">
-				{post.title}
-			</Typography.Heading>
+			<View onLayout={onTitleLayout}>
+				<Typography.Heading type="h1" selectable className="text-[30px] leading-[38px] tracking-tight">
+					{post.title}
+				</Typography.Heading>
+			</View>
 			{post.excerpt ? (
 				<Typography selectable color="muted" className="text-[18px] leading-7">
 					{post.excerpt}
@@ -313,8 +354,7 @@ function RelatedPosts({ post }: { post: ApiPost }) {
 
 function StaticTopBar() {
 	const scrollY = useSharedValue(0);
-	const progress = useSharedValue(0);
-	return <ArticleTopBar title="" scrollY={scrollY} solidAt={0} progress={progress} />;
+	return <ArticleTopBar title="" scrollY={scrollY} solidAt={0} titleAt={scrollY} />;
 }
 
 function ArticleSkeleton() {
