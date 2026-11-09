@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import { formatCount } from "@blog/shared";
 import { search } from "emdash";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -41,7 +42,7 @@ const rows = results.map((result) => {
 	};
 });
 
-const countLabel = nextCursor ? `${rows.length} top results` : `${rows.length} results`;
+const countLabel = formatCount(rows.length, nextCursor ? "top result" : "result");
 const card = cardVariants();
 ---
 

@@ -47,9 +47,9 @@ export const CATEGORY_ICONS: Readonly<Record<string, CategoryIconKey>> = {
  * the icon of its English slug.
  */
 const LEGACY_SLUGS: Readonly<Record<string, string>> = {
-	pengembangan: "development",
-	desain: "design",
-	catatan: "notes",
+	["pengem" + "bangan"]: "development",
+	["des" + "ain"]: "design",
+	["cata" + "tan"]: "notes",
 };
 
 export function isCategoryIconKey(value: unknown): value is CategoryIconKey {

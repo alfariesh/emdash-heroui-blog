@@ -1,5 +1,5 @@
 import type { ApiComment } from "@blog/shared";
-import { formatDate } from "@blog/shared";
+import { formatCount, formatDate } from "@blog/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Avatar } from "heroui-native/avatar";
 import { Button } from "heroui-native/button";
@@ -51,7 +51,7 @@ export function PostComments({ slug, webUrl, className }: PostCommentsProps) {
 				<Typography.Heading type="h5">Discussion</Typography.Heading>
 				{data ? (
 					<Typography type="body-sm" color="muted" className="tabular-nums">
-						{data.total === 0 ? "No comments yet" : `${data.total} comments`}
+						{data.total === 0 ? "No comments yet" : formatCount(data.total, "comment")}
 					</Typography>
 				) : null}
 			</View>
@@ -76,7 +76,7 @@ export function PostComments({ slug, webUrl, className }: PostCommentsProps) {
 
 			{hiddenCount > 0 ? (
 				<Button variant="ghost" size="sm" onPress={() => setExpanded(true)} className="self-start">
-					<Button.Label className="tabular-nums">{`Show ${hiddenCount} more comments`}</Button.Label>
+					<Button.Label className="tabular-nums">{`Show ${formatCount(hiddenCount, "more comment")}`}</Button.Label>
 				</Button>
 			) : null}
 

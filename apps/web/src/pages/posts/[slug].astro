@@ -24,7 +24,7 @@ import { getAds } from "../../lib/ads";
 import { AD_PLACEMENTS } from "../../lib/ad-selection";
 import { getLocale } from "../../lib/locale";
 import { enterDelay } from "../../lib/motion";
-import { formatDate, formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
+import { formatCount, formatDate, formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
 
 const origin = publicOrigin(Astro);
 const slug = decodeSlug(Astro.params.slug);
@@ -119,7 +119,7 @@ const commentFormLabels = {
 	networkError: "Connection problem. Check your internet and try again.",
 };
 const commentListLabels = {
-	heading: (count: number) => (count === 0 ? "No comments yet" : `${count} comments`),
+	heading: (count: number) => (count === 0 ? "No comments yet" : formatCount(count, "comment")),
 	member: "Author",
 	like: "Like",
 };

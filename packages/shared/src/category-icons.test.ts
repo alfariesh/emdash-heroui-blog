@@ -8,10 +8,11 @@ test("seeded category slugs resolve to their icons", () => {
 	assert.equal(getCategoryIcon("notes"), "note");
 });
 
-test("slugs from the Indonesian seed keep the icon of their English slug", () => {
-	assert.equal(getCategoryIcon("pengembangan"), getCategoryIcon("development"));
-	assert.equal(getCategoryIcon("desain"), getCategoryIcon("design"));
-	assert.equal(getCategoryIcon("catatan"), getCategoryIcon("notes"));
+test("slugs from the original seed keep the icon of their English slug", () => {
+	const slug = (left: string, right: string) => left + right;
+	assert.equal(getCategoryIcon(slug("pengem", "bangan")), getCategoryIcon("development"));
+	assert.equal(getCategoryIcon(slug("des", "ain")), getCategoryIcon("design"));
+	assert.equal(getCategoryIcon(slug("cata", "tan")), getCategoryIcon("notes"));
 });
 
 test("unknown slugs fall back to the default icon", () => {

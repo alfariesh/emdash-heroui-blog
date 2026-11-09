@@ -1,3 +1,4 @@
+import { formatCount } from "@blog/shared";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import { useScrollToTop } from "expo-router";
 import { useRef } from "react";
@@ -30,7 +31,7 @@ export default function SavedScreen() {
 						title="Saved"
 						description={
 							bookmarks.length > 0
-								? `${bookmarks.length} posts to read later, saved on this device.`
+								? `${formatCount(bookmarks.length, "post")} to read later, saved on this device.`
 								: null
 						}
 						className="-mx-4"

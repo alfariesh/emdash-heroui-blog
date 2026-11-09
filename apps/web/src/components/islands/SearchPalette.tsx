@@ -1,4 +1,4 @@
-import { createBlogClient, parseSnippet, type ApiSearchResult, type SnippetSegment } from "@blog/shared";
+import { createBlogClient, formatCount, parseSnippet, type ApiSearchResult, type SnippetSegment } from "@blog/shared";
 import { Kbd, Modal, SearchField, Spinner } from "@heroui/react";
 import { buttonVariants, cn } from "@heroui/styles";
 import { ArrowRight01Icon, Search01Icon } from "@hugeicons/core-free-icons";
@@ -190,7 +190,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 				</div>
 				{message && <p className="px-3 py-8 text-center typography--body-sm text-muted">{message}</p>}
 				<p role="status" className="sr-only">
-					{status === "done" ? `${results.length} results` : ""}
+					{status === "done" ? formatCount(results.length, "result") : ""}
 				</p>
 			</div>
 

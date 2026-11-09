@@ -1,6 +1,7 @@
 ---
 import type { ContentEntry, InferCollectionData } from "emdash";
 import type { IconSvgElement } from "@hugeicons/react";
+import { formatCount } from "@blog/shared";
 import type { TermLink } from "../lib/post-terms";
 import PageIntro from "./PageIntro.astro";
 import PostCard from "./PostCard.astro";
@@ -24,7 +25,7 @@ interface Props {
 }
 
 const { eyebrow, title, description, icon, basePath, posts, cursor, nextCursor } = Astro.props;
-const countLabel = `${posts.length}${nextCursor ? "+" : ""} posts`;
+const countLabel = nextCursor ? `${posts.length}+ posts` : formatCount(posts.length, "post");
 ---
 
 <PageIntro eyebrow={eyebrow} title={title} description={description ?? countLabel} icon={icon} />

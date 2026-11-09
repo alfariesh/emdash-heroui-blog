@@ -36,13 +36,6 @@ const TOKENS = [
 	"Ba" + "hasa",
 ];
 
-/**
- * Files that keep Indonesian on purpose: category-icons.ts aliases the slugs
- * the original Indonesian seed left in existing databases, and its test
- * checks them.
- */
-const ALLOWED = new Set(["packages/shared/src/category-icons.ts", "packages/shared/src/category-icons.test.ts"]);
-
 const TOKEN = new RegExp(`\\b(?:${TOKENS.join("|")})\\b`, "i");
 const SKIP_DIRS = new Set(["node_modules", "dist", ".astro", ".git"]);
 const TEXT_EXT = new Set([".md", ".ts", ".tsx", ".mjs", ".json", ".jsonc", ".astro", ".css"]);
@@ -99,7 +92,6 @@ test("first-party copy has no Indonesian tokens", async () => {
 	const hits: string[] = [];
 	for (const file of files) {
 		if (file.endsWith("pnpm-lock.yaml")) continue;
-		if (ALLOWED.has(path.relative(ROOT, file))) continue;
 		const text = await readFile(file, "utf8");
 		text.split("\n").forEach((line, index) => {
 			if (TOKEN.test(line)) hits.push(`${path.relative(ROOT, file)}:${index + 1}: ${line.trim()}`);

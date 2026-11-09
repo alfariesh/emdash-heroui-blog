@@ -68,8 +68,8 @@ Every icon uses the free [Hugeicons](https://hugeicons.com) set (MIT). To give a
 
 ```ts
 export const CATEGORY_ICONS = {
-	pengembangan: "code",
-	desain: "design",
+	development: "code",
+	design: "design",
 	notes: "note",
 	"new-category": "idea", // pick from CATEGORY_ICON_KEYS
 };

@@ -1,4 +1,4 @@
-import type { ApiTerm } from "@blog/shared";
+import { formatCount, type ApiTerm } from "@blog/shared";
 import { Typography } from "heroui-native/text";
 import { View } from "react-native";
 import { Icon } from "@/components/ui/icon";
@@ -30,7 +30,7 @@ export function TermHeader({ taxonomy, slug, term }: TermHeaderProps) {
 			{term?.description ? <Typography.Paragraph color="muted">{term.description}</Typography.Paragraph> : null}
 			{term ? (
 				<Typography type="body-sm" color="muted" className="tabular-nums">
-					{term.count} posts
+					{formatCount(term.count, "post")}
 				</Typography>
 			) : null}
 		</View>
