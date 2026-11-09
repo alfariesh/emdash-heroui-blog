@@ -77,7 +77,7 @@ A blog with posts, pages, categories, tags, full-text search, comments, and RSS.
 
 - `posts` collection: `title`, `featured_image`, `content` (Portable Text), `excerpt` (text).
 - `pages` collection: `title`, `content` (Portable Text). Used for `/pages/about` etc.
-- `ads` collection: non-routable web/native banners with `title`, `image`, `target_url`, `placement`, `enabled`, optional `starts_at`/`ends_at`, and `priority`. Placement values are `Home`, `Article sidebar`, `Below the article` (`AD_PLACEMENTS` in `src/lib/ad-selection.ts`). Drafts/revisions are enabled; edits must be published. Existing databases need `pnpm --filter @blog/web setup:ads` against the running site; a seed change alone does not evolve them.
+- `ads` collection: non-routable web/native banners with `title`, `image`, `target_url`, `placement`, `enabled`, optional `starts_at`/`ends_at`, and `priority`. Placement values are `Home`, `Article sidebar`, `Below the article` (`AD_PLACEMENTS` in `src/lib/ad-selection.ts`); the Indonesian values a database set up from the original seed stores are still accepted (`LEGACY_PLACEMENTS`), so no ad stops showing until those options are edited. Drafts/revisions are enabled; edits must be published. Existing databases need `pnpm --filter @blog/web setup:ads` against the running site; a seed change alone does not evolve them.
 - Taxonomies: `category`, `tag`.
 - Single `primary` menu (Home, Posts, About by default).
 - Widget areas: `sidebar` (post rail) and `footer`.
@@ -115,7 +115,7 @@ Rules (enforced in `src/lib/public-api.ts`; types come from `@blog/shared`):
 - **Published only.** Collection queries pass `status: "published"`; detail endpoints also check `entry.data.status === "published"`, because `getEmDashEntry` can serve drafts in preview/edit mode. The draft `still-writing` must always be 404.
 - **Envelope:** `{ ok: true, data }`, lists `{ ok: true, data, nextCursor }`, errors `{ ok: false, error: { status, code, message } }` with English messages. Bad `limit`/`cursor` → 400 (the live loader re-wraps `InvalidCursorError`, so it is matched by message too).
 - **Absolute URLs** for images, avatars, logo, menu items and root-relative links inside Portable Text, built from `context.url.origin`. Portable Text image blocks are rewritten to `{ _type: "image", url, alt, caption, width, height }`.
-- **Headers:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` on success, `no-store` on errors, `Access-Control-Allow-Origin: *`.
+- **Headers:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` on success (`/ads` and `/devices` are always `no-store`), `no-store` on errors, `Access-Control-Allow-Origin: *`.
 - **Public origin:** every absolute URL goes through `publicOrigin()` (`src/lib/site-url.ts`): Astro's `site` when set (only if `EMDASH_SITE_URL` is exported in the *build* environment), else the request origin, which on Workers is already the public host. EmDash itself reads `EMDASH_SITE_URL` at runtime from `wrangler.jsonc` `vars` for passkeys, CSRF and email links; it must be set before the production setup wizard runs, and setup must be done on that domain. Locally it is overridden to empty via `.env`, so `10.0.2.2` / LAN IPs keep working.
 
 ## Shared code
@@ -132,7 +132,7 @@ Framework-agnostic helpers live in `packages/shared` (`@blog/shared`) so the mob
 
 Motion follows Emil Kowalski's design-engineering rules (skills.sh/emilkowalski/skills): animate only `transform`/`opacity` (and `clip-path`), strong custom curves, UI motion under ~300ms, no animation on keyboard-triggered or high-frequency actions, and a `prefers-reduced-motion` fallback for everything (movement goes, opacity stays). The styles are in the "Motion" section of `src/styles/global.css`.
 
-- **Easing tokens** (`@theme`): `--ease-out` (overrides Tailwind's, which also sharpens HeroUI's own transitions), `--ease-in-out`, `--ease-drawer`. Never `ease-in`. HeroUI `.button`/`.toggle-button` presses are retimed to 160ms.
+- **Easing tokens** (`@theme`): `--ease-out` (overrides Tailwind's, which also sharpens HeroUI's own transitions), `--ease-drawer`. Never `ease-in`. HeroUI `.button`/`.toggle-button` presses are retimed to 160ms.
 - **Page entrance**: put `data-enter="lead|support|decoration|pop"` on a page's intro elements and stagger them with `style={enterDelay(ms[, index])}` from `src/lib/motion.ts`. One title per page is the `lead`; body content, cards and the largest image (LCP) don't animate in.
 - **Press feedback**: HeroUI buttons scale on press already; give other pressable links (chips, cards) the `pressable` utility (`[--press-scale:0.985]` for large surfaces). Post cards press through `.post-card` / `.post-card__link`.
 - **Card → article image**: cross-document View Transitions. Elements carry `data-post-image="/posts/<slug>"` (card media and article hero); the inline script in `Base.astro` names only the image being opened or left at `pageswap`/`pagereveal`, so nothing else moves. HeroUI keeps `:root` out of view transitions, so the new page is live immediately; don't add `view-transition-name` to elements statically (duplicate names cancel the transition).

@@ -21,13 +21,11 @@
  * the site uses stronger ones. Overriding Tailwind's --ease-out also sharpens
  * HeroUI's own transitions, which read var(--ease-out).
  *   ease-out     entering / exiting, press feedback (starts fast)
- *   ease-in-out  something moving on screen (e.g. the TOC indicator)
  *   ease-drawer  iOS-like settle for big moves (drawers, the card → article image)
  * Never ease-in: it delays the moment the visitor is watching.
  */
 @theme {
 	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -371,7 +369,8 @@
 		outline-offset: 2px;
 	}
 
-	/* A heading the TOC moved keyboard focus to: the focus is for continuing from there, not a target. */
+	/* A heading (or the article, for "Introduction") the TOC moved keyboard focus to: the focus is for continuing from there, not a target. */
+	.article-prose:focus,
 	.article-prose :is(h2, h3):focus {
 		outline: none;
 	}

@@ -19,10 +19,6 @@ export function isThemePreference(value: unknown): value is ThemePreference {
 	return value === "light" || value === "dark" || value === "system";
 }
 
-export function getResolvedTheme(): ResolvedTheme {
-	return document.documentElement.classList.contains("dark") ? "dark" : "light";
-}
-
 function systemTheme(): ResolvedTheme {
 	return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }

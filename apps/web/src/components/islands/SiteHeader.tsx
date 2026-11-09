@@ -104,17 +104,15 @@ function DockedTitle({ title }: { title: string }) {
 	return (
 		<span className="header-title">
 			<Popover isOpen={isOpen} onOpenChange={setOpen}>
-				<Popover.Trigger className="-ms-2 max-w-[calc(100%+0.5rem)] min-w-0">
-					<Button
-						variant="ghost"
-						size="sm"
-						aria-label="Open table of contents"
-						className="h-9 max-w-full min-w-0 gap-1 px-2"
-					>
-						{label}
-						<HugeiconsIcon icon={ArrowDown01Icon} size={14} className="shrink-0 text-muted" aria-hidden="true" />
-					</Button>
-				</Popover.Trigger>
+				<Button
+					variant="ghost"
+					size="sm"
+					aria-label="Open table of contents"
+					className="-ms-2 h-9 max-w-[calc(100%+0.5rem)] min-w-0 gap-1 px-2"
+				>
+					{label}
+					<HugeiconsIcon icon={ArrowDown01Icon} size={14} className="shrink-0 text-muted" aria-hidden="true" />
+				</Button>
 				<Popover.Content placement="bottom start" className="w-80 max-w-[calc(100vw-2rem)]">
 					<Popover.Dialog className="flex flex-col gap-1 p-2">
 						<Popover.Heading className="px-3 pt-1 pb-1 typography--body-sm typography--weight-semibold text-foreground">
@@ -122,11 +120,16 @@ function DockedTitle({ title }: { title: string }) {
 						</Popover.Heading>
 						<ol className="flex max-h-[60dvh] flex-col gap-0.5 overflow-y-auto">
 							{sections.map((section) => (
-								<li key={section.id} className={section.nested ? "toc-item--nested" : undefined}>
+								<li key={section.id} className={section.nested ? "ps-3" : undefined}>
 									<a
 										href={`#${section.id}`}
 										aria-current={section.id === activeId ? "true" : undefined}
-										className={cn("toc-link", section.id === activeId && "bg-surface-secondary text-foreground")}
+										className={cn(
+											"block rounded-lg px-3 py-1.5 typography--body-sm text-pretty wrap-anywhere",
+											section.id === activeId
+												? "bg-surface-secondary text-foreground"
+												: "text-muted hover:bg-default hover:text-foreground",
+										)}
 										onClick={() => setOpen(false)}
 									>
 										{section.title}

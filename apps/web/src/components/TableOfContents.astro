@@ -242,6 +242,7 @@ const { rows, class: className } = Astro.props;
 		let hover = 0;
 		let targetHover = 0;
 		let hovering = false;
+		let focused = false;
 		let current = -2;
 		let frame = 0;
 		let lastFrame = 0;
@@ -297,11 +298,11 @@ const { rows, class: className } = Astro.props;
 
 		/**
 		 * In a list taller than the rail, scrolls the rail so the cursor stays in view
-		 * (the list's own scroll is left alone while the pointer is over it). Returns
+		 * (the list's own scroll is left alone while the pointer is over it or a link has keyboard focus). Returns
 		 * whether it is still moving.
 		 */
 		const follow = (dt: number, instant = reduceMotion.matches) => {
-			if (!scrollable || hovering) return false;
+			if (!scrollable || hovering || focused) return false;
 			const max = scroller.scrollHeight - scroller.clientHeight;
 			const goal = Math.min(Math.max(y - scroller.clientHeight * FOLLOW_AT, 0), max);
 			const gap = goal - scroller.scrollTop;
@@ -395,12 +396,15 @@ const { rows, class: className } = Astro.props;
 			const link = (event.target as Element).closest<HTMLAnchorElement>(".toc__link");
 			const entry = entries.find((candidate) => candidate.link === link);
 			if (!entry || !link?.matches(":focus-visible")) return;
+			// The browser has just scrolled the link into view; do not pull it back out.
+			focused = true;
 			targetHoverY = entry.middle;
 			if (targetHover === 0) hoverY = entry.middle;
 			targetHover = 1;
 			kick();
 		});
 		list.addEventListener("focusout", () => {
+			focused = false;
 			if (hovering) return;
 			targetHover = 0;
 			kick();
