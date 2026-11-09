@@ -1,7 +1,7 @@
 // Add the seed's ads schema through EmDash's API, including on an existing database.
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
-import { EmDashClient } from "emdash/client";
+import { EmDashClient, createTransport, csrfInterceptor, devBypassInterceptor, tokenInterceptor } from "emdash/client";
 
 const { values } = parseArgs({ options: { url: { type: "string", default: "http://localhost:4321" } } });
 const url = new URL(values.url);
@@ -21,11 +21,9 @@ if (url.pathname !== "/" || url.search || url.hash) {
 if (!isLocal && !process.env.EMDASH_TOKEN) {
 	throw new Error("Set EMDASH_TOKEN to an admin-scoped token for a remote instance.");
 }
-const client = new EmDashClient({
-	baseUrl: url.origin,
-	token: process.env.EMDASH_TOKEN,
-	devBypass: isLocal && !process.env.EMDASH_TOKEN,
-});
+const auth = process.env.EMDASH_TOKEN ? tokenInterceptor(process.env.EMDASH_TOKEN) : devBypassInterceptor(url.origin);
+const client = new EmDashClient({ baseUrl: url.origin, interceptors: [auth] });
+const transport = createTransport({ interceptors: [csrfInterceptor(), auth] });
 const seed = JSON.parse(await readFile(new URL("../seed/seed.json", import.meta.url), "utf8"));
 const { fields, ...definition } = seed.collections.find((collection) => collection.slug === "ads");
 
@@ -40,7 +38,7 @@ for (const field of fields) {
 	const current = currentFields.find((item) => item.slug === field.slug);
 	if (!current) continue;
 	if (current.type !== field.type) {
-		issues.push(`ads.${field.slug} must be ${field.type}`);
+		issues.push(`ads.${field.slug} must be ${field.type}${field.slug === "placement" ? "; run scripts/migrate-ads-placements.sql first (see README)" : ""}`);
 		continue;
 	}
 	if (field.required && !current.required) issues.push(`ads.${field.slug} must be required`);
@@ -59,7 +57,19 @@ if (!existing) {
 	console.log(`Created ads collection on ${url.origin}`);
 }
 for (const [sortOrder, field] of fields.entries()) {
-	if (currentFields.some((current) => current.slug === field.slug)) continue;
+	const current = currentFields.find((item) => item.slug === field.slug);
+	if (current) {
+		if (field.widget && current.widget !== field.widget) {
+			const response = await transport.fetch(new Request(`${url.origin}/_emdash/api/schema/collections/ads/fields/${field.slug}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ widget: field.widget }),
+			}));
+			if (!response.ok) throw new Error(`Could not update ads.${field.slug} widget (${response.status}).`);
+			console.log(`Updated ads.${field.slug} editor`);
+		}
+		continue;
+	}
 	await client.createField("ads", { ...field, validation: field.validation ?? null, sortOrder });
 	console.log(`Added ads.${field.slug}`);
 }

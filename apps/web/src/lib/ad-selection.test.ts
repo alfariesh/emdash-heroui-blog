@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AD_PLACEMENTS, adUrl, isAdUrl, nextAdChangeAt, placementValues, selectAd, type AdCandidate } from "./ad-selection.ts";
+import { AD_PLACEMENTS, adUrl, isAdUrl, nextAdChangeAt, selectAd, type AdCandidate } from "./ad-selection.ts";
 
 const now = Date.parse("2026-11-08T05:00:00Z");
 const ad = (changes: Partial<AdCandidate> = {}): AdCandidate => ({
@@ -109,9 +109,19 @@ test("placement values stored by the Indonesian seed still select their slot", (
 		const other = slots[(index + 1) % slots.length];
 		assert.equal(selectAd([ad({ placement })], slot, now)?.id, "ad-a");
 		assert.equal(selectAd([ad({ placement })], other, now), undefined);
-		assert.deepEqual(placementValues(slot), [slot, placement]);
 	});
 	assert.equal(selectAd([ad({ placement: "constructor" })], AD_PLACEMENTS.home, now), undefined);
+});
+
+test("one campaign can serve several positions without matching unselected slots", () => {
+	const campaign = ad({ placement: [AD_PLACEMENTS.home, AD_PLACEMENTS.postBottom] });
+	assert.equal(select([campaign]), campaign);
+	assert.equal(selectAd([campaign], AD_PLACEMENTS.postBottom, now), campaign);
+	assert.equal(selectAd([campaign], AD_PLACEMENTS.postSidebar, now), undefined);
+	assert.equal(nextAdChangeAt([{ ...campaign, ends_at: new Date(now + 1000) }], AD_PLACEMENTS.postBottom, now), now + 1000);
+	for (const placement of [[], null, undefined, ["unknown"], ["constructor"]]) {
+		assert.equal(select([ad({ placement })]), undefined);
+	}
 });
 
 test("adUrl publishes the normalized absolute URL", () => {

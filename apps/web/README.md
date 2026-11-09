@@ -73,11 +73,21 @@ The **Ads** collection (`ads`) manages web and native app banners through the CM
 pnpm --filter @blog/web setup:ads
 ```
 
-The command adds collections and fields that are not there yet through the EmDash API, can be run again, and does not change ad entries. If it stops partway, run it again to continue with the fields that were not created. An existing schema is checked before anything is added: field type, required fields, placement options, and draft/revision support must match. A mismatch is reported so you can fix it in Content Types; existing settings are not overwritten.
+The command adds missing collections/fields through the EmDash API and configures the Ads schedule widgets. Rerunning it is safe. An existing schema is checked before any write: field type, required fields, placement options, and draft/revision support must match.
+
+To upgrade the original single-placement schema on SQLite/D1, back up `_emdash_fields`, `ec_ads`, and `revisions`, pause ad editing, deploy the new reader, then run the migration below. It converts the existing field and every retained revision in place, preserving publication state, IDs and schedule instants; it also normalizes the original Indonesian choices. Run against `--local` first; use `--remote` for the deployed database. The migration refuses unknown choices and can be rerun.
+
+```bash
+pnpm --filter @blog/web exec wrangler d1 export DB --local --table _emdash_fields --table ec_ads --table revisions --output /tmp/ads-backup.sql
+pnpm --filter @blog/web exec wrangler d1 execute DB --local --file scripts/migrate-ads-placements.sql
+pnpm --filter @blog/web setup:ads
+```
+
+After the SQL migration, restart every app instance before resuming editing: EmDash caches validation schemas in memory. Locally, restart the dev server to regenerate `emdash-env.d.ts`; on Workers, redeploy the array-compatible build to clear the old isolates. The migration targets EmDash 1.4's SQLite/D1 layout; inspect it before applying it to another storage adapter or EmDash version. Keep the backup outside the repository.
 
 For a production instance, set `EMDASH_TOKEN` to an admin-scoped token in the environment, then run `pnpm --filter @blog/web setup:ads --url https://blog.example.com`. A remote target must be HTTPS; use the origin with no path, query, fragment, or URL credentials. The web code also has to be deployed before the slots appear. Do not put the token in code or in the mobile app.
 
-In the admin → **Ads**, create an entry, pick a banner from media, fill in a full `http://` or `https://` URL, choose a placement, turn on **Active**, then **publish**. Save as a draft when it is not ready. Changes to an ad that is already published also have to be published before they apply, including a change to the Active switch.
+In the admin → **Ads**, create an entry, pick a banner from media, fill in a full `http://` or `https://` URL, check one or more **Placements**, turn on **Active**, then **publish**. One entry can serve any combination of positions. Save as a draft when it is not ready. Changes to an ad that is already published also have to be published before they apply, including a change to the Active switch.
 
 | Placement | Where it appears |
 |---|---|
@@ -85,13 +95,19 @@ In the admin → **Ads**, create an entry, pick a banner from media, fill in a f
 | Article sidebar | The article's side column, on desktop screens only (from 1024px); it scrolls with the page |
 | Below the article | After the body and tags, before comments; on desktop it is the fallback when there is no sidebar ad |
 
-**Starts** and **Ends** are optional: empty means that side has no bound. The start is inclusive and the end is exclusive; the end must be after the start. The schedule is checked on every page request, so a published ad can start or stop without a cron job and without another deploy. A page that is already open does not update on its own. For API input, use a timestamp with a time zone, for example `2026-11-08T09:00:00+07:00`.
+**Starts** and **Ends** use the native `ads-editor` plugin's Kumo calendar and hour/minute selectors, always in **WIB (Asia/Jakarta, UTC+07:00)** regardless of the browser or site timezone. The editor converts to UTC automatically. Both fields are optional; **Clear** removes the bound. Opening the picker does not rewrite existing instants. The start is inclusive and the end is exclusive; the end must be after the start. The schedule is checked on every page request, so a published ad can start or stop without a cron job and without another deploy. A page that is already open does not update on its own. For API input, use a timestamp with a time zone, for example `2026-11-08T09:00:00+07:00`.
 
 At most **one ad is visible per article** at each screen size. Desktop prefers the sidebar and uses the bottom slot when the sidebar is empty. Below 1024px only the below-the-article ad is shown; a sidebar ad is not moved down. The sidebar banner sits outside the sticky table-of-contents and widget group, so it scrolls with the page.
 
 The home and below-the-article image frame uses a **3:1** ratio (prepare a **1200 × 400 px** asset); the sidebar uses **6:5** (prepare a **600 × 500 px** asset). The frame reserves its space when the page renders so an image that loads later does not push the post down. An image with a different ratio is still shown whole inside the frame, with empty space as needed. The CMS still accepts images of other sizes.
 
 The highest **Priority** wins within a placement; ID ascending breaks ties. Disabled, draft, expired, malformed or incomplete ads are skipped. Empty slots leave no space. The native app uses Home and Below the article only, both 3:1; it refreshes through the public API within 60 seconds or at the next schedule boundary and does not persist ads offline. There is no impression or click tracking.
+
+### Admin sidebar names
+
+The sidebar reads each collection's **Label** from the CMS schema. Labels are editable metadata; changing the admin interface language does not translate custom collection or field labels in EmDash 1.4. This template seeds English labels (`Ads`, `Posts`, `Pages`), while an existing database keeps its saved labels after a deploy. `setup:ads` installs the schedule widget without overwriting custom field labels.
+
+To rename an existing collection, open **Content Types**, edit the collection, set **Label** to `Ads` and **Singular label** to `Ad`, then save. Keep the slug `ads`: code and API clients use that stable identifier. Field labels can be edited in the same content type. Per-admin-language collection labels require support in EmDash core; this template does not rewrite the admin DOM or patch dependency files to simulate translation.
 
 ## `src/` layout
 

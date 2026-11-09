@@ -43,6 +43,14 @@ const pushNotificationsPlugin = {
 	entrypoint: "/src/plugins/push-notifications/index.ts",
 };
 
+const adsEditorPlugin = {
+	id: "ads-editor",
+	version: "1.0.0",
+	format: "native",
+	entrypoint: "/src/plugins/ads-editor/index.ts",
+	adminEntry: "/src/plugins/ads-editor/admin.tsx",
+};
+
 export default defineConfig({
 	site: siteUrl,
 	output: "server",
@@ -57,7 +65,7 @@ export default defineConfig({
 		emdash({
 			database: d1({ binding: "DB", session: "auto", coalesce: true }),
 			storage: r2({ binding: "MEDIA" }),
-			plugins: [pushNotificationsPlugin],
+			plugins: [pushNotificationsPlugin, adsEditorPlugin],
 		}),
 	],
 	vite: {

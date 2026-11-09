@@ -1,14 +1,15 @@
 import { getEmDashCollection } from "emdash";
-import { nextAdChangeAt, placementValues, selectAd, type AdPlacement } from "./ad-selection";
+import { inPlacement, nextAdChangeAt, selectAd, type AdPlacement } from "./ad-selection";
 
 /** Fetch every matching candidate so expired high-priority ads cannot hide an active one. */
 export async function getAds(placements: AdPlacement[]) {
 	const { entries, error, cacheHint } = await getEmDashCollection("ads", {
 		status: "published",
-		where: { placement: placements.flatMap(placementValues) },
 	});
 	if (error) console.error("Failed to load ads:", error);
-	const candidates = error ? [] : entries.map((entry) => entry.data);
+	// multiSelect is JSON-backed: SQL IN would compare the whole array to a string.
+	const candidates = error ? [] : entries.map((entry) => entry.data)
+		.filter((ad) => placements.some((placement) => inPlacement(ad.placement, placement)));
 	const now = Date.now();
 	return {
 		error,

@@ -22,6 +22,7 @@
     "@astrojs/cloudflare": "^14.4.4",
     "@astrojs/react": "^7.0.0",
     "@blog/shared": "workspace:*",
+    "@cloudflare/kumo": "2.6.0",
     "@emdash-cms/cloudflare": "^1.4.0",
     "@heroui/react": "^3.2.7",
     "@heroui/styles": "^3.2.7",

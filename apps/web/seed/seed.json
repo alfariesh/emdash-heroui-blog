@@ -109,10 +109,10 @@
 				},
 				{
 					"slug": "placement",
-					"label": "Placement",
-					"type": "select",
+					"label": "Placements",
+					"type": "multiSelect",
 					"required": true,
-					"defaultValue": "Home",
+					"defaultValue": ["Home"],
 					"validation": { "options": ["Home", "Article sidebar", "Below the article"] }
 				},
 				{
@@ -123,13 +123,15 @@
 				},
 				{
 					"slug": "starts_at",
-					"label": "Starts (optional)",
-					"type": "datetime"
+					"label": "Starts (WIB, optional)",
+					"type": "datetime",
+					"widget": "ads-editor:wib-datetime"
 				},
 				{
 					"slug": "ends_at",
-					"label": "Ends (optional)",
-					"type": "datetime"
+					"label": "Ends (WIB, optional)",
+					"type": "datetime",
+					"widget": "ads-editor:wib-datetime"
 				},
 				{
 					"slug": "priority",

@@ -4,14 +4,13 @@ export const AD_PLACEMENTS = {
 	home: "Home",
 	postSidebar: "Article sidebar",
 	postBottom: "Below the article",
-} as const satisfies Record<string, InferCollectionData<"ads">["placement"]>;
+} as const satisfies Record<string, InferCollectionData<"ads">["placement"][number]>;
 
 export type AdPlacement = (typeof AD_PLACEMENTS)[keyof typeof AD_PLACEMENTS];
 
 /**
- * Option values the original Indonesian seed created. A seed only runs once, so
- * existing databases keep offering and storing them until their `placement`
- * options are edited; each means the same slot as its English value.
+ * Original seed values remain readable during rollout. The migration converts
+ * them to the English choices in both current entries and retained revisions.
  */
 const LEGACY_PLACEMENTS: Readonly<Record<string, AdPlacement>> = {
 	["Beran" + "da"]: AD_PLACEMENTS.home,
@@ -19,14 +18,11 @@ const LEGACY_PLACEMENTS: Readonly<Record<string, AdPlacement>> = {
 	["Bawah ar" + "tikel"]: AD_PLACEMENTS.postBottom,
 };
 
-/** Stored `placement` values that mean `placement`: its own and any legacy spelling. */
-export function placementValues(placement: AdPlacement): string[] {
-	const legacy = Object.entries(LEGACY_PLACEMENTS).filter(([, value]) => value === placement);
-	return [placement, ...legacy.map(([stored]) => stored)];
-}
-
-function inPlacement(stored: string, placement: AdPlacement): boolean {
-	return stored === placement || LEGACY_PLACEMENTS[stored] === placement;
+/** Also read single-position values while an existing database is being migrated. */
+export function inPlacement(stored: unknown, placement: AdPlacement): boolean {
+	const values = Array.isArray(stored) ? stored : [stored];
+	return values.some((value) => typeof value === "string" &&
+		(value === placement || LEGACY_PLACEMENTS[value] === placement));
 }
 
 /** Selection also accepts nullable fields from collections created before setup. */
@@ -36,7 +32,7 @@ export interface AdCandidate {
 	title?: string | null;
 	image?: { id: string; src?: string } | null;
 	target_url?: string | null;
-	placement: string;
+	placement?: string | readonly string[] | null;
 	enabled?: boolean;
 	starts_at?: Date | string | null;
 	ends_at?: Date | string | null;

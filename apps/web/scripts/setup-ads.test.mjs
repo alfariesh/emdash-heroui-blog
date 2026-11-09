@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { createCollectionBody, createFieldBody } from "emdash/api/schemas";
+import { createCollectionBody, createFieldBody, updateFieldBody } from "emdash/api/schemas";
 
 const script = new URL("./setup-ads.mjs", import.meta.url);
 const seed = JSON.parse(await readFile(new URL("../seed/seed.json", import.meta.url), "utf8"));
@@ -41,6 +41,12 @@ async function fixture(t, fields) {
 		for await (const chunk of req) raw += chunk;
 		const body = JSON.parse(raw || "{}");
 		state.writes.push({ path, body });
+		if (req.method === "PUT" && path.includes("/fields/")) {
+			const parsed = updateFieldBody.safeParse(body);
+			if (!parsed.success) return send({ error: parsed.error.message }, 400);
+			Object.assign(state.fields.find((field) => path.endsWith(`/fields/${field.slug}`)), parsed.data);
+			return send({ item: body });
+		}
 		if (path.endsWith("/schema/collections")) {
 			const parsed = createCollectionBody.safeParse(body);
 			if (!parsed.success) return send({ error: parsed.error.message }, 400);
@@ -121,6 +127,22 @@ test("setup refuses a placement selector missing a supported position", async (t
 	const result = await run(url);
 	assert.notEqual(result.code, 0, "An incompatible selector must not be reported as ready.");
 	assert.equal(state.writes.length, 0);
+});
+
+test("setup replaces native schedule inputs and remains idempotent", async (t) => {
+	const fields = existingFields();
+	for (const field of fields) delete field.widget;
+	fields.find((field) => field.slug === "starts_at").label = "Campaign goes live";
+	const { state, url } = await fixture(t, fields);
+	const result = await run(url);
+	assert.equal(result.code, 0, result.output);
+	assert.equal(state.writes.length, 2);
+	for (const slug of ["starts_at", "ends_at"]) {
+		assert.equal(state.fields.find((field) => field.slug === slug).widget, "ads-editor:wib-datetime");
+	}
+	assert.equal(state.fields.find((field) => field.slug === "starts_at").label, "Campaign goes live");
+	assert.equal((await run(url)).code, 0);
+	assert.equal(state.writes.length, 2);
 });
 
 test("setup refuses nullable fields required by the renderer", async (t) => {

@@ -12,7 +12,7 @@ export interface Ad {
   title: string;
   image: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
   target_url: string;
-  placement: "Home" | "Article sidebar" | "Below the article";
+  placement: ("Home" | "Article sidebar" | "Below the article")[];
   enabled?: boolean;
   starts_at?: string;
   ends_at?: string;
