@@ -188,40 +188,111 @@
 	}
 
 	/*
-	 * Table of contents (built client-side from the article headings).
-	 * The active state is a second, aria-hidden copy of the list styled as
-	 * "active" and clipped to the current item; moving the clip slides the pill
-	 * and swaps the text colour in one composited animation, so the two never
-	 * drift apart. Both lists share the same type styles so they line up, and
-	 * the current link (aria-current) is styled only through the copy.
+	 * Table of contents (components/TableOfContents.astro).
+	 * A ruler of 2px ticks sits beside the entries on a 5px grid that matches the
+	 * text (20px lines, 15px gaps), so every entry's first line lands on a tick.
+	 * The script writes --w (0 to 1) on each tick, and --t (the section being read)
+	 * and --h (hover / keyboard focus) on each entry; this turns them into width,
+	 * opacity and colour. Nothing here transitions: the script already eases the
+	 * values frame by frame.
 	 */
-	.toc-link {
-		@apply block rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-default hover:text-foreground;
-		transition:
-			background-color 150ms ease,
-			color 150ms ease;
+	.toc {
+		--toc-line: 20px;
+		--toc-gap: 15px;
+		--toc-gutter: 2.25rem;
+		@apply flex-col gap-3;
 	}
 
-	.toc-item--nested .toc-link {
-		@apply ps-6;
+	/* The list is filled by script: keep its room until then, but show nothing */
+	.toc:not([data-ready]) {
+		visibility: hidden;
 	}
 
-	.toc-active {
-		@apply pointer-events-none absolute inset-0 rounded-lg bg-surface-secondary;
-		/* Hidden until the script places it on the current heading */
-		clip-path: inset(0 0 100% 0 round 0.5rem);
+	.toc:not([data-ready]) .toc__track {
+		min-height: calc(var(--toc-rows, 0) * (var(--toc-line) + var(--toc-gap)) - var(--toc-gap));
 	}
 
-	.toc-active .toc-link {
-		@apply text-foreground;
+	.toc[data-ready] {
+		animation: enter-fade 250ms var(--ease-out) backwards;
 	}
 
-	.toc-active[data-ready] {
-		transition: clip-path 250ms var(--ease-in-out);
-
-		@media (prefers-reduced-motion: reduce) {
-			transition: none;
+	@media (scripting: none) {
+		.toc {
+			display: none !important;
 		}
+	}
+
+	.toc__title {
+		@apply flex items-center gap-2 text-sm font-medium text-foreground;
+	}
+
+	/* -m-1/p-1: room for focus rings, which the scroll box would otherwise clip */
+	.toc__scroller {
+		@apply -m-1 overflow-y-auto overscroll-contain p-1;
+		max-height: min(32rem, calc(100dvh - 16rem));
+		scrollbar-width: none;
+		/* Fades the edge that has more list behind it; the script sets both lengths */
+		mask-image: linear-gradient(
+			to bottom,
+			transparent,
+			#000 var(--fade-top, 0px),
+			#000 calc(100% - var(--fade-bottom, 0px)),
+			transparent
+		);
+	}
+
+	.toc__scroller::-webkit-scrollbar {
+		display: none;
+	}
+
+	.toc__track {
+		@apply relative;
+		padding-inline-start: var(--toc-gutter);
+	}
+
+	.toc__ruler {
+		@apply pointer-events-none absolute start-0 flex flex-col;
+		top: calc(var(--toc-line) / 2 - 1px);
+		gap: 3px;
+	}
+
+	/* Grows to the right and fills in towards the accent under the cursor */
+	.toc__tick {
+		@apply block h-0.5 w-3 origin-left rounded-[1px];
+		background-color: color-mix(in oklab, var(--accent) calc(var(--w, 0) * 100%), var(--foreground));
+		opacity: calc(0.2 + var(--w, 0) * 0.8);
+		transform: scaleX(calc(1 + var(--w, 0) * 1.1));
+	}
+
+	.toc__list {
+		@apply flex flex-col;
+		gap: var(--toc-gap);
+		font-size: 0.875rem;
+		line-height: var(--toc-line);
+	}
+
+	.toc__item[data-level="3"] {
+		@apply ps-3;
+	}
+
+	/* Muted, darker under hover/focus (--h), accent for the section being read (--t) */
+	.toc__link {
+		@apply block rounded-sm text-pretty wrap-anywhere;
+		color: color-mix(
+			in oklab,
+			var(--accent) calc(var(--t, 0) * 100%),
+			color-mix(in oklab, var(--foreground) calc(var(--h, 0) * 100%), var(--muted))
+		);
+	}
+
+	.toc__link:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	/* A heading the TOC moved keyboard focus to: the focus is for continuing from there, not a target. */
+	.article-prose :is(h2, h3):focus {
+		outline: none;
 	}
 }
 

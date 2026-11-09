@@ -19,6 +19,7 @@ import Byline from "../../components/Byline.astro";
 import PostCard from "../../components/PostCard.astro";
 import AdSlot from "../../components/AdSlot.astro";
 import BackToTop from "../../components/BackToTop.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
 import { getAds } from "../../lib/ads";
 import { AD_PLACEMENTS } from "../../lib/ad-selection";
 import { getLocale } from "../../lib/locale";
@@ -91,14 +92,15 @@ const bottomAd = ads.forPlacement(AD_PLACEMENTS.postBottom);
 // Tags + category for the related posts in two batched queries
 const otherTermsFor = await getPostTerms(otherPosts.map((p) => p.data.id));
 
-// The script below builds the table of contents and has the final say; this
-// guess keeps the sidebar from shifting when the page loads.
-const hasHeadings = (post.data.content ?? []).some(
-	(block) =>
-		block._type === "block" &&
-		"style" in block &&
-		(block.style === "h2" || block.style === "h3"),
-);
+// TableOfContents builds the list in the browser and has the final say; this
+// guess (headings, plus an intro when the body starts with something else) only
+// reserves its height, so the sidebar doesn't shift when the page loads.
+const isHeading = (block: { _type: string; style?: unknown }) =>
+	block._type === "block" && (block.style === "h2" || block.style === "h3");
+const bodyBlocks = post.data.content ?? [];
+const headingCount = bodyBlocks.filter(isHeading).length;
+const tocRows =
+	headingCount === 0 ? 0 : headingCount + (bodyBlocks[0] && isHeading(bodyBlocks[0]) ? 0 : 1);
 
 const crumbs = breadcrumbsVariants();
 const card = cardVariants();
@@ -269,21 +271,7 @@ const commentListLabels = {
 						class="hidden lg:block"
 					/>
 					<div class="flex flex-col gap-4 lg:sticky lg:top-24">
-						<nav
-							class={cn(card.base(), "hidden gap-2 p-3 lg:flex")}
-							aria-labelledby="toc-title"
-							hidden={!hasHeadings}
-							data-toc
-						>
-							<h2 id="toc-title" class="px-3 pt-1 text-sm font-semibold text-foreground">
-								Di halaman ini
-							</h2>
-							<div class="relative">
-								<ol class="flex flex-col gap-0.5" data-toc-list></ol>
-								{/* Visual copy of the list in its "active" style; see .toc-active */}
-								<ol class="toc-active flex flex-col gap-0.5" aria-hidden="true" data-toc-active></ol>
-							</div>
-						</nav>
+						<TableOfContents rows={tocRows} />
 
 						{
 							categories.length > 0 && (
@@ -334,109 +322,6 @@ const commentListLabels = {
 	<BackToTop />
 
 	<script>
-		import { publishActiveSection, publishSections } from "../../lib/article-outline";
-
-		/** Where a heading counts as the section being read, from the top of the viewport. */
-		const SECTION_LINE = 96;
-
-		// Build the table of contents from the body's h2/h3 headings
-		function buildToc() {
-			const content = document.querySelector("[data-post-content]");
-			const toc = document.querySelector<HTMLElement>("[data-toc]");
-			const list = document.querySelector<HTMLElement>("[data-toc-list]");
-			const active = document.querySelector<HTMLElement>("[data-toc-active]");
-			if (!content || !toc || !list || !active) return;
-
-			const headings = [...content.querySelectorAll<HTMLHeadingElement>("h2, h3")];
-			toc.hidden = headings.length === 0;
-			if (headings.length === 0) return;
-
-			const links = new Map<Element, HTMLAnchorElement>();
-			headings.forEach((heading, index) => {
-				if (!heading.id) heading.id = `bagian-${index + 1}`;
-				const nested = heading.tagName === "H3" ? "toc-item--nested" : "";
-
-				const item = document.createElement("li");
-				item.className = nested;
-				const link = document.createElement("a");
-				link.href = `#${heading.id}`;
-				link.className = "toc-link";
-				link.textContent = heading.textContent;
-				item.appendChild(link);
-				list.appendChild(item);
-				links.set(heading, link);
-
-				// Same text and box in the "active" copy, so the two lists line up
-				const copyItem = document.createElement("li");
-				copyItem.className = nested;
-				const copy = document.createElement("span");
-				copy.className = "toc-link";
-				copy.textContent = heading.textContent;
-				copyItem.appendChild(copy);
-				active.appendChild(copyItem);
-			});
-
-			// Clip the active copy to the current link; the clip transitions, so the
-			// pill slides and the text colour changes with it.
-			let current: HTMLAnchorElement | undefined;
-			let placed = false;
-			const place = () => {
-				// Not laid out while the rail is hidden (below lg)
-				if (!current || list.offsetHeight === 0) return;
-				const top = current.offsetTop;
-				const bottom = list.offsetHeight - top - current.offsetHeight;
-				active.style.clipPath = `inset(${top}px 0 ${bottom}px 0 round 0.5rem)`;
-				// The first placement jumps; only later moves animate
-				if (!placed) {
-					placed = true;
-					requestAnimationFrame(() => {
-						requestAnimationFrame(() => active.setAttribute("data-ready", ""));
-					});
-				}
-			};
-
-			// Mark the section currently in view
-			const setCurrent = (link: HTMLAnchorElement) => {
-				if (link === current) return;
-				current?.removeAttribute("aria-current");
-				link.setAttribute("aria-current", "true");
-				current = link;
-				place();
-			};
-			publishSections(
-				headings.map((heading) => ({
-					id: heading.id,
-					title: heading.textContent ?? "",
-					nested: heading.tagName === "H3",
-				})),
-			);
-
-			const first = links.values().next().value;
-			if (first) setCurrent(first);
-
-			// Re-measure when the rail is shown (lg+) or the text re-wraps
-			new ResizeObserver(place).observe(list);
-
-			const observer = new IntersectionObserver(
-				(entries) => {
-					for (const entry of entries) {
-						const link = links.get(entry.target);
-						if (link && entry.isIntersecting) {
-							setCurrent(link);
-							publishActiveSection(entry.target.id);
-						} else if (entry.target === headings[0] && entry.boundingClientRect.top > SECTION_LINE) {
-							// Back above the first heading: the intro belongs to no section.
-							publishActiveSection(null);
-						}
-					}
-				},
-				{ rootMargin: `-${SECTION_LINE}px 0px -75% 0px` },
-			);
-			headings.forEach((heading) => observer.observe(heading));
-		}
-
-		buildToc();
-
 		// Past the H1 the header shows the article title while reading down and the
 		// navigation as soon as the reader scrolls back up. The flag lives on <html>
 		// because React owns the header's own attributes.

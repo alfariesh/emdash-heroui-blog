@@ -1,11 +1,10 @@
-import { ArrowDown01Icon, ArrowRight01Icon, Menu01Icon, Moon02Icon, Sun03Icon } from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, ArrowRight01Icon, Menu01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Button, Drawer, Popover, Separator, Tooltip, type PressEvent } from "@heroui/react";
+import { Button, Drawer, Popover, Separator } from "@heroui/react";
 import { buttonVariants, cn } from "@heroui/styles";
 import { useState, useSyncExternalStore } from "react";
 
 import { getEmptyOutline, getOutline, subscribeOutline } from "../../lib/article-outline";
-import { getResolvedTheme, setThemePreference, themeOrigin } from "../../lib/theme";
 import BrandLogo, { BrandWordmark } from "./BrandLogo";
 import SearchForm from "./SearchForm";
 import SearchPalette from "./SearchPalette";
@@ -151,9 +150,6 @@ export default function SiteHeader({
 	themePreference,
 	articleTitle,
 }: Props) {
-	const toggleTheme = (press: PressEvent) =>
-		setThemePreference(getResolvedTheme() === "dark" ? "light" : "dark", themeOrigin(press));
-
 	return (
 		<header className="sticky top-0 z-50">
 			<div className="header-progressive-blur" aria-hidden="true">
@@ -192,14 +188,6 @@ export default function SiteHeader({
 
 				<div className="flex items-center gap-1.5">
 					<SearchPalette />
-
-					<Tooltip delay={300}>
-						<Button isIconOnly variant="ghost" aria-label="Ganti tema" onPress={toggleTheme}>
-							<HugeiconsIcon icon={Sun03Icon} className="dark:hidden" />
-							<HugeiconsIcon icon={Moon02Icon} className="hidden dark:block" />
-						</Button>
-						<Tooltip.Content>Ganti tema terang/gelap</Tooltip.Content>
-					</Tooltip>
 
 					{isLoggedIn && (
 						<a
