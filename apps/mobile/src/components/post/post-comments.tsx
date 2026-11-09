@@ -17,18 +17,18 @@ import { postCommentsQuery } from "@/lib/queries";
 import { initials, splitLinks } from "@/lib/text";
 import { useOpenLink } from "@/lib/use-open-link";
 
-/** Threads shown before "Tampilkan …": a long discussion would otherwise bury "Baca Juga". */
+/** Threads shown before "Show …": a long discussion would otherwise bury "Read next". */
 const INITIAL_THREADS = 5;
 
 interface PostCommentsProps {
 	slug: string;
-	/** Public web URL of the post; "Tulis komentar" opens its comment form. */
+	/** Public web URL of the post; "Write a comment" opens its comment form. */
 	webUrl: string;
 	className?: string;
 }
 
 /**
- * "Diskusi": approved comments under an article, like the web's comment card.
+ * "Discussion": approved comments under an article, like the web's comment card.
  * The app only reads them; writing happens on the web form, which keeps
  * EmDash's spam checks and moderation in one place.
  */
@@ -48,10 +48,10 @@ export function PostComments({ slug, webUrl, className }: PostCommentsProps) {
 	return (
 		<Card className={cn("gap-5 p-5", className)}>
 			<View className="gap-1">
-				<Typography.Heading type="h5">Diskusi</Typography.Heading>
+				<Typography.Heading type="h5">Discussion</Typography.Heading>
 				{data ? (
 					<Typography type="body-sm" color="muted" className="tabular-nums">
-						{data.total === 0 ? "Belum ada komentar" : `${data.total} komentar`}
+						{data.total === 0 ? "No comments yet" : `${data.total} comments`}
 					</Typography>
 				) : null}
 			</View>
@@ -63,12 +63,12 @@ export function PostComments({ slug, webUrl, className }: PostCommentsProps) {
 			) : (
 				<View className="flex-row items-center gap-3">
 					<Typography type="body-sm" color="muted" className="flex-1">
-						{error ? "Komentar gagal dimuat." : "Komentar akan tampil saat perangkat online."}
+						{error ? "Comments failed to load." : "Comments will appear when this device is online."}
 					</Typography>
 					{error ? (
 						<Button variant="secondary" size="sm" onPress={() => void refetch()}>
 							<Icon icon={RefreshIcon} size={16} />
-							<Button.Label>Coba lagi</Button.Label>
+							<Button.Label>Try again</Button.Label>
 						</Button>
 					) : null}
 				</View>
@@ -76,17 +76,17 @@ export function PostComments({ slug, webUrl, className }: PostCommentsProps) {
 
 			{hiddenCount > 0 ? (
 				<Button variant="ghost" size="sm" onPress={() => setExpanded(true)} className="self-start">
-					<Button.Label className="tabular-nums">{`Tampilkan ${hiddenCount} komentar lainnya`}</Button.Label>
+					<Button.Label className="tabular-nums">{`Show ${hiddenCount} more comments`}</Button.Label>
 				</Button>
 			) : null}
 
 			<Button
 				variant="secondary"
-				onPress={() => void openExternal(`${webUrl}#komentar`)}
-				accessibilityHint="Membuka formulir komentar di situs web"
+				onPress={() => void openExternal(`${webUrl}#comments`)}
+				accessibilityHint="Opens the comment form on the website"
 			>
 				<Icon icon={CommentWriteIcon} size={18} />
-				<Button.Label>Tulis komentar</Button.Label>
+				<Button.Label>Write a comment</Button.Label>
 			</Button>
 		</Card>
 	);
@@ -130,7 +130,7 @@ function CommentItem({ comment }: { comment: ApiComment }) {
 					</Typography>
 					{comment.isMember ? (
 						<Chip size="sm" variant="soft" color="accent">
-							<Chip.Label>Penulis</Chip.Label>
+							<Chip.Label>Author</Chip.Label>
 						</Chip>
 					) : null}
 				</View>
@@ -161,7 +161,7 @@ function CommentItem({ comment }: { comment: ApiComment }) {
 /** Two comment rows, the footprint of a short discussion. */
 function CommentsSkeleton() {
 	return (
-		<View className="gap-5" accessibilityLabel="Memuat komentar">
+		<View className="gap-5" accessibilityLabel="Loading comments">
 			{["w-11/12", "w-3/4"].map((widthClass) => (
 				<View key={widthClass} className="flex-row gap-3">
 					<Skeleton className="size-8 rounded-full" />

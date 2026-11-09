@@ -11,7 +11,7 @@ interface ReadingPositionOptions {
 	slug: string;
 	/** The full body has rendered (not the placeholder), so offsets are real. */
 	ready: boolean;
-	/** False when the screen opens somewhere specific (a #komentar link). */
+	/** False when the screen opens somewhere specific (a #comments link). */
 	offer: boolean;
 	scrollY: SharedValue<number>;
 	viewportHeight: SharedValue<number>;
@@ -28,7 +28,7 @@ interface ReadingPositionState {
 }
 
 /**
- * "Lanjutkan membaca" for one article screen. Saves the position when the
+ * "Continue reading" for one article screen. Saves the position when the
  * screen closes or the app leaves the foreground (scrolling itself never
  * reaches JS), and exposes the previous visit's position for a resume offer.
  */
@@ -49,7 +49,7 @@ export function useReadingPosition({
 		const save = () => {
 			if (bodyEnd.get() <= 0) return;
 			const offset = scrollY.get();
-			// Progress through the body only: comments and "Baca Juga" below count as finished.
+			// Progress through the body only: comments and "Read next" below count as finished.
 			saveReadingPosition(slug, offset, offset / Math.max(1, bodyEnd.get() - viewportHeight.get()));
 		};
 		const subscription = AppState.addEventListener("change", (state) => {

@@ -9,11 +9,11 @@ const MAX_QUERY_LENGTH = 200;
 export const GET: APIRoute = ({ url }) =>
 	handle(async () => {
 		const limit = parseLimit(url);
-		if (limit === null) return jsonError("bad_request", "Parameter limit harus angka 1–50.");
+		if (limit === null) return jsonError("bad_request", "The limit parameter must be a number from 1 to 50.");
 
 		const q = param(url, "q") ?? "";
 		if (q.length > MAX_QUERY_LENGTH) {
-			return jsonError("bad_request", `Kata kunci maksimal ${MAX_QUERY_LENGTH} karakter.`);
+			return jsonError("bad_request", `The query can be at most ${MAX_QUERY_LENGTH} characters.`);
 		}
 		if (!q) return jsonPage<ApiSearchResult>([], null);
 

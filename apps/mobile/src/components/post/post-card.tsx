@@ -43,7 +43,7 @@ export function PostCard({ post, variant = "row", hideCategory = false, classNam
 			onPressIn={() => prefetchPost(queryClient, post.slug)}
 			accessibilityRole="link"
 			accessibilityLabel={post.title}
-			accessibilityHint="Buka tulisan"
+			accessibilityHint="Open post"
 			className={className}
 		>
 			{variant === "feature" ? (

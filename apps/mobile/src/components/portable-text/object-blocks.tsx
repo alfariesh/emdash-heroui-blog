@@ -106,7 +106,7 @@ export function ObjectBlock({ block, onLink, webUrl, renderNested }: ObjectBlock
 			return (
 				<WebOnlyBlock
 					icon={PlayIcon}
-					title={str(node.provider) ?? "Media sematan"}
+					title={str(node.provider) ?? "Embedded media"}
 					description={str(node.caption) ?? url}
 					onOpen={() => onLink(url ?? webUrl)}
 				/>
@@ -117,8 +117,8 @@ export function ObjectBlock({ block, onLink, webUrl, renderNested }: ObjectBlock
 			return url ? (
 				<WebOnlyBlock
 					icon={LinkIcon}
-					title={str(node.filename) ?? url.split("/").pop() ?? "Berkas"}
-					description="Buka atau unduh berkas"
+					title={str(node.filename) ?? url.split("/").pop() ?? "File"}
+					description="Open or download the file"
 					onOpen={() => onLink(url)}
 				/>
 			) : null;
@@ -131,8 +131,8 @@ export function ObjectBlock({ block, onLink, webUrl, renderNested }: ObjectBlock
 			return (
 				<WebOnlyBlock
 					icon={block._type === "video" ? PlayIcon : LinkIcon}
-					title={TITLES[block._type] ?? "Konten tambahan"}
-					description="Bagian ini hanya bisa ditampilkan di versi web."
+					title={TITLES[block._type] ?? "Extra content"}
+					description="This part can only be shown on the web."
 					onOpen={() => onLink(webUrl)}
 				/>
 			);
@@ -144,9 +144,9 @@ export function ObjectBlock({ block, onLink, webUrl, renderNested }: ObjectBlock
 
 const TITLES: Record<string, string> = {
 	video: "Video",
-	iframe: "Konten sematan",
-	htmlBlock: "Konten interaktif",
-	table: "Tabel",
+	iframe: "Embedded content",
+	htmlBlock: "Interactive content",
+	table: "Table",
 	cover: "Sampul",
 };
 
@@ -297,7 +297,7 @@ function WebOnlyBlock({
 					</Typography>
 				) : null}
 			</View>
-			<Button isIconOnly size="sm" variant="secondary" accessibilityLabel={`Buka ${title}`} onPress={onOpen}>
+			<Button isIconOnly size="sm" variant="secondary" accessibilityLabel={`Open ${title}`} onPress={onOpen}>
 				<Icon icon={ArrowUpRightIcon} size={18} />
 			</Button>
 		</Surface>

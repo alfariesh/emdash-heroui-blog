@@ -17,7 +17,7 @@ interface Props {
  */
 export default function SearchForm({
 	defaultValue = "",
-	placeholder = "Cari tulisan…",
+	placeholder = "Search posts…",
 	variant = "primary",
 	autoFocus = false,
 	className,
@@ -25,7 +25,7 @@ export default function SearchForm({
 	return (
 		<form action="/search" method="get" role="search" className={className}>
 			<SearchField
-				aria-label="Cari tulisan"
+				aria-label="Search posts"
 				defaultValue={defaultValue}
 				name="q"
 				variant={variant}

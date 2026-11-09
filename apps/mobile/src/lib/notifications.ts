@@ -1,11 +1,11 @@
 /**
- * "Tulisan baru" push notifications on the device: permission, the Expo push
+ * "New posts" push notifications on the device: permission, the Expo push
  * token and its registration with the blog (POST /api/v1/devices). The
  * server (the push-notifications plugin in apps/web) sends one notification
  * per published post; tapping it opens the post (use-notification-navigation).
  *
  * Opt-in only: nothing asks for permission until the reader turns the switch
- * on in Pengaturan. The choice is kept in `storage` behind a tiny external
+ * on in Settings. The choice is kept in `storage` behind a tiny external
  * store, like the theme and bookmarks.
  */
 import { NEW_POSTS_CHANNEL_ID } from "@blog/shared";
@@ -54,7 +54,7 @@ function read(): PushState {
 	}
 }
 
-// Read lazily: most launches never touch this store before Pengaturan opens.
+// Read lazily: most launches never touch this store before Settings opens.
 let state: PushState | null = null;
 
 function getSnapshot(): PushState {
@@ -102,8 +102,8 @@ async function expoPushToken(): Promise<string> {
 async function ensureChannel(): Promise<void> {
 	if (Platform.OS !== "android") return;
 	await Notifications.setNotificationChannelAsync(NEW_POSTS_CHANNEL_ID, {
-		name: "Tulisan baru",
-		description: "Kabar saat ada tulisan baru terbit",
+		name: "New posts",
+		description: "A note when a new post is published",
 		importance: Notifications.AndroidImportance.DEFAULT,
 	});
 }

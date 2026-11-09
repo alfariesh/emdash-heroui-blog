@@ -15,11 +15,11 @@ const { basePath, cursor, nextCursor } = Astro.props;
 
 {
 	(cursor || nextCursor) && (
-		<nav class="mt-12 flex items-center justify-between gap-3" aria-label="Paginasi">
+		<nav class="mt-12 flex items-center justify-between gap-3" aria-label="Pagination">
 			{cursor ? (
 				<a href={basePath} class={buttonVariants({ variant: "outline" })}>
 					<HugeiconsIcon icon={ArrowLeft02Icon} className="nudge-icon nudge-icon--back" aria-hidden="true" />
-					Halaman pertama
+					First page
 				</a>
 			) : (
 				<span />
@@ -29,7 +29,7 @@ const { basePath, cursor, nextCursor } = Astro.props;
 					href={`${basePath}?cursor=${encodeURIComponent(nextCursor)}`}
 					class={buttonVariants({ variant: "secondary" })}
 				>
-					Tulisan lebih lama
+					Older posts
 					<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 				</a>
 			)}

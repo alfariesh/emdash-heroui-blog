@@ -27,10 +27,10 @@ export default function SavedScreen() {
 				ItemSeparatorComponent={() => <View className="h-3" />}
 				ListHeaderComponent={
 					<ScreenHeader
-						title="Tersimpan"
+						title="Saved"
 						description={
 							bookmarks.length > 0
-								? `${bookmarks.length} tulisan untuk dibaca nanti, tersimpan di perangkat ini.`
+								? `${bookmarks.length} posts to read later, saved on this device.`
 								: null
 						}
 						className="-mx-4"
@@ -39,8 +39,8 @@ export default function SavedScreen() {
 				ListEmptyComponent={
 					<StateView
 						icon={BookmarkIcon}
-						title="Belum ada yang disimpan"
-						description="Ketuk ikon penanda saat membaca untuk menyimpan tulisan ke sini."
+						title="Nothing saved yet"
+						description="Tap the bookmark icon while reading to save a post here."
 					/>
 				}
 				contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: bottomInset }}

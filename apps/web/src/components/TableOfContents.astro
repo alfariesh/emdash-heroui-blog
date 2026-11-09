@@ -32,7 +32,7 @@ const { rows, class: className } = Astro.props;
 >
 	<h2 id="toc-title" class="toc__title">
 		<HugeiconsIcon icon={LeftToRightListBulletIcon} size={18} className="shrink-0 text-muted" aria-hidden="true" />
-		Di halaman ini
+		On this page
 	</h2>
 	<div class="toc__scroller" data-toc-scroller>
 		<div class="toc__track" data-toc-track>
@@ -72,7 +72,7 @@ const { rows, class: className } = Astro.props;
 	const LABEL_MS = 120;
 	const HOVER_FOLLOW_MS = 45;
 	const HOVER_FADE_MS = 100;
-	const INTRO_LABEL = "Pengantar";
+	const INTRO_LABEL = "Introduction";
 
 	interface Entry {
 		id: string;
@@ -155,13 +155,13 @@ const { rows, class: className } = Astro.props;
 		// Text before the first heading is the "intro" and gets an entry of its own, so
 		// the cursor has somewhere to rest at the top of the article.
 		if (content.firstElementChild !== headings[0]) {
-			if (!content.id) content.id = claimId("pengantar", "pengantar");
+			if (!content.id) content.id = claimId("introduction", "introduction");
 			addEntry(content, INTRO_LABEL, 2, content.id, true);
 		}
 
 		headings.forEach((heading, index) => {
 			const title = heading.textContent!.trim();
-			if (!heading.id) heading.id = claimId(slugifyHeading(title), `bagian-${index + 1}`);
+			if (!heading.id) heading.id = claimId(slugifyHeading(title), `section-${index + 1}`);
 			addEntry(heading, title, heading.tagName === "H3" ? 3 : 2, heading.id);
 		});
 

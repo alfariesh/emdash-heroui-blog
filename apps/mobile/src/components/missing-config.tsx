@@ -9,8 +9,8 @@ export function MissingConfig() {
 		<View className="flex-1 justify-center bg-background">
 			<StateView
 				icon={InformationIcon}
-				title="Alamat server belum diatur"
-				description="Aplikasi ini belum tahu dari mana mengambil tulisan."
+				title="Server address is not set"
+				description="This app does not know where to load posts from."
 			/>
 			{__DEV__ ? (
 				<Typography.Code className="mx-auto">EXPO_PUBLIC_API_URL=https://blog.example.com</Typography.Code>

@@ -9,7 +9,7 @@ const RADIUS = 22.75;
 {/* Floating back-to-top button whose ring shows how much of the article body has been read. */}
 <button
 	type="button"
-	aria-label="Kembali ke atas"
+	aria-label="Back to top"
 	data-back-to-top
 	class={cn(
 		buttonVariants({ variant: "ghost", isIconOnly: true }),
@@ -50,7 +50,7 @@ const RADIUS = 22.75;
 			const { scrollY, innerHeight } = window;
 			button.toggleAttribute("data-visible", scrollY >= innerHeight / 2);
 
-			// Share of the body read: comments and "Baca Juga" below count as finished.
+			// Share of the body read: comments and "Read next" below count as finished.
 			const max = body.getBoundingClientRect().bottom + scrollY - innerHeight;
 			const progress = max > 0 ? Math.min(Math.max(scrollY / max, 0), 1) : 1;
 			ring.style.strokeDashoffset = String(1 - progress);

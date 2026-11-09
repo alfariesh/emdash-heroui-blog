@@ -4,17 +4,17 @@ import { test } from "node:test";
 import { buildMessage, EXPO_PUSH_URL, readTickets, sendBatch, truncate, type PushContent } from "./expo.ts";
 
 const content: PushContent = {
-	title: "Tulisan baru",
-	body: "Ringkasan",
-	data: { url: "https://blog.example.com/posts/halo" },
+	title: "New post",
+	body: "Summary",
+	data: { url: "https://blog.example.com/posts/hello" },
 	channelId: "new-posts",
 };
 const A = "ExponentPushToken[aaaaaaaaaaaa]";
 const B = "ExponentPushToken[bbbbbbbbbbbb]";
 
 test("truncate collapses whitespace and cuts at a word", () => {
-	assert.equal(truncate("  Satu\n dua   tiga ", 50), "Satu dua tiga");
-	assert.equal(truncate("Batasan bukan penghalang kreativitas sama sekali", 30), "Batasan bukan penghalang…");
+	assert.equal(truncate("  One\n two   three ", 50), "One two three");
+	assert.equal(truncate("Limits are not a barrier to creativity at all", 30), "Limits are not a barrier to…");
 	assert.equal(truncate("Supercalifragilisticexpialidocious", 10), "Supercali…");
 });
 

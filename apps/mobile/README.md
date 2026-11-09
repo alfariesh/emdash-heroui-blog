@@ -1,96 +1,96 @@
 # @blog/mobile
 
-Aplikasi pembaca blog untuk iOS dan Android: [Expo](https://expo.dev) SDK 58 (React Native 0.88), [HeroUI Native](https://heroui.com/docs/native) di atas [Uniwind](https://uniwind.dev) (Tailwind CSS v4), Expo Router, TanStack Query, dan FlashList. Konten diambil dari API publik baca-saja `apps/web` (`/api/v1`), jadi tidak ada token atau rahasia di dalam aplikasi.
+A blog reader for iOS and Android: [Expo](https://expo.dev) SDK 58 (React Native 0.88), [HeroUI Native](https://heroui.com/docs/native) on [Uniwind](https://uniwind.dev) (Tailwind CSS v4), Expo Router, TanStack Query, and FlashList. Content comes from the read-only public API in `apps/web` (`/api/v1`), so the app ships no token or secret.
 
-## Fitur
+## Features
 
-| Layar | Isi |
+| Screen | What it shows |
 |---|---|
-| Beranda | Judul & tagline situs, chip kategori, tulisan unggulan, daftar terbaru dengan scroll tak terbatas dan tarik-untuk-segarkan |
-| Jelajah | Kartu kategori (ikon, jumlah tulisan) dan awan tag |
-| Cari | Pencarian tulisan & halaman dengan debounce, sorotan hasil, saran tag |
-| Tersimpan | Tulisan yang ditandai, tersimpan di perangkat (bisa dibuka offline) |
-| Tulisan | Gambar hero parallax, bar atas kaca dengan progres baca, Portable Text native, tag, diskusi (baca komentar; menulis lewat formulir web), "Baca Juga", simpan & bagikan, tawaran "Lanjutkan membaca" saat tulisan yang belum selesai dibuka lagi |
-| Kategori / Tag / Halaman | Arsip per istilah dan halaman statis (mis. Tentang) |
-| Pengaturan | Tema (sistem/terang/gelap), notifikasi tulisan baru (opt-in), halaman dari menu situs, buka situs web, bersihkan cache |
+| Home | Site title and tagline, category chips, a featured post, and the latest list with infinite scroll and pull to refresh |
+| Explore | Category cards (icon, post count) and a tag cloud |
+| Search | Debounced search across posts and pages, highlighted matches, tag suggestions |
+| Saved | Bookmarked posts, stored on the device (readable offline) |
+| Post | Parallax hero image, a glass top bar with reading progress, native Portable Text, tags, discussion (read comments; write through the web form), "Read next", save and share, and a "Continue reading" offer when an unfinished post is opened again |
+| Category / Tag / Page | An archive for one term, and static pages (for example About) |
+| Settings | Theme (system/light/dark), new-post notifications (opt-in), pages from the site menu, open the website, clear the cache |
 
-Tautan di dalam konten yang mengarah ke situs sendiri dibuka sebagai layar aplikasi; tautan lain dibuka di browser dalam aplikasi. Tautan tulisan dari luar (chat, email, media sosial) bisa langsung membuka aplikasi, dan tautan yang berakhir `#komentar` langsung menuju diskusi; lihat [Tautan aplikasi](#tautan-aplikasi-universal-links--app-links). Feed dan tulisan terakhir disimpan 24 jam sehingga aplikasi tetap bisa dibaca saat offline.
+A link inside content that points at this site opens as an app screen; other links open in the in-app browser. A post link from outside the app (chat, email, social) can open the app directly, and a link that ends in `#comments` jumps to the discussion; see [App links](#app-links-universal-links--app-links). The feed and the latest posts are kept for 24 hours so the app can still be read offline.
 
 ## Internal ads
 
 The app reads CMS-managed ads from `GET /api/v1/ads?placement=home|post_bottom`, without an admin token. Deploy the updated web API before releasing the mobile build; no additional CMS fields are needed if the `ads` collection is already installed.
 
-Both placements use a **3:1** frame (recommended asset: **1200 × 400 px**). Home shows a banner after the last feed page; articles show at most one banner after the content and tags, before comments. Sidebar campaigns remain web-only. Images are contained without cropping, labeled “Iklan”, and links use the usual app/browser routing.
+Both placements use a **3:1** frame (recommended asset: **1200 × 400 px**). Home shows a banner after the last feed page; articles show at most one banner after the content and tags, before comments. Sidebar campaigns remain web-only. Images are contained without cropping, labeled "Ad", and links use the usual app/browser routing.
 
-Schedules, priority and the enabled switch remain in CMS. Selections refresh within 60 seconds or at the next schedule boundary. Expired, unavailable and failed-image banners leave no empty space. Ads are excluded from the offline cache; there is no impression or click tracking.
+Schedules, priority and the enabled switch remain in the CMS. Selections refresh within 60 seconds or at the next schedule boundary. Expired, unavailable and failed-image banners leave no empty space. Ads are excluded from the offline cache; there is no impression or click tracking.
 
-## Menjalankan
+## Run
 
 ```bash
-# dari root repo
-pnpm --filter @blog/web dev --host   # API (dan admin) di port 4321, terbuka ke jaringan lokal
-pnpm dev:mobile                      # Metro; tekan i (iOS), a (Android), atau pindai QR di Expo Go
+# from the repo root
+pnpm --filter @blog/web dev --host   # API (and admin) on port 4321, open to the local network
+pnpm dev:mobile                      # Metro; press i (iOS), a (Android), or scan the QR code in Expo Go
 ```
 
-Saat development, alamat API otomatis = komputer yang menjalankan Metro, port 4321. Untuk memakai server lain (mis. produksi), salin `.env.example` ke `.env`:
+During development, the API address is the computer running Metro, port 4321. To use another server (for example production), copy `.env.example` to `.env`:
 
 ```bash
 EXPO_PUBLIC_API_URL=https://blog.example.com
 ```
 
-Emulator Android tanpa `--host` di web: pakai `EXPO_PUBLIC_API_URL=http://10.0.2.2:4321`.
+An Android emulator without `--host` on the web app: use `EXPO_PUBLIC_API_URL=http://10.0.2.2:4321`.
 
-## Perintah
+## Commands
 
-| Perintah | Fungsi |
+| Command | What it does |
 |---|---|
-| `pnpm start` | Dev server Metro |
-| `pnpm typecheck` | Generate tipe (typed routes, Uniwind) lalu `tsc` |
-| `pnpm test` | Unit test (test runner bawaan Node) |
-| `pnpm export` | Bundle produksi Android + iOS, untuk memastikan Metro/Uniwind/Hermes lolos |
-| `pnpm check-deps` | Cek versi modul native terhadap Expo SDK |
-| `pnpm web` | Pratinjau di browser (hanya untuk cek cepat; HeroUI Native menargetkan iOS/Android) |
+| `pnpm start` | Metro dev server |
+| `pnpm typecheck` | Generate types (typed routes, Uniwind) then `tsc` |
+| `pnpm test` | Unit tests (Node's built-in test runner) |
+| `pnpm export` | Production Android + iOS bundles, to confirm Metro/Uniwind/Hermes succeed |
+| `pnpm check-deps` | Check native module versions against the Expo SDK |
+| `pnpm web` | Browser preview (a quick check only; HeroUI Native targets iOS/Android) |
 
-## Build & rilis (EAS)
+## Build and release (EAS)
 
-1. `npm i -g eas-cli && eas login`, lalu `eas init` di folder ini (menambahkan `projectId`).
-2. Atur environment variable di EAS untuk `preview` dan `production`: `EXPO_PUBLIC_API_URL` (wajib), serta `APP_NAME`, `APP_ID` (bundle identifier/package), `APP_SCHEME` bila perlu. Lihat `app.config.ts`.
-3. `eas build --profile preview` (APK/IPA internal) atau `eas build --profile production`, lalu `eas submit`.
+1. `npm i -g eas-cli && eas login`, then `eas init` in this folder (adds `projectId`).
+2. Set EAS environment variables for `preview` and `production`: `EXPO_PUBLIC_API_URL` (required), plus `APP_NAME`, `APP_ID` (bundle identifier/package), and `APP_SCHEME` when you need it. See `app.config.ts`.
+3. `eas build --profile preview` (internal APK/IPA) or `eas build --profile production`, then `eas submit`.
 
-### Tautan aplikasi (Universal Links / App Links)
+### App links (Universal Links / App Links)
 
-Bila `EXPO_PUBLIC_API_URL` memakai https, build menyertakan Universal Links (iOS, entitlement Associated Domains) dan App Links (Android, intent filter `autoVerify`) untuk `/posts/…`, `/pages/…`, `/category/…` dan `/tag/…` di domain itu. Sistem operasi baru mempercayainya setelah domain menyajikan file verifikasi dari `apps/web`:
+When `EXPO_PUBLIC_API_URL` uses https, the build includes Universal Links (iOS, Associated Domains entitlement) and App Links (Android, `autoVerify` intent filter) for `/posts/…`, `/pages/…`, `/category/…` and `/tag/…` on that domain. The operating system trusts them only after the domain serves the verification files from `apps/web`:
 
-1. Isi `vars` di `apps/web/wrangler.jsonc`, lalu `pnpm deploy:web`:
-   - `APP_LINKS_IOS_APP_IDS` = `<Team ID>.<APP_ID>`. Team ID ada di Apple Developer → Membership (juga ditampilkan `eas credentials -p ios`).
+1. Fill `vars` in `apps/web/wrangler.jsonc`, then `pnpm deploy:web`:
+   - `APP_LINKS_IOS_APP_IDS` = `<Team ID>.<APP_ID>`. The Team ID is in Apple Developer → Membership (`eas credentials -p ios` shows it too).
    - `APP_LINKS_ANDROID_PACKAGE` = `APP_ID`.
-   - `APP_LINKS_ANDROID_SHA256` = sidik jari SHA-256 sertifikat penanda tangan, dipisah koma: kunci *App signing* dari halaman Play app signing di Play Console untuk build dari Play Store, dan kunci dari `eas credentials -p android` untuk APK internal.
-2. Pastikan `https://domain/.well-known/apple-app-site-association` dan `/.well-known/assetlinks.json` menjawab 200 dengan JSON.
-3. Build ulang (`eas build`): entitlement dan intent filter masuk ke build native, jadi pembaruan OTA saja tidak cukup.
-4. Setelah aplikasi terbit di App Store, isi juga `APP_LINKS_IOS_STORE_ID` (ID numerik dari App Store Connect): Safari di iPhone lalu menampilkan banner "Buka di aplikasi" di situs.
+   - `APP_LINKS_ANDROID_SHA256` = SHA-256 fingerprints of the signing certificates, comma-separated: the *App signing* key from the Play app signing page in Play Console for Play Store builds, and the key from `eas credentials -p android` for an internal APK.
+2. Confirm `https://domain/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` answer 200 with JSON.
+3. Build again (`eas build`): the entitlement and intent filter are part of the native build, so an OTA update alone is not enough.
+4. After the app is on the App Store, also set `APP_LINKS_IOS_STORE_ID` (the numeric ID from App Store Connect): Safari on iPhone then shows an "Open in the app" banner on the site.
 
-Cek di Android: `adb shell pm get-app-links <APP_ID>` harus `verified`. Di iOS, uji dengan mengetuk tautan dari Notes atau Messages (mengetik URL di Safari tidak membuka aplikasi); Apple mengambil file lewat CDN-nya, jadi perubahan bisa butuh waktu. Associated Domains butuh akun Apple Developer Program (berbayar); tim personal gratis tidak bisa menandatangani build dengan entitlement ini.
+Check on Android: `adb shell pm get-app-links <APP_ID>` must say `verified`. On iOS, test by tapping a link from Notes or Messages (typing the URL in Safari does not open the app); Apple fetches the file through its CDN, so a change can take a while. Associated Domains needs a paid Apple Developer Program account; a free personal team cannot sign a build with this entitlement.
 
-### Notifikasi push (tulisan baru)
+### Push notifications (new posts)
 
-Pembaca mengaktifkannya di **Pengaturan → Notifikasi → Tulisan baru**; aplikasi baru meminta izin saat itu. Server mengirim lewat layanan push Expo (plugin `push-notifications` di `apps/web`), dan mengetuk notifikasi membuka tulisannya.
+Readers turn this on in **Settings → Notifications → New posts**; the app asks for permission only then. The server sends through the Expo push service (the `push-notifications` plugin in `apps/web`), and tapping the notification opens the post.
 
-1. `eas init` untuk membuat proyek EAS, lalu isi `EAS_PROJECT_ID` (ID proyek yang ditampilkan) sebagai environment variable EAS dan di `.env` lokal. Tanpa ini sakelar di Pengaturan nonaktif.
-2. iOS: tidak ada langkah tambahan; `eas build` membuat kunci APNs dan mengaktifkan kapabilitas Push Notifications.
-3. Android: buat proyek Firebase dengan package = `APP_ID`, unduh `google-services.json`, simpan sebagai environment variable EAS bertipe *file* bernama `GOOGLE_SERVICES_JSON`, lalu unggah kunci akun layanan FCM V1 lewat `eas credentials -p android`.
-4. Opsional: bila *Enhanced push security* diaktifkan di proyek Expo, isi **Expo access token** di admin situs (Plugins → push-notifications).
-5. Build ulang (`eas build`). Notifikasi hanya bisa diuji di perangkat fisik dengan development build atau build rilis; Expo Go dan simulator tidak mendapat token push.
+1. `eas init` to create the EAS project, then set `EAS_PROJECT_ID` (the project ID it prints) as an EAS environment variable and in the local `.env`. Without it the switch in Settings stays off.
+2. iOS: no extra step; `eas build` creates the APNs key and turns on the Push Notifications capability.
+3. Android: create a Firebase project with package = `APP_ID`, download `google-services.json`, store it as an EAS *file* environment variable named `GOOGLE_SERVICES_JSON`, then upload the FCM V1 service-account key with `eas credentials -p android`.
+4. Optional: if *Enhanced push security* is on for the Expo project, set the **Expo access token** in the site admin (Plugins → push-notifications).
+5. Build again (`eas build`). Notifications can only be tested on a physical device with a development build or a release build; Expo Go and the simulator do not receive a push token.
 
-Folder `ios/` dan `android/` tidak di-commit; keduanya dibuat oleh `expo prebuild`/EAS. Ikon dan splash ada di `assets/images/` (PNG biasa, boleh diganti).
+The `ios/` and `android/` folders are not committed; `expo prebuild` / EAS creates them. The icon and splash live in `assets/images/` (plain PNGs; you can replace them).
 
-## Struktur `src/`
+## `src/` layout
 
 ```
 src/
-├── app/              Rute Expo Router (layar)
-├── components/       UI: ui/ (primitif), post/, portable-text/, tab bar, dll.
-├── lib/              Data & logika tanpa JSX: API, query, cache, tema, tautan, ikon, tersimpan
-└── global.css        Tailwind + Uniwind + HeroUI Native, font Inter
+├── app/              Expo Router routes (screens)
+├── components/       UI: ui/ (primitives), post/, portable-text/, tab bar, and the rest
+├── lib/              Data and logic without JSX: API, queries, cache, theme, links, icons, saved posts
+└── global.css        Tailwind + Uniwind + HeroUI Native, Google Sans font
 ```
 
-Panduan gaya kode untuk agen AI dan kontributor ada di `AGENTS.md`.
+The code-style guide for AI agents and contributors is in `AGENTS.md`.

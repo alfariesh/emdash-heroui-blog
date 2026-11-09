@@ -46,9 +46,9 @@ export default function ExploreScreen() {
 				<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={accent} colors={[accent]} />
 			}
 		>
-			<ScreenHeader title="Jelajah" description="Telusuri tulisan menurut kategori dan tag." />
+			<ScreenHeader title="Explore" description="Browse posts by category and tag." />
 
-			<Section title="Kategori">
+			<Section title="Categories">
 				{categories.isPending ? (
 					<CategoryGridSkeleton />
 				) : categories.isError ? (
@@ -96,7 +96,7 @@ function CategoryGrid({ categories }: { categories: ApiTerm[] }) {
 					key={category.slug}
 					className="basis-[47%] grow"
 					accessibilityRole="link"
-					accessibilityLabel={`${category.label}, ${category.count} tulisan`}
+					accessibilityLabel={`${category.label}, ${category.count} posts`}
 					onPress={() => router.push({ pathname: "/category/[slug]", params: { slug: category.slug } })}
 				>
 					<Card className="h-full gap-3 p-4">
@@ -108,7 +108,7 @@ function CategoryGrid({ categories }: { categories: ApiTerm[] }) {
 								{category.label}
 							</Typography.Heading>
 							<Typography type="body-xs" color="muted" className="tabular-nums">
-								{category.count} tulisan
+								{category.count} posts
 							</Typography>
 						</View>
 						{category.description ? (

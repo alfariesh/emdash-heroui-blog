@@ -90,7 +90,7 @@ export function ArticleTopBar({
 			<View className="flex-row items-center gap-3 px-4" style={{ height: TOP_BAR_HEIGHT }} pointerEvents="box-none">
 				<GlassIconButton
 					icon={ArrowLeftIcon}
-					accessibilityLabel="Kembali"
+					accessibilityLabel="Back"
 					onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
 				/>
 				<Animated.View className="flex-1" style={titleStyle} pointerEvents="none">

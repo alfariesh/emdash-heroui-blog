@@ -42,9 +42,9 @@ import { findCachedSummary, flattenPages, postQuery, postsQuery } from "@/lib/qu
 import { useReadingPosition } from "@/lib/use-reading-position";
 
 const MAX_HERO_HEIGHT = 520;
-/** URL fragment of the web's comment section: …/posts/slug#komentar opens at the comments. */
-const COMMENTS_HASH = "komentar";
-/** How long a #komentar link keeps re-aiming while comments and "Baca Juga" load below the card. */
+/** URL fragment of the web's comment section: …/posts/slug#comments opens at the comments. */
+const COMMENTS_HASH = "comments";
+/** How long a #comments link keeps re-aiming while comments and "Read next" load below the card. */
 const COMMENTS_SCROLL_MS = 3000;
 
 export default function PostScreen() {
@@ -93,7 +93,7 @@ interface ArticleProps {
 	contentLoading: boolean;
 	contentError: Error | null;
 	onRetry: () => void;
-	/** Scroll to "Diskusi" once it lays out (a link to …#komentar). */
+	/** Scroll to "Discussion" once it lays out (a link to …#comments). */
 	openAtComments?: boolean;
 }
 
@@ -149,7 +149,7 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 		scrollToComments();
 	};
 
-	// Share of the body read (UI thread): comments and "Baca Juga" below count as finished.
+	// Share of the body read (UI thread): comments and "Read next" below count as finished.
 	const progress = useDerivedValue(() => {
 		const end = bodyEnd.get();
 		if (end <= 0) return 0;
@@ -310,7 +310,7 @@ function ArticleActions({ post, webUrl }: { post: ApiPostSummary; webUrl: string
 		void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		toast.show({
 			variant: nowSaved ? "success" : "default",
-			label: nowSaved ? "Disimpan ke Tersimpan" : "Dihapus dari Tersimpan",
+			label: nowSaved ? "Saved" : "Removed from Saved",
 		});
 	};
 
@@ -324,17 +324,17 @@ function ArticleActions({ post, webUrl }: { post: ApiPostSummary; webUrl: string
 		<>
 			<GlassIconButton
 				icon={BookmarkIcon}
-				accessibilityLabel={saved ? "Hapus dari Tersimpan" : "Simpan tulisan"}
+				accessibilityLabel={saved ? "Remove from Saved" : "Save post"}
 				selected={saved}
 				tone={saved ? "accent" : "foreground"}
 				onPress={onBookmark}
 			/>
-			<GlassIconButton icon={ShareIcon} accessibilityLabel="Bagikan" onPress={onShare} />
+			<GlassIconButton icon={ShareIcon} accessibilityLabel="Share" onPress={onShare} />
 		</>
 	);
 }
 
-/** "Baca Juga": newest posts from the same category (or overall), sharing that list's cache. */
+/** "Read next": newest posts from the same category (or overall), sharing that list's cache. */
 function RelatedPosts({ post }: { post: ApiPost }) {
 	const category = post.categories[0]?.slug;
 	const { data } = useInfiniteQuery(postsQuery(category ? { category } : {}));
@@ -346,7 +346,7 @@ function RelatedPosts({ post }: { post: ApiPost }) {
 	return (
 		<View className="gap-3 px-4 pt-12">
 			<Typography.Heading type="h5" className="px-1">
-				Baca Juga
+				Read next
 			</Typography.Heading>
 			{related.map((other) => (
 				<PostCard key={other.slug} post={other} />
@@ -375,7 +375,7 @@ function ArticleSkeleton() {
 
 function BodySkeleton() {
 	return (
-		<View className="gap-3 pt-2" accessibilityLabel="Memuat tulisan">
+		<View className="gap-3 pt-2" accessibilityLabel="Loading post">
 			{["w-full", "w-11/12", "w-full", "w-4/5", "w-full", "w-2/3"].map((widthClass, index) => (
 				<Skeleton key={index} className={cn("h-4 rounded-md", widthClass)} />
 			))}

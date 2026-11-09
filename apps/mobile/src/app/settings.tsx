@@ -35,9 +35,9 @@ import { persistOptions, queryClient } from "@/lib/query-client";
 import { setThemePreference, useThemePreference, type ThemePreference } from "@/lib/theme";
 
 const THEMES: { value: ThemePreference; label: string; description: string; icon: IconSvgElement }[] = [
-	{ value: "system", label: "Ikuti sistem", description: "Terang atau gelap sesuai perangkat", icon: SmartPhoneIcon },
-	{ value: "light", label: "Terang", description: "Selalu tampilan terang", icon: SunIcon },
-	{ value: "dark", label: "Gelap", description: "Selalu tampilan gelap", icon: MoonIcon },
+	{ value: "system", label: "Match system", description: "Light or dark to match this device", icon: SmartPhoneIcon },
+	{ value: "light", label: "Light", description: "Always use the light appearance", icon: SunIcon },
+	{ value: "dark", label: "Dark", description: "Always use the dark appearance", icon: MoonIcon },
 ];
 
 export default function SettingsScreen() {
@@ -46,7 +46,7 @@ export default function SettingsScreen() {
 	const { data: site } = useQuery(siteQuery());
 	const { toast } = useToast();
 
-	// Static pages from the site's primary menu ("Tentang"…), opened natively.
+	// Static pages from the site's primary menu ("About"…), opened natively.
 	const pages = (site?.menu ?? []).flatMap((item) => flattenMenu(item)).flatMap((item) => {
 		const href = toAppHref(item.url);
 		return href && typeof href === "object" && href.pathname === "/pages/[slug]" ? [{ item, href }] : [];
@@ -55,12 +55,12 @@ export default function SettingsScreen() {
 	const clearCache = async () => {
 		queryClient.clear();
 		await persistOptions.persister.removeClient();
-		toast.show({ variant: "success", label: "Cache offline dibersihkan" });
+		toast.show({ variant: "success", label: "Offline cache cleared" });
 	};
 
 	return (
 		<ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: bottom + 32 }}>
-			<Section title="Tampilan">
+			<Section title="Appearance">
 				<ListGroup>
 					{THEMES.map((theme, index) => (
 						<Fragment key={theme.value}>
@@ -91,13 +91,13 @@ export default function SettingsScreen() {
 				</ListGroup>
 			</Section>
 
-			<Section title="Notifikasi">
+			<Section title="Notifications">
 				<ListGroup>
 					<NewPostNotificationsItem />
 				</ListGroup>
 			</Section>
 
-			<Section title="Tentang">
+			<Section title="About">
 				<ListGroup>
 					{pages.map(({ item, href }) => (
 						<Fragment key={item.url}>
@@ -107,7 +107,7 @@ export default function SettingsScreen() {
 					))}
 					<LinkItem
 						icon={GlobeIcon}
-						title="Buka situs web"
+						title="Open website"
 						description={site ? site.url.replace(/^https?:\/\//, "") : undefined}
 						onPress={() => site && void openExternal(site.url)}
 					/>
@@ -118,8 +118,8 @@ export default function SettingsScreen() {
 				<ListGroup>
 					<LinkItem
 						icon={DatabaseIcon}
-						title="Bersihkan cache offline"
-						description="Tulisan dimuat ulang dari server. Tersimpan tidak terhapus."
+						title="Clear offline cache"
+						description="Posts reload from the server. Saved posts stay on this device."
 						onPress={() => void clearCache()}
 						chevron={false}
 					/>
@@ -128,7 +128,7 @@ export default function SettingsScreen() {
 
 			<View className="items-center gap-1 pt-4">
 				<Typography type="body-xs" color="muted">
-					{`${site?.title ?? Constants.expoConfig?.name ?? "Blog"} · versi ${Constants.expoConfig?.version ?? "1.0.0"}`}
+					{`${site?.title ?? Constants.expoConfig?.name ?? "Blog"} · version ${Constants.expoConfig?.version ?? "1.0.0"}`}
 				</Typography>
 			</View>
 		</ScrollView>
@@ -136,12 +136,12 @@ export default function SettingsScreen() {
 }
 
 const UNAVAILABLE: Record<PushUnavailableReason, string> = {
-	web: "Tidak tersedia di versi web.",
-	simulator: "Hanya tersedia di perangkat fisik.",
-	unconfigured: "Belum diatur untuk versi aplikasi ini.",
+	web: "Not available in the web version.",
+	simulator: "Only available on a physical device.",
+	unconfigured: "Not set up for this version of the app.",
 };
 
-/** Opt-in switch for "Tulisan baru" pushes; the whole row toggles, the switch only shows the state. */
+/** Opt-in switch for "New posts" pushes; the whole row toggles, the switch only shows the state. */
 function NewPostNotificationsItem() {
 	const enabled = useNewPostNotifications();
 	const [busy, setBusy] = useState(false);
@@ -154,18 +154,18 @@ function NewPostNotificationsItem() {
 		try {
 			if (enabled) {
 				await disableNewPostNotifications();
-				toast.show({ label: "Notifikasi tulisan baru dimatikan" });
+				toast.show({ label: "New-post notifications turned off" });
 				return;
 			}
 			const result = await enableNewPostNotifications();
 			if (result === "enabled") {
-				toast.show({ variant: "success", label: "Notifikasi tulisan baru aktif" });
+				toast.show({ variant: "success", label: "New-post notifications are on" });
 			} else if (result === "denied") {
 				toast.show({
 					variant: "warning",
-					label: "Izin notifikasi ditolak",
-					description: "Izinkan notifikasi untuk aplikasi ini di pengaturan perangkat.",
-					actionLabel: "Buka",
+					label: "Notification permission denied",
+					description: "Allow notifications for this app in the device settings.",
+					actionLabel: "Open",
 					onActionPress: ({ hide }) => {
 						void Linking.openSettings();
 						hide();
@@ -174,8 +174,8 @@ function NewPostNotificationsItem() {
 			} else {
 				toast.show({
 					variant: "danger",
-					label: "Gagal mengaktifkan notifikasi",
-					description: "Periksa koneksi, lalu coba lagi.",
+					label: "Could not turn on notifications",
+					description: "Check your connection, then try again.",
 				});
 			}
 		} finally {
@@ -194,9 +194,9 @@ function NewPostNotificationsItem() {
 				<Icon icon={NotificationIcon} size={22} tone={enabled ? "accent" : "muted"} />
 			</ListGroup.ItemPrefix>
 			<ListGroup.ItemContent>
-				<ListGroup.ItemTitle>Tulisan baru</ListGroup.ItemTitle>
+				<ListGroup.ItemTitle>New posts</ListGroup.ItemTitle>
 				<ListGroup.ItemDescription>
-					{unavailable ? UNAVAILABLE[unavailable] : "Kabari saya saat ada tulisan baru terbit"}
+					{unavailable ? UNAVAILABLE[unavailable] : "Tell me when a new post is published"}
 				</ListGroup.ItemDescription>
 			</ListGroup.ItemContent>
 			<ListGroup.ItemSuffix>

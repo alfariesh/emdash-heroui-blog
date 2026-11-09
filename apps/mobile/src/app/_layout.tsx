@@ -86,7 +86,7 @@ function RootStack() {
 			<Stack.Screen name="category/[slug]" options={{ title: "" }} />
 			<Stack.Screen name="tag/[slug]" options={{ title: "" }} />
 			<Stack.Screen name="pages/[slug]" options={{ title: "" }} />
-			<Stack.Screen name="settings" options={{ title: "Pengaturan" }} />
+			<Stack.Screen name="settings" options={{ title: "Settings" }} />
 		</Stack>
 	);
 }

@@ -12,9 +12,9 @@ interface Props {
 }
 
 const OPTIONS: { id: ThemePreference; label: string; icon: IconSvgElement }[] = [
-	{ id: "light", label: "Terang", icon: Sun03Icon },
-	{ id: "dark", label: "Gelap", icon: Moon02Icon },
-	{ id: "system", label: "Ikuti sistem", icon: ComputerIcon },
+	{ id: "light", label: "Light", icon: Sun03Icon },
+	{ id: "dark", label: "Dark", icon: Moon02Icon },
+	{ id: "system", label: "Match system", icon: ComputerIcon },
 ];
 
 /** Light / dark / system switch built on HeroUI's detached ToggleButtonGroup */
@@ -36,7 +36,7 @@ export default function ThemeSwitcher({ initialPreference }: Props) {
 
 	return (
 		<ToggleButtonGroup
-			aria-label="Tema warna"
+			aria-label="Color theme"
 			isDetached
 			size="sm"
 			selectionMode="single"

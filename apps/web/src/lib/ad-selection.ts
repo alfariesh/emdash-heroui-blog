@@ -1,9 +1,9 @@
 import type { InferCollectionData } from "emdash";
 
 export const AD_PLACEMENTS = {
-	home: "Beranda",
-	postSidebar: "Sidebar artikel",
-	postBottom: "Bawah artikel",
+	home: "Home",
+	postSidebar: "Article sidebar",
+	postBottom: "Below the article",
 } as const satisfies Record<string, InferCollectionData<"ads">["placement"]>;
 
 export type AdPlacement = (typeof AD_PLACEMENTS)[keyof typeof AD_PLACEMENTS];

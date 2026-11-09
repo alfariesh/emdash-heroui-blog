@@ -14,7 +14,7 @@ export const GET: APIRoute = (context) =>
 	handle(async () => {
 		const key = context.url.searchParams.get("placement");
 		if (key !== "home" && key !== "post_bottom") {
-			return jsonError("bad_request", "Posisi iklan tidak valid.");
+			return jsonError("bad_request", "The ad placement is invalid.");
 		}
 		const placement = placements[key];
 		const ads = await getAds([placement]);

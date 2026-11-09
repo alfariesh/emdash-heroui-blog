@@ -7,7 +7,7 @@ import PostCard from "./PostCard.astro";
 import Pagination from "./Pagination.astro";
 
 interface Props {
-	/** "Kategori" or "Tag" */
+	/** "Category" or "Tag" */
 	eyebrow: string;
 	title: string;
 	description?: string | null;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 const { eyebrow, title, description, icon, basePath, posts, cursor, nextCursor } = Astro.props;
-const countLabel = `${posts.length}${nextCursor ? "+" : ""} tulisan`;
+const countLabel = `${posts.length}${nextCursor ? "+" : ""} posts`;
 ---
 
 <PageIntro eyebrow={eyebrow} title={title} description={description ?? countLabel} icon={icon} />
@@ -39,7 +39,7 @@ const countLabel = `${posts.length}${nextCursor ? "+" : ""} tulisan`;
 			</div>
 		) : (
 			<p class="rounded-3xl bg-surface px-6 py-16 text-center typography--body-sm text-muted shadow-surface">
-				Belum ada tulisan di sini.
+				No posts here yet.
 			</p>
 		)
 	}

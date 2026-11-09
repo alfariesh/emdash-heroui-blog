@@ -78,7 +78,7 @@ const chip = chipVariants({ variant: "secondary" });
 			}
 			{
 				categories.length > 0 && (
-					<nav aria-label="Kategori" class="pt-2">
+					<nav aria-label="Categories" class="pt-2">
 						<ul class="flex flex-wrap gap-2">
 							{categories.map((category, index) => (
 								<li data-enter="decoration" style={enterDelay(140, index)}>
@@ -110,19 +110,19 @@ const chip = chipVariants({ variant: "secondary" });
 		visiblePosts.length === 0 ? (
 			<section class="container-page">
 				<div class="flex flex-col items-center gap-3 rounded-3xl bg-surface px-6 py-16 text-center shadow-surface">
-					<h2 class="typography--h5">Belum ada tulisan</h2>
+					<h2 class="typography--h5">No posts yet</h2>
 					<p class="max-w-sm typography--body-sm text-muted">
-						Tulisan yang dipublikasikan dari panel admin akan muncul di sini.
+						Posts published from the admin will show up here.
 					</p>
 					<a href="/_emdash/admin" class={cn(buttonVariants({ variant: "primary" }), "mt-2")}>
-						Tulis tulisan pertama
+						Write the first post
 					</a>
 				</div>
 			</section>
 		) : (
 			<>
 				{featuredPost && (
-					<section class="container-page" aria-label="Tulisan unggulan">
+					<section class="container-page" aria-label="Featured post">
 						<PostCard
 							post={featuredPost}
 							{...termsFor(featuredPost.data.id)}
@@ -136,11 +136,11 @@ const chip = chipVariants({ variant: "secondary" });
 					<section class="container-page mt-16" aria-labelledby="latest-title">
 						<div class="mb-6 flex items-end justify-between gap-4">
 							<h2 id="latest-title" class="typography--h3">
-								Tulisan Terbaru
+								Latest posts
 							</h2>
 							{hasMorePosts && (
 								<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
-									Lihat semua
+									View all
 									<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 								</a>
 							)}

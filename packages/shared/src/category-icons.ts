@@ -36,16 +36,32 @@ export const DEFAULT_CATEGORY_ICON: CategoryIconKey = "folder";
  * add its slug here to give it an icon; otherwise it gets the folder icon.
  */
 export const CATEGORY_ICONS: Readonly<Record<string, CategoryIconKey>> = {
-	pengembangan: "code",
+	development: "code",
+	design: "design",
+	notes: "note",
+};
+
+/**
+ * Slugs created by the original Indonesian seed. Sites set up from it keep
+ * these slugs in their database (a seed only runs once), so each one borrows
+ * the icon of its English slug.
+ */
+const LEGACY_SLUGS: Readonly<Record<string, string>> = {
+	pengembangan: "development",
 	desain: "design",
-	catatan: "note",
+	catatan: "notes",
 };
 
 export function isCategoryIconKey(value: unknown): value is CategoryIconKey {
 	return typeof value === "string" && (CATEGORY_ICON_KEYS as readonly string[]).includes(value);
 }
 
+/** Own-property lookup, so a slug like "constructor" never reaches Object.prototype. */
+function own<T>(table: Readonly<Record<string, T>>, key: string): T | undefined {
+	return Object.hasOwn(table, key) ? table[key] : undefined;
+}
+
 /** Icon key for a category slug, falling back to DEFAULT_CATEGORY_ICON. */
 export function getCategoryIcon(slug: string): CategoryIconKey {
-	return CATEGORY_ICONS[slug] ?? DEFAULT_CATEGORY_ICON;
+	return own(CATEGORY_ICONS, own(LEGACY_SLUGS, slug) ?? slug) ?? DEFAULT_CATEGORY_ICON;
 }

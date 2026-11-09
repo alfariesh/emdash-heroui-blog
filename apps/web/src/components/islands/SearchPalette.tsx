@@ -53,7 +53,7 @@ function ResultRow({ id, result, isActive, onHover }: ResultRowProps) {
 				<span className="truncate typography--body-sm typography--weight-medium text-foreground">
 					{snippetIsTitle ? <Highlighted segments={segments} /> : result.title}
 				</span>
-				{result.collection === "pages" && <span className="shrink-0 typography--body-xs text-muted">Halaman</span>}
+				{result.collection === "pages" && <span className="shrink-0 typography--body-xs text-muted">Page</span>}
 			</span>
 			{!snippetIsTitle && segments.length > 0 && (
 				<span className="line-clamp-2 typography--body-sm text-muted">
@@ -124,17 +124,17 @@ function Palette({ onClose }: { onClose: () => void }) {
 
 	const message =
 		status === "idle"
-			? "Ketik untuk mencari judul dan isi tulisan."
+			? "Type to search titles and post text."
 			: status === "error"
-				? "Pencarian gagal. Coba lagi sebentar lagi."
+				? "Search failed. Try again in a moment."
 				: status === "done" && results.length === 0
-					? `Tidak ada hasil untuk “${q}”.`
+					? `No results for “${q}”.`
 					: null;
 
 	return (
 		<>
 			<SearchField
-				aria-label="Cari tulisan"
+				aria-label="Search posts"
 				value={query}
 				onChange={setQuery}
 				fullWidth
@@ -146,7 +146,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 						<HugeiconsIcon icon={Search01Icon} size={18} />
 					</SearchField.SearchIcon>
 					<SearchField.Input
-						placeholder="Cari tulisan…"
+						placeholder="Search posts…"
 						role="combobox"
 						aria-expanded={hrefs.length > 0}
 						aria-controls={listId}
@@ -160,7 +160,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 			</SearchField>
 
 			<div className="max-h-[min(26rem,60dvh)] overflow-y-auto p-2">
-				<div id={listId} role="listbox" aria-label="Hasil pencarian">
+				<div id={listId} role="listbox" aria-label="Search results">
 					{results.map((result, index) => (
 						<ResultRow
 							key={`${result.collection}/${result.slug}`}
@@ -183,26 +183,26 @@ function Palette({ onClose }: { onClose: () => void }) {
 								active === results.length && "bg-default",
 							)}
 						>
-							Lihat semua hasil
+							View all results
 							<HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" />
 						</a>
 					)}
 				</div>
 				{message && <p className="px-3 py-8 text-center typography--body-sm text-muted">{message}</p>}
 				<p role="status" className="sr-only">
-					{status === "done" ? `${results.length} hasil` : ""}
+					{status === "done" ? `${results.length} results` : ""}
 				</p>
 			</div>
 
 			<div className="hidden items-center gap-4 border-t border-separator px-4 py-2.5 typography--body-xs text-muted sm:flex">
 				<span className="flex items-center gap-1.5">
-					<Kbd>↑↓</Kbd> pilih
+					<Kbd>↑↓</Kbd> select
 				</span>
 				<span className="flex items-center gap-1.5">
-					<Kbd>↵</Kbd> buka
+					<Kbd>↵</Kbd> open
 				</span>
 				<span className="flex items-center gap-1.5">
-					<Kbd>esc</Kbd> tutup
+					<Kbd>esc</Kbd> close
 				</span>
 			</div>
 		</>
@@ -240,7 +240,7 @@ export default function SearchPalette() {
 		<>
 			<a
 				href="/search"
-				aria-label="Cari"
+				aria-label="Search"
 				aria-keyshortcuts="Meta+K Control+K"
 				onClick={openPalette}
 				className={cn(
@@ -249,7 +249,7 @@ export default function SearchPalette() {
 				)}
 			>
 				<HugeiconsIcon icon={Search01Icon} size={18} aria-hidden="true" />
-				<span className="hidden typography--body-sm typography--weight-normal lg:inline">Cari…</span>
+				<span className="hidden typography--body-sm typography--weight-normal lg:inline">Search…</span>
 				<Kbd className="ms-auto hidden lg:inline-flex" aria-hidden="true">
 					<Kbd.Content>{isMac ? "⌘" : "Ctrl"}</Kbd.Content>
 					<Kbd.Content>K</Kbd.Content>
@@ -258,7 +258,7 @@ export default function SearchPalette() {
 
 			<Modal.Backdrop isOpen={isOpen} onOpenChange={setOpen} variant="blur">
 				<Modal.Container placement="top" size="md">
-					<Modal.Dialog aria-label="Cari tulisan" className="gap-0 overflow-hidden p-0">
+					<Modal.Dialog aria-label="Search posts" className="gap-0 overflow-hidden p-0">
 						<Palette onClose={() => setOpen(false)} />
 					</Modal.Dialog>
 				</Modal.Container>

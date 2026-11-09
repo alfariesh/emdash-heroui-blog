@@ -108,20 +108,20 @@ const categoryChip = chipVariants({ variant: "soft", color: "accent" });
 const tagChip = chipVariants({ variant: "secondary" });
 
 const commentFormLabels = {
-	name: "Nama",
-	email: "Email (tidak ditampilkan)",
-	comment: "Komentar",
-	submit: "Kirim komentar",
-	submitting: "Mengirim…",
-	published: "Terima kasih! Komentar Anda sudah tampil.",
-	pending: "Terima kasih! Komentar Anda akan tampil setelah disetujui.",
-	error: "Komentar gagal dikirim. Silakan coba lagi.",
-	networkError: "Koneksi bermasalah. Periksa internet Anda lalu coba lagi.",
+	name: "Name",
+	email: "Email (not shown)",
+	comment: "Comment",
+	submit: "Post comment",
+	submitting: "Sending…",
+	published: "Thanks! Your comment is now visible.",
+	pending: "Thanks! Your comment will appear after it is approved.",
+	error: "The comment could not be sent. Please try again.",
+	networkError: "Connection problem. Check your internet and try again.",
 };
 const commentListLabels = {
-	heading: (count: number) => (count === 0 ? "Belum ada komentar" : `${count} komentar`),
-	member: "Penulis",
-	like: "Suka",
+	heading: (count: number) => (count === 0 ? "No comments yet" : `${count} comments`),
+	member: "Author",
+	like: "Like",
 };
 ---
 
@@ -144,11 +144,11 @@ const commentListLabels = {
 				<nav aria-label="Breadcrumb" data-enter="decoration">
 					<ol class={crumbs.base()}>
 						<li class={crumbs.item()}>
-							<a href="/" class={crumbs.link()}>Beranda</a>
+							<a href="/" class={crumbs.link()}>Home</a>
 							<HugeiconsIcon icon={ArrowRight01Icon} className={crumbs.separator()} aria-hidden="true" />
 						</li>
 						<li class={crumbs.item()}>
-							<a href="/posts" class={crumbs.link()}>Tulisan</a>
+							<a href="/posts" class={crumbs.link()}>Posts</a>
 							{categories[0] && <HugeiconsIcon icon={ArrowRight01Icon} className={crumbs.separator()} aria-hidden="true" />}
 						</li>
 						{
@@ -243,14 +243,14 @@ const commentListLabels = {
 						class={cn("mt-12", sidebarAd && "lg:hidden")}
 					/>
 
-					{/* id="komentar": the mobile app links here so readers can write a comment. */}
+					{/* id="comments": the mobile app links here so readers can write a comment. */}
 					<section
-						id="komentar"
+						id="comments"
 						class={cn(card.base(), "post-comments mt-12 scroll-mt-24 gap-4 p-6 sm:p-8")}
 						aria-labelledby="comments-title"
 					>
 						<h2 id="comments-title" class="typography--h4">
-							Diskusi
+							Discussion
 						</h2>
 						<Comments
 							collection="posts"
@@ -263,7 +263,7 @@ const commentListLabels = {
 					</section>
 				</div>
 
-				<aside class="flex flex-col gap-4" aria-label="Info tambahan">
+				<aside class="flex flex-col gap-4" aria-label="More on this page">
 					{/* Keep the banner before and outside the sticky navigation group. */}
 					<AdSlot
 						ad={sidebarAd}
@@ -298,10 +298,10 @@ const commentListLabels = {
 			<section class="container-page mt-24" aria-labelledby="continue-reading">
 				<div class="mb-6 flex items-end justify-between gap-4">
 					<h2 id="continue-reading" class="typography--h3">
-						Baca Juga
+						Read next
 					</h2>
 					<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>
-						Semua tulisan
+						All posts
 						<HugeiconsIcon icon={ArrowRight02Icon} className="nudge-icon" aria-hidden="true" />
 					</a>
 				</div>

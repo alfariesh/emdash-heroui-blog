@@ -28,11 +28,11 @@ export function AdSlot({ placement, className }: AdSlotProps) {
 			className={className}
 			onPress={() => openLink(ad.targetUrl)}
 			accessibilityRole="link"
-			accessibilityLabel={`Iklan: ${ad.image.alt.trim() || ad.title}`}
-			accessibilityHint="Buka tautan iklan"
+			accessibilityLabel={`Advertisement: ${ad.image.alt.trim() || ad.title}`}
+			accessibilityHint="Open the ad link"
 		>
 			<Card className="gap-2 p-2 shadow-none">
-				<Typography type="body-xs" color="muted" className="px-3 pt-1">Iklan</Typography>
+				<Typography type="body-xs" color="muted" className="px-3 pt-1">Ad</Typography>
 				<View className="aspect-[3/1] overflow-hidden rounded-2xl bg-surface-secondary">
 					<Image
 						image={ad.image}

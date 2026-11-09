@@ -28,7 +28,7 @@ export const GET: APIRoute = (context) =>
 	handle(async () => {
 		const { url } = context;
 		const limit = parseLimit(url);
-		if (limit === null) return jsonError("bad_request", "Parameter limit harus angka 1–50.");
+		if (limit === null) return jsonError("bad_request", "The limit parameter must be a number from 1 to 50.");
 
 		const cursor = param(url, "cursor");
 		const category = param(url, "category");
@@ -38,8 +38,8 @@ export const GET: APIRoute = (context) =>
 			category ? termExists("category", category) : true,
 			tag ? termExists("tag", tag) : true,
 		]);
-		if (!categoryOk) return notFound("Kategori tidak ditemukan.");
-		if (!tagOk) return notFound("Tag tidak ditemukan.");
+		if (!categoryOk) return notFound("Category not found.");
+		if (!tagOk) return notFound("Tag not found.");
 
 		const where: Record<string, string> = {};
 		if (category) where.category = category;

@@ -3,18 +3,18 @@
 	"version": "1",
 	"meta": {
 		"name": "Blog HeroUI",
-		"description": "Blog dengan tulisan dan halaman, tampilan HeroUI",
+		"description": "A blog of posts and pages, with a HeroUI look",
 		"author": "EmDash"
 	},
 	"settings": {
-		"title": "Catatan Membangun",
-		"tagline": "Tulisan tentang perangkat lunak, desain, dan proses membuat sesuatu di web."
+		"title": "Building Notes",
+		"tagline": "Writing about software, design, and the process of making things on the web."
 	},
 	"collections": [
 		{
 			"slug": "posts",
-			"label": "Tulisan",
-			"labelSingular": "Tulisan",
+			"label": "Posts",
+			"labelSingular": "Post",
 			"urlPattern": "/posts/{slug}",
 			"supports": [
 				"drafts",
@@ -28,33 +28,33 @@
 			"fields": [
 				{
 					"slug": "title",
-					"label": "Judul",
+					"label": "Title",
 					"type": "string",
 					"required": true,
 					"searchable": true
 				},
 				{
 					"slug": "featured_image",
-					"label": "Gambar Utama",
+					"label": "Featured image",
 					"type": "image"
 				},
 				{
 					"slug": "content",
-					"label": "Isi",
+					"label": "Body",
 					"type": "portableText",
 					"searchable": true
 				},
 				{
 					"slug": "excerpt",
-					"label": "Ringkasan",
+					"label": "Excerpt",
 					"type": "text"
 				}
 			]
 		},
 		{
 			"slug": "pages",
-			"label": "Halaman",
-			"labelSingular": "Halaman",
+			"label": "Pages",
+			"labelSingular": "Page",
 			"urlPattern": "/pages/{slug}",
 			"supports": [
 				"drafts",
@@ -66,14 +66,14 @@
 			"fields": [
 				{
 					"slug": "title",
-					"label": "Judul",
+					"label": "Title",
 					"type": "string",
 					"required": true,
 					"searchable": true
 				},
 				{
 					"slug": "content",
-					"label": "Isi",
+					"label": "Body",
 					"type": "portableText",
 					"searchable": true
 				}
@@ -81,16 +81,16 @@
 		},
 		{
 			"slug": "ads",
-			"label": "Iklan",
-			"labelSingular": "Iklan",
-			"description": "Banner web. Terbitkan perubahan agar tampil; tanggal mulai dan selesai menentukan periode tayang.",
+			"label": "Ads",
+			"labelSingular": "Ad",
+			"description": "Web banners. Publish changes before they appear; the start and end dates set the run.",
 			"icon": "megaphone",
 			"routable": false,
 			"supports": ["drafts", "revisions"],
 			"fields": [
 				{
 					"slug": "title",
-					"label": "Nama iklan",
+					"label": "Ad name",
 					"type": "string",
 					"required": true
 				},
@@ -102,38 +102,38 @@
 				},
 				{
 					"slug": "target_url",
-					"label": "URL tujuan (http/https)",
+					"label": "Destination URL (http/https)",
 					"type": "url",
 					"required": true,
 					"validation": { "pattern": "^https?://" }
 				},
 				{
 					"slug": "placement",
-					"label": "Posisi",
+					"label": "Placement",
 					"type": "select",
 					"required": true,
-					"defaultValue": "Beranda",
-					"validation": { "options": ["Beranda", "Sidebar artikel", "Bawah artikel"] }
+					"defaultValue": "Home",
+					"validation": { "options": ["Home", "Article sidebar", "Below the article"] }
 				},
 				{
 					"slug": "enabled",
-					"label": "Aktif",
+					"label": "Active",
 					"type": "boolean",
 					"defaultValue": false
 				},
 				{
 					"slug": "starts_at",
-					"label": "Mulai tayang (opsional)",
+					"label": "Starts (optional)",
 					"type": "datetime"
 				},
 				{
 					"slug": "ends_at",
-					"label": "Selesai tayang (opsional)",
+					"label": "Ends (optional)",
 					"type": "datetime"
 				},
 				{
 					"slug": "priority",
-					"label": "Prioritas (angka terbesar didahulukan)",
+					"label": "Priority (highest number wins)",
 					"type": "integer",
 					"defaultValue": 0
 				}
@@ -143,24 +143,24 @@
 	"taxonomies": [
 		{
 			"name": "category",
-			"label": "Kategori",
-			"labelSingular": "Kategori",
+			"label": "Category",
+			"labelSingular": "Category",
 			"hierarchical": true,
 			"collections": [
 				"posts"
 			],
 			"terms": [
 				{
-					"slug": "pengembangan",
-					"label": "Pengembangan"
+					"slug": "development",
+					"label": "Development"
 				},
 				{
-					"slug": "desain",
-					"label": "Desain"
+					"slug": "design",
+					"label": "Design"
 				},
 				{
-					"slug": "catatan",
-					"label": "Catatan"
+					"slug": "notes",
+					"label": "Notes"
 				}
 			]
 		},
@@ -178,16 +178,16 @@
 					"label": "Web"
 				},
 				{
-					"slug": "opini",
-					"label": "Opini"
+					"slug": "opinion",
+					"label": "Opinion"
 				},
 				{
-					"slug": "perkakas",
-					"label": "Perkakas"
+					"slug": "tools",
+					"label": "Tools"
 				},
 				{
-					"slug": "kreativitas",
-					"label": "Kreativitas"
+					"slug": "creativity",
+					"label": "Creativity"
 				}
 			]
 		}
@@ -195,35 +195,35 @@
 	"bylines": [
 		{
 			"id": "byline-editorial",
-			"slug": "redaksi",
-			"displayName": "Redaksi"
+			"slug": "editorial",
+			"displayName": "Editorial"
 		},
 		{
 			"id": "byline-guest",
-			"slug": "kontributor-tamu",
-			"displayName": "Kontributor Tamu",
+			"slug": "guest-contributor",
+			"displayName": "Guest contributor",
 			"isGuest": true
 		}
 	],
 	"menus": [
 		{
 			"name": "primary",
-			"label": "Navigasi Utama",
+			"label": "Primary navigation",
 			"items": [
 				{
 					"type": "custom",
-					"label": "Beranda",
+					"label": "Home",
 					"url": "/"
 				},
 				{
 					"type": "custom",
-					"label": "Tulisan",
+					"label": "Posts",
 					"url": "/posts"
 				},
 				{
 					"type": "custom",
-					"label": "Tentang",
-					"url": "/pages/tentang"
+					"label": "About",
+					"url": "/pages/about"
 				}
 			]
 		}
@@ -232,12 +232,12 @@
 		{
 			"name": "sidebar",
 			"label": "Sidebar",
-			"description": "Widget di samping halaman tulisan",
+			"description": "Widgets beside a post",
 			"widgets": [
 				{
 					"type": "component",
 					"componentId": "core:categories",
-					"title": "Kategori"
+					"title": "Categories"
 				},
 				{
 					"type": "component",
@@ -249,7 +249,7 @@
 		{
 			"name": "footer",
 			"label": "Footer",
-			"description": "Widget di bagian bawah situs",
+			"description": "Widgets at the bottom of the site",
 			"widgets": [
 				{
 					"type": "content",
@@ -262,7 +262,7 @@
 								{
 									"_type": "span",
 									"_key": "s0",
-									"text": "Ditulis pelan-pelan, diterbitkan kalau sudah siap. Tanpa jadwal tetap."
+									"text": "Written slowly, published when it is ready. No fixed schedule."
 								}
 							]
 						}
@@ -273,13 +273,13 @@
 	],
 	"sections": [
 		{
-			"slug": "ajakan-berlangganan",
-			"title": "Ajakan Berlangganan",
-			"description": "Blok ajakan untuk berlangganan feed",
+			"slug": "subscribe-prompt",
+			"title": "Subscribe prompt",
+			"description": "A prompt to subscribe to the feed",
 			"keywords": [
-				"langganan",
+				"subscribe",
 				"rss",
-				"ajakan"
+				"prompt"
 			],
 			"source": "theme",
 			"content": [
@@ -291,7 +291,7 @@
 						{
 							"_type": "span",
 							"_key": "s0",
-							"text": "Ikuti tulisan berikutnya"
+							"text": "Follow the next post"
 						}
 					]
 				},
@@ -303,20 +303,20 @@
 						{
 							"_type": "span",
 							"_key": "s1",
-							"text": "Tambahkan feed RSS blog ini ke pembaca feed Anda supaya tidak ketinggalan tulisan baru."
+							"text": "Add this blog's RSS feed to your reader so you do not miss a new post."
 						}
 					]
 				}
 			]
 		},
 		{
-			"slug": "tentang-penulis",
-			"title": "Tentang Penulis",
-			"description": "Bio singkat penulis untuk tulisan atau halaman",
+			"slug": "about-the-author",
+			"title": "About the author",
+			"description": "A short author bio for a post or page",
 			"keywords": [
-				"penulis",
+				"author",
 				"bio",
-				"tentang"
+				"about"
 			],
 			"source": "theme",
 			"content": [
@@ -328,7 +328,7 @@
 						{
 							"_type": "span",
 							"_key": "s0",
-							"text": "Pengembang perangkat lunak yang suka menulis tentang cara membuat sesuatu di web, dan kenapa sebagian keputusan kecil ternyata paling penting."
+							"text": "A software developer who likes writing about how to make things on the web, and why some small decisions turn out to matter most."
 						}
 					]
 				}
@@ -338,11 +338,11 @@
 	"content": {
 		"pages": [
 			{
-				"id": "tentang",
-				"slug": "tentang",
+				"id": "about",
+				"slug": "about",
 				"status": "published",
 				"data": {
-					"title": "Tentang",
+					"title": "About",
 					"content": [
 						{
 							"_type": "block",
@@ -352,7 +352,7 @@
 								{
 									"_type": "span",
 									"_key": "s0",
-									"text": "Tempat untuk menulis tentang perangkat lunak, desain, dan pikiran-pikiran yang sesekali mampir. Tidak ada jadwal terbit, tidak ada corong newsletter. Hanya hal-hal yang ingin saya catat."
+									"text": "A place to write about software, design, and the thoughts that stop by now and then. No publishing schedule, and no newsletter funnel. Only the things I want to write down."
 								}
 							]
 						},
@@ -364,7 +364,7 @@
 								{
 									"_type": "span",
 									"_key": "s1",
-									"text": "Tentang situs ini"
+									"text": "About this site"
 								}
 							]
 						},
@@ -376,7 +376,7 @@
 								{
 									"_type": "span",
 									"_key": "s2",
-									"text": "Situs ini dibangun dengan Astro dan EmDash, dengan tampilan dari HeroUI. Semua tulisan dan halaman, termasuk halaman ini, bisa diubah dari panel admin."
+									"text": "This site is built with Astro and EmDash, with an interface from HeroUI. Every post and page, including this one, can be edited from the admin."
 								}
 							]
 						}
@@ -387,15 +387,15 @@
 		"posts": [
 			{
 				"id": "post-1",
-				"slug": "membangun-untuk-jangka-panjang",
+				"slug": "building-for-the-long-term",
 				"status": "published",
 				"data": {
-					"title": "Membangun untuk Jangka Panjang",
-					"excerpt": "Framework akan berganti, database akan berganti. Yang bertahan adalah kejernihan cara berpikir Anda.",
+					"title": "Building for the Long Term",
+					"excerpt": "Frameworks will change, and databases will change. What lasts is the clarity of how you think.",
 					"featured_image": {
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop",
-							"alt": "Kode di layar monitor dalam ruangan gelap",
+							"alt": "Code on a monitor in a dark room",
 							"filename": "membangun-jangka-panjang.jpg"
 						}
 					},
@@ -408,7 +408,7 @@
 								{
 									"_type": "span",
 									"_key": "s0",
-									"text": "Setiap beberapa tahun, industri ini serempak memutuskan bahwa cara kerja kita selama ini salah dan ada cara yang lebih baik. Framework baru, paradigma baru, build tool baru. Perputarannya tidak pernah berhenti, dan kalau tidak hati-hati, kita lebih sibuk bermigrasi daripada membangun."
+									"text": "Every few years this industry decides, all at once, that the way we have been working is wrong and that there is a better way. A new framework, a new paradigm, a new build tool. The cycle never stops, and if you are not careful you spend more time migrating than building."
 								}
 							]
 						},
@@ -420,7 +420,7 @@
 								{
 									"_type": "span",
 									"_key": "s1",
-									"text": "Saya sudah cukup lama menulis perangkat lunak untuk melihat beberapa siklus seperti itu. Setiap transisi terasa mendesak pada masanya. Namun kalau menoleh ke belakang, hal yang benar-benar penting jarang sekali soal framework."
+									"text": "I have been writing software long enough to watch several of those cycles. Each transition felt urgent at the time. Looking back, what actually mattered was rarely the framework."
 								}
 							]
 						},
@@ -432,7 +432,7 @@
 								{
 									"_type": "span",
 									"_key": "s2",
-									"text": "Apa yang bertahan"
+									"text": "What lasts"
 								}
 							]
 						},
@@ -444,7 +444,7 @@
 								{
 									"_type": "span",
 									"_key": "s3",
-									"text": "Model data yang rapi bertahan. Batas yang jelas antarsistem bertahan. Penamaan yang baik bertahan. Keputusan untuk tetap sederhana ketika sebenarnya bisa dibuat rumit, itu jelas bertahan."
+									"text": "A clean data model lasts. Clear boundaries between systems last. Good names last. The choice to stay simple when something could have been made complicated — that lasts too."
 								}
 							]
 						},
@@ -456,7 +456,7 @@
 								{
 									"_type": "span",
 									"_key": "s4",
-									"text": "Struktur data yang mencerminkan domain, bukan selera framework."
+									"text": "Data structures that reflect the domain, not the taste of a framework."
 								}
 							],
 							"listItem": "bullet",
@@ -470,7 +470,7 @@
 								{
 									"_type": "span",
 									"_key": "s5",
-									"text": "Kode yang bisa dibaca orang lain tanpa harus bertanya ke penulisnya."
+									"text": "Code someone else can read without asking the person who wrote it."
 								}
 							],
 							"listItem": "bullet",
@@ -484,7 +484,7 @@
 								{
 									"_type": "span",
 									"_key": "s6",
-									"text": "Dokumentasi singkat tentang alasan sebuah keputusan diambil."
+									"text": "A short note on why a decision was made."
 								}
 							],
 							"listItem": "bullet",
@@ -498,7 +498,7 @@
 								{
 									"_type": "span",
 									"_key": "s7",
-									"text": "Apa yang tidak bertahan"
+									"text": "What does not last"
 								}
 							]
 						},
@@ -510,7 +510,7 @@
 								{
 									"_type": "span",
 									"_key": "s8",
-									"text": "Yang tidak bertahan adalah kode yang ditulis untuk membuat kagum, abstraksi untuk masalah yang tidak pernah muncul, dan arsitektur yang mengikuti opini framework alih-alih kenyataan domainnya."
+									"text": "What does not last is code written to impress, abstractions for problems that never arrive, and architecture that follows a framework's opinion instead of the domain."
 								}
 							]
 						},
@@ -522,7 +522,7 @@
 								{
 									"_type": "span",
 									"_key": "s9",
-									"text": "Kode terbaik yang pernah saya tulis justru membosankan. Ia terbaca seperti prosa dan mengerjakan satu hal dengan baik."
+									"text": "The best code I have written is boring. It reads like prose and does one thing well."
 								}
 							]
 						},
@@ -534,7 +534,7 @@
 								{
 									"_type": "span",
 									"_key": "s10",
-									"text": "Kode terburuk yang pernah saya tulis terasa sangat canggih pada saat itu. Itu pelajaran yang terus saya ingat setiap kali tergoda membuat sesuatu yang pintar."
+									"text": "The worst code I have written felt very clever at the time. I remember that lesson whenever I am tempted to build something smart."
 								}
 							]
 						}
@@ -546,29 +546,29 @@
 					},
 					{
 						"byline": "byline-guest",
-						"roleLabel": "Esai tamu"
+						"roleLabel": "Guest essay"
 					}
 				],
 				"taxonomies": {
 					"category": [
-						"pengembangan"
+						"development"
 					],
 					"tag": [
-						"opini"
+						"opinion"
 					]
 				}
 			},
 			{
 				"id": "post-2",
-				"slug": "alasan-memilih-situs-statis",
+				"slug": "why-choose-a-static-site",
 				"status": "published",
 				"data": {
-					"title": "Alasan Memilih Situs Statis",
-					"excerpt": "Situs statis bukan langkah mundur. Ia adalah hasil dari menganggap serius performa dan kesederhanaan.",
+					"title": "Why Choose a Static Site",
+					"excerpt": "A static site is not a step backward. It is what you get when you take performance and simplicity seriously.",
 					"featured_image": {
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=800&fit=crop",
-							"alt": "Laptop dan secangkir kopi di atas meja kayu",
+							"alt": "A laptop and a cup of coffee on a wooden desk",
 							"filename": "situs-statis.jpg"
 						}
 					},
@@ -581,7 +581,7 @@
 								{
 									"_type": "span",
 									"_key": "s0",
-									"text": "Ada ironi kecil dalam sejarah web: awalnya statis, lalu menjadi dinamis, dan sekarang perlahan kembali ke statis. Tetapi situs statis hari ini bukan lagi halaman HTML yang diketik manual seperti tahun 1998. Ia dihasilkan, dioptimalkan, lalu disajikan dari jaringan edge dalam hitungan milidetik."
+									"text": "There is a small irony in the history of the web: it started static, became dynamic, and is slowly returning to static. A static site today is not a hand-typed HTML page from 1998. It is generated, optimized, and served from an edge network in milliseconds."
 								}
 							]
 						},
@@ -593,7 +593,7 @@
 								{
 									"_type": "span",
 									"_key": "s1",
-									"text": "Janji server-side rendering untuk semua hal memang menarik: konten dinamis, personalisasi, data real time. Namun sebagian besar situs tidak membutuhkan semua itu hampir di setiap waktu. Sebuah tulisan blog tidak perlu dirender ulang pada setiap permintaan."
+									"text": "The promise of server-side rendering for everything is appealing: dynamic content, personalization, real-time data. Most sites do not need all of that almost all of the time. A blog post does not need to be rendered again on every request."
 								}
 							]
 						},
@@ -605,7 +605,7 @@
 								{
 									"_type": "span",
 									"_key": "s2",
-									"text": "Argumen performa"
+									"text": "The performance argument"
 								}
 							]
 						},
@@ -617,7 +617,7 @@
 								{
 									"_type": "span",
 									"_key": "s3",
-									"text": "File statis yang disajikan dari CDN adalah bentuk tercepat yang bisa diberikan web. Tidak ada cold start, tidak ada query database, tidak ada beban rendering di server. Waktu respons pertamanya pada dasarnya hanya latensi jaringan ke edge terdekat."
+									"text": "A static file served from a CDN is the fastest thing the web can hand you. No cold start, no database query, no rendering work on a server. The first response time is basically the network latency to the nearest edge."
 								}
 							]
 						},
@@ -629,7 +629,7 @@
 								{
 									"_type": "span",
 									"_key": "s4",
-									"text": "Interaktivitas secukupnya"
+									"text": "Just enough interactivity"
 								}
 							]
 						},
@@ -641,7 +641,7 @@
 								{
 									"_type": "span",
 									"_key": "s5",
-									"text": "Ketika perilaku dinamis benar-benar dibutuhkan, tambahkan secara presisi. Sebuah pulau interaktif di tengah lautan HTML statis. Dapat yang terbaik dari keduanya, tanpa harus membayar biaya keduanya setiap saat."
+									"text": "When dynamic behavior is actually needed, add it precisely. An interactive island in a sea of static HTML. You get the best of both, without paying for both on every request."
 								}
 							]
 						}
@@ -654,25 +654,25 @@
 				],
 				"taxonomies": {
 					"category": [
-						"pengembangan"
+						"development"
 					],
 					"tag": [
 						"web",
-						"opini"
+						"opinion"
 					]
 				}
 			},
 			{
 				"id": "post-3",
-				"slug": "perkakas-kecil-dampak-besar",
+				"slug": "small-tools-large-impact",
 				"status": "published",
 				"data": {
-					"title": "Perkakas Kecil, Dampak Besar",
-					"excerpt": "Perkakas developer terbaik mengerjakan satu hal dengan baik lalu menyingkir dari jalan Anda.",
+					"title": "Small Tools, Large Impact",
+					"excerpt": "The best developer tools do one thing well and then get out of your way.",
 					"featured_image": {
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1575026615908-666710ae5e47?w=1200&h=800&fit=crop",
-							"alt": "Kunci pas dan perkakas tangan tergantung di dinding bengkel",
+							"alt": "Wrenches and hand tools hanging on a workshop wall",
 							"filename": "perkakas-kecil.jpg"
 						}
 					},
@@ -685,7 +685,7 @@
 								{
 									"_type": "span",
 									"_key": "s0",
-									"text": "Ada golongan perangkat lunak yang jarang mendapat pujian. Bukan framework, platform, atau IDE, melainkan perkakas kecil dan tajam yang menyelesaikan satu masalah dengan begitu baik sampai kita lupa sedang memakainya. Menjadi tak terlihat adalah pujian tertinggi untuk sebuah perkakas."
+									"text": "There is a class of software that rarely gets praised. Not frameworks, platforms, or IDEs, but small sharp tools that solve one problem so well you forget you are using them. Becoming invisible is the highest praise a tool can get."
 								}
 							]
 						},
@@ -697,7 +697,7 @@
 								{
 									"_type": "span",
 									"_key": "s1",
-									"text": "Contohnya ripgrep, yang mencari kode begitu cepat sampai mengubah cara saya berpikir soal pencarian. Atau jq, yang membuat JSON terasa seperti format data kelas satu di terminal. Atau curl, yang diam-diam menopang pipa internet selama puluhan tahun."
+									"text": "Ripgrep, for example, searches code so fast it changed how I think about search. Or jq, which makes JSON feel like a first-class data format in the terminal. Or curl, which has quietly held up the pipes of the internet for decades."
 								}
 							]
 						},
@@ -709,7 +709,7 @@
 								{
 									"_type": "span",
 									"_key": "s2",
-									"text": "Filosofi Unix, ditengok kembali"
+									"text": "The Unix philosophy, revisited"
 								}
 							]
 						},
@@ -721,7 +721,7 @@
 								{
 									"_type": "span",
 									"_key": "s3",
-									"text": "Kerjakan satu hal dengan baik. Nasihat ini sudah begitu tua sampai terdengar klise, tetapi perkakas modern terbaik masih mengikutinya. Mereka tidak mencoba menjadi platform. Mereka mengerjakan tugasnya dan bisa dirangkai dengan perkakas lain."
+									"text": "Do one thing well. The advice is old enough to sound like a cliché, but the best modern tools still follow it. They do not try to become a platform. They do their job and can be composed with other tools."
 								}
 							]
 						},
@@ -733,7 +733,7 @@
 								{
 									"_type": "span",
 									"_key": "s4",
-									"text": "Godaan untuk menambah selalu ada: satu fitur lagi, satu opsi lagi, satu integrasi lagi. Setiap tambahan adalah keputusan yang harus diambil seseorang dan jalur kode yang harus dirawat. Perkakas terbaik menahan godaan itu, dan karena tetap kecil, mereka tetap andal."
+									"text": "The temptation to add is always there: one more feature, one more option, one more integration. Each addition is a decision someone has to make and a code path someone has to maintain. The best tools resist that temptation, and because they stay small, they stay reliable."
 								}
 							]
 						}
@@ -746,24 +746,24 @@
 				],
 				"taxonomies": {
 					"category": [
-						"pengembangan"
+						"development"
 					],
 					"tag": [
-						"perkakas"
+						"tools"
 					]
 				}
 			},
 			{
 				"id": "post-4",
-				"slug": "mendesain-dengan-batasan",
+				"slug": "designing-with-constraints",
 				"status": "published",
 				"data": {
-					"title": "Mendesain dengan Batasan",
-					"excerpt": "Batasan bukan penghalang kreativitas. Batasan adalah struktur yang membuat kreativitas mungkin terjadi.",
+					"title": "Designing with Constraints",
+					"excerpt": "A constraint is not a barrier to creativity. A constraint is the structure that makes creativity possible.",
 					"featured_image": {
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=1200&h=800&fit=crop",
-							"alt": "Pensil dan alat desain di atas meja",
+							"alt": "Pencils and design tools on a desk",
 							"filename": "mendesain-dengan-batasan.jpg"
 						}
 					},
@@ -776,7 +776,7 @@
 								{
 									"_type": "span",
 									"_key": "s0",
-									"text": "Berikan seorang desainer kanvas kosong dan waktu tanpa batas, sering kali hasilnya biasa saja. Berikan brief yang ketat, layar kecil, dan tenggat, hasilnya bisa mengejutkan. Ini bukan paradoks, memang begitulah kreativitas bekerja."
+									"text": "Give a designer a blank canvas and unlimited time, and the result is often ordinary. Give a tight brief, a small screen, and a deadline, and the result can surprise you. That is not a paradox. That is how creativity works."
 								}
 							]
 						},
@@ -788,7 +788,7 @@
 								{
 									"_type": "span",
 									"_key": "s1",
-									"text": "Batasan memaksa kita mengambil keputusan. Ketika hanya boleh memakai dua jenis huruf, kita memilih dengan cermat. Ketika halaman harus termuat di bawah satu detik, setiap elemen harus layak berada di sana."
+									"text": "Constraints force decisions. When you may use only two typefaces, you choose carefully. When a page has to load in under a second, every element has to earn its place."
 								}
 							]
 						},
@@ -800,7 +800,7 @@
 								{
 									"_type": "span",
 									"_key": "s2",
-									"text": "Merangkul kotak"
+									"text": "Embracing the box"
 								}
 							]
 						},
@@ -812,7 +812,7 @@
 								{
 									"_type": "span",
 									"_key": "s3",
-									"text": "Web sendiri adalah batasan. HTML mengalir ke satu arah. CSS punya box model. Peramban punya ukuran viewport dan keunikan rendering huruf. Kita bisa melawan batasan itu atau bekerja bersamanya, dan hasilnya sangat berbeda."
+									"text": "The web itself is a constraint. HTML flows in one direction. CSS has a box model. Browsers have viewport sizes and their own ideas about rendering type. You can fight those constraints or work with them, and the results are very different."
 								}
 							]
 						},
@@ -824,7 +824,7 @@
 								{
 									"_type": "span",
 									"_key": "s4",
-									"text": "Desain yang paling saya kagumi tidak terlihat dipaksakan lewat sebuah framework. Ia terlihat tumbuh secara alami dari mediumnya, mengikuti seratnya alih-alih melawannya."
+									"text": "The design I admire most does not look forced through a framework. It looks like it grew out of its medium, following the grain instead of fighting it."
 								}
 							]
 						}
@@ -837,20 +837,20 @@
 				],
 				"taxonomies": {
 					"category": [
-						"desain"
+						"design"
 					],
 					"tag": [
-						"kreativitas"
+						"creativity"
 					]
 				}
 			},
 			{
 				"id": "post-draft",
-				"slug": "masih-ditulis",
+				"slug": "still-writing",
 				"status": "draft",
 				"data": {
-					"title": "Masih Ditulis",
-					"excerpt": "Tulisan ini belum selesai.",
+					"title": "Still Writing",
+					"excerpt": "This post is not finished yet.",
 					"content": [
 						{
 							"_type": "block",
@@ -860,7 +860,7 @@
 								{
 									"_type": "span",
 									"_key": "s0",
-									"text": "Ini draf. Draf tidak muncul di daftar tulisan publik sampai dipublikasikan."
+									"text": "This is a draft. Drafts do not appear in the public post list until they are published."
 								}
 							]
 						}

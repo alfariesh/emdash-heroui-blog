@@ -47,8 +47,8 @@ export function PostList({
 	featureFirst = false,
 	hideCategory = false,
 	bottomInset,
-	emptyTitle = "Belum ada tulisan",
-	emptyDescription = "Tulisan yang diterbitkan akan muncul di sini.",
+	emptyTitle = "No posts yet",
+	emptyDescription = "Published posts will show up here.",
 }: PostListProps) {
 	const query = useInfiniteQuery(postsQuery(filter));
 	const listRef = useRef<FlashListRef<Row>>(null);
@@ -94,8 +94,8 @@ export function PostList({
 					query.fetchStatus === "paused" ? (
 						<StateView
 							icon={WifiOffIcon}
-							title="Anda sedang offline"
-							description="Tulisan akan dimuat begitu perangkat tersambung ke internet."
+							title="You are offline"
+							description="Posts will load once this device is online."
 						/>
 					) : (
 						<LoadingRows featureFirst={featureFirst} />
@@ -164,13 +164,13 @@ function ListFooter({ loading, failed, done, onRetry }: ListFooterProps) {
 				<Spinner size="sm" />
 			) : failed ? (
 				<Button variant="ghost" size="sm" onPress={onRetry}>
-					<Button.Label>Gagal memuat. Coba lagi</Button.Label>
+					<Button.Label>Could not load. Try again</Button.Label>
 				</Button>
 			) : done ? (
 				<View className="flex-row items-center gap-3">
 					<View className="h-px w-8 bg-separator" />
 					<Typography type="body-xs" color="muted">
-						Sudah sampai ujung
+						You have reached the end
 					</Typography>
 					<View className="h-px w-8 bg-separator" />
 				</View>

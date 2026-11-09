@@ -6,7 +6,7 @@ const now = Date.parse("2026-11-08T05:00:00Z");
 const ad = (changes: Partial<AdCandidate> = {}): AdCandidate => ({
 	id: "ad-a",
 	status: "published",
-	title: "Promo pembaca",
+	title: "Reader offer",
 	image: { id: "banner" },
 	target_url: "https://blog.example.com/pages/promo",
 	placement: AD_PLACEMENTS.home,

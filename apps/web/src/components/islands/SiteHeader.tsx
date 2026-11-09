@@ -108,7 +108,7 @@ function DockedTitle({ title }: { title: string }) {
 					<Button
 						variant="ghost"
 						size="sm"
-						aria-label="Buka daftar isi"
+						aria-label="Open table of contents"
 						className="h-9 max-w-full min-w-0 gap-1 px-2"
 					>
 						{label}
@@ -118,7 +118,7 @@ function DockedTitle({ title }: { title: string }) {
 				<Popover.Content placement="bottom start" className="w-80 max-w-[calc(100vw-2rem)]">
 					<Popover.Dialog className="flex flex-col gap-1 p-2">
 						<Popover.Heading className="px-3 pt-1 pb-1 typography--body-sm typography--weight-semibold text-foreground">
-							Di halaman ini
+							On this page
 						</Popover.Heading>
 						<ol className="flex max-h-[60dvh] flex-col gap-0.5 overflow-y-auto">
 							{sections.map((section) => (
@@ -163,7 +163,7 @@ export default function SiteHeader({
 
 					<div className="relative ms-4 flex h-full min-w-0 flex-1 items-center">
 						{items.length > 0 && (
-							<nav aria-label="Navigasi utama" className="header-nav hidden md:block">
+							<nav aria-label="Primary" className="header-nav hidden md:block">
 								<ul className="flex items-center gap-1">
 									{items.map((item) => (
 										<li key={`${item.url}-${item.label}`}>
@@ -199,7 +199,7 @@ export default function SiteHeader({
 					)}
 
 					<Drawer>
-						<Button isIconOnly variant="ghost" aria-label="Buka menu" className="md:hidden">
+						<Button isIconOnly variant="ghost" aria-label="Open menu" className="md:hidden">
 							<HugeiconsIcon icon={Menu01Icon} />
 						</Button>
 						<Drawer.Backdrop variant="blur">
@@ -212,7 +212,7 @@ export default function SiteHeader({
 									<Drawer.Body className="flex flex-col gap-6">
 										<SearchForm defaultValue={searchQuery} variant="secondary" />
 										{items.length > 0 && (
-											<nav aria-label="Navigasi utama">
+											<nav aria-label="Primary">
 												<ul className="flex flex-col gap-1">
 													{items.map((item) => (
 														<li key={`${item.url}-${item.label}`}>
@@ -241,7 +241,7 @@ export default function SiteHeader({
 									<Drawer.Footer className="flex flex-col items-stretch gap-4">
 										<Separator />
 										<div className="flex items-center justify-between gap-3">
-											<span className="typography--body-sm text-muted">Tema</span>
+											<span className="typography--body-sm text-muted">Theme</span>
 											<ThemeSwitcher initialPreference={themePreference} />
 										</div>
 										{isLoggedIn && (
@@ -249,7 +249,7 @@ export default function SiteHeader({
 												href="/_emdash/admin"
 												className={buttonVariants({ variant: "outline", fullWidth: true })}
 											>
-												Buka Admin
+												Open admin
 											</a>
 										)}
 									</Drawer.Footer>

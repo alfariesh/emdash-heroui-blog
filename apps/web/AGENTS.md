@@ -57,15 +57,15 @@ The repo root has `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json` so Cla
 
 ## This Template
 
-A blog with posts, pages, categories, tags, full-text search, comments, and RSS. The UI is **HeroUI v3** (`@heroui/react` + `@heroui/styles`) on **Tailwind CSS v4**, and all visitor-facing text is in **Indonesian** (dates use `id-ID`; see `src/lib/locale.ts` and `@blog/shared`).
+A blog with posts, pages, categories, tags, full-text search, comments, and RSS. The UI is **HeroUI v3** (`@heroui/react` + `@heroui/styles`) on **Tailwind CSS v4**, and all visitor-facing text is in **English** (dates use `en-US`; see `src/lib/locale.ts` and `@blog/shared`).
 
 ## Pages
 
 | Page        | Path               | What it shows                                                                                   |
 | ----------- | ------------------ | ----------------------------------------------------------------------------------------------- |
-| Home        | `/`                | Site title + tagline, category chips, featured post card, "Tulisan Terbaru" grid                |
+| Home        | `/`                | Site title + tagline, category chips, featured post card, "Latest posts" grid                   |
 | All posts   | `/posts`           | Horizontal post cards; cursor pagination                                                        |
-| Post detail | `/posts/[slug]`    | Breadcrumbs, title, excerpt, bylines, hero image, body + sticky rail (table of contents, widgets), tags, comments, "Baca Juga" |
+| Post detail | `/posts/[slug]`    | Breadcrumbs, title, excerpt, bylines, hero image, body + sticky rail (table of contents, widgets), tags, comments, "Read next" |
 | Search      | `/search`          | HeroUI SearchField + FTS results with highlighted matches                                       |
 | Page        | `/pages/[slug]`    | Static page content (Portable Text)                                                             |
 | Category    | `/category/[slug]` | Card grid of posts in a category                                                                |
@@ -76,10 +76,10 @@ A blog with posts, pages, categories, tags, full-text search, comments, and RSS.
 ## Schema
 
 - `posts` collection: `title`, `featured_image`, `content` (Portable Text), `excerpt` (text).
-- `pages` collection: `title`, `content` (Portable Text). Used for `/pages/tentang` etc.
-- `ads` collection: non-routable web/native banners with `title`, `image`, `target_url`, `placement`, `enabled`, optional `starts_at`/`ends_at`, and `priority`. Placement values are `Beranda`, `Sidebar artikel`, `Bawah artikel` (`AD_PLACEMENTS` in `src/lib/ad-selection.ts`). Drafts/revisions are enabled; edits must be published. Existing databases need `pnpm --filter @blog/web setup:ads` against the running site; a seed change alone does not evolve them.
+- `pages` collection: `title`, `content` (Portable Text). Used for `/pages/about` etc.
+- `ads` collection: non-routable web/native banners with `title`, `image`, `target_url`, `placement`, `enabled`, optional `starts_at`/`ends_at`, and `priority`. Placement values are `Home`, `Article sidebar`, `Below the article` (`AD_PLACEMENTS` in `src/lib/ad-selection.ts`). Drafts/revisions are enabled; edits must be published. Existing databases need `pnpm --filter @blog/web setup:ads` against the running site; a seed change alone does not evolve them.
 - Taxonomies: `category`, `tag`.
-- Single `primary` menu (Beranda, Tulisan, Tentang by default).
+- Single `primary` menu (Home, Posts, About by default).
 - Widget areas: `sidebar` (post rail) and `footer`.
 
 ## How HeroUI is wired
@@ -112,8 +112,8 @@ Read-only endpoints for the mobile app and other clients. The EmDash admin API (
 
 Rules (enforced in `src/lib/public-api.ts`; types come from `@blog/shared`):
 
-- **Published only.** Collection queries pass `status: "published"`; detail endpoints also check `entry.data.status === "published"`, because `getEmDashEntry` can serve drafts in preview/edit mode. The draft `masih-ditulis` must always be 404.
-- **Envelope:** `{ ok: true, data }`, lists `{ ok: true, data, nextCursor }`, errors `{ ok: false, error: { status, code, message } }` with Indonesian messages. Bad `limit`/`cursor` → 400 (the live loader re-wraps `InvalidCursorError`, so it is matched by message too).
+- **Published only.** Collection queries pass `status: "published"`; detail endpoints also check `entry.data.status === "published"`, because `getEmDashEntry` can serve drafts in preview/edit mode. The draft `still-writing` must always be 404.
+- **Envelope:** `{ ok: true, data }`, lists `{ ok: true, data, nextCursor }`, errors `{ ok: false, error: { status, code, message } }` with English messages. Bad `limit`/`cursor` → 400 (the live loader re-wraps `InvalidCursorError`, so it is matched by message too).
 - **Absolute URLs** for images, avatars, logo, menu items and root-relative links inside Portable Text, built from `context.url.origin`. Portable Text image blocks are rewritten to `{ _type: "image", url, alt, caption, width, height }`.
 - **Headers:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` on success, `no-store` on errors, `Access-Control-Allow-Origin: *`.
 - **Public origin:** every absolute URL goes through `publicOrigin()` (`src/lib/site-url.ts`): Astro's `site` when set (only if `EMDASH_SITE_URL` is exported in the *build* environment), else the request origin, which on Workers is already the public host. EmDash itself reads `EMDASH_SITE_URL` at runtime from `wrangler.jsonc` `vars` for passkeys, CSRF and email links; it must be set before the production setup wizard runs, and setup must be done on that domain. Locally it is overridden to empty via `.env`, so `10.0.2.2` / LAN IPs keep working.
@@ -137,14 +137,14 @@ Motion follows Emil Kowalski's design-engineering rules (skills.sh/emilkowalski/
 - **Press feedback**: HeroUI buttons scale on press already; give other pressable links (chips, cards) the `pressable` utility (`[--press-scale:0.985]` for large surfaces). Post cards press through `.post-card` / `.post-card__link`.
 - **Card → article image**: cross-document View Transitions. Elements carry `data-post-image="/posts/<slug>"` (card media and article hero); the inline script in `Base.astro` names only the image being opened or left at `pageswap`/`pagereveal`, so nothing else moves. HeroUI keeps `:root` out of view transitions, so the new page is live immediately; don't add `view-transition-name` to elements statically (duplicate names cancel the transition).
 - **Theme switch**: `setThemePreference(pref, themeOrigin(pressEvent))` grows the new palette out of the pressed control; keyboard presses switch instantly.
-- **Article**: `TableOfContents.astro` (the sticky rail) builds its list in the browser from the body's h2/h3, giving them readable slug ids (`slugifyHeading`, duplicates get `-2`) and adding a "Pengantar" entry when text precedes the first heading. Entries are 14px text on a 20px line with 15px gaps; beside them runs a ruler of 2px ticks on a 5px grid, four per text line, so each entry's first line sits on a tick (`lib/toc.ts` holds the pure maths and its tests; keep `TOC_LINE`/`TICK_PITCH` equal to `--toc-line` and the CSS gap). A script eases a reading cursor along the list by scroll progress and writes `--w` (ticks) plus `--t` (section being read) and `--h` (hover/focus) on the entries; `.toc__tick` / `.toc__link` in `global.css` turn them into width, opacity and colour, so nothing transitions in CSS. The current section's title is accent-coloured while the ticks swell around the cursor as it drifts to the next entry; hovering or keyboard-focusing an entry darkens its text and adds a softer second swell. A list taller than the rail scrolls with the cursor and fades at the clipped edges. Links scroll smoothly (instantly for keyboard use and `prefers-reduced-motion`) and update the hash with `replaceState`. The reading line sits below where a link lands a heading (`scroll-padding-top` + `scroll-margin-top`), or the clicked section would not become current. `BackToTop.astro` is a floating back-to-top button with a reading-progress ring measured through the body only (same rule as the mobile app). `SiteHeader` always sits on a progressive blur. On articles (`Base.astro`'s `headerTitle`) the page script sets `data-title-docked` on `<html>` so the title and current section replace the navigation while reading down past the H1; scrolling up restores it. The script feeds headings to the header through `lib/article-outline.ts`, and the docked title opens them as a table of contents. Header search is `SearchPalette` (⌘K, `/api/v1/search`).
+- **Article**: `TableOfContents.astro` (the sticky rail) builds its list in the browser from the body's h2/h3, giving them readable slug ids (`slugifyHeading`, duplicates get `-2`) and adding an "Introduction" entry when text precedes the first heading. Entries are 14px text on a 20px line with 15px gaps; beside them runs a ruler of 2px ticks on a 5px grid, four per text line, so each entry's first line sits on a tick (`lib/toc.ts` holds the pure maths and its tests; keep `TOC_LINE`/`TICK_PITCH` equal to `--toc-line` and the CSS gap). A script eases a reading cursor along the list by scroll progress and writes `--w` (ticks) plus `--t` (section being read) and `--h` (hover/focus) on the entries; `.toc__tick` / `.toc__link` in `global.css` turn them into width, opacity and colour, so nothing transitions in CSS. The current section's title is accent-coloured while the ticks swell around the cursor as it drifts to the next entry; hovering or keyboard-focusing an entry darkens its text and adds a softer second swell. A list taller than the rail scrolls with the cursor and fades at the clipped edges. Links scroll smoothly (instantly for keyboard use and `prefers-reduced-motion`) and update the hash with `replaceState`. The reading line sits below where a link lands a heading (`scroll-padding-top` + `scroll-margin-top`), or the clicked section would not become current. `BackToTop.astro` is a floating back-to-top button with a reading-progress ring measured through the body only (same rule as the mobile app). `SiteHeader` always sits on a progressive blur. On articles (`Base.astro`'s `headerTitle`) the page script sets `data-title-docked` on `<html>` so the title and current section replace the navigation while reading down past the H1; scrolling up restores it. The script feeds headings to the header through `lib/article-outline.ts`, and the docked title opens them as a table of contents. Header search is `SearchPalette` (⌘K, `/api/v1/search`).
 
 ## What not to do
 
 - Don't hard-code colours (`bg-blue-500`); use HeroUI semantic tokens and variants.
 - Keep all content cards flat: `--surface-shadow` is zero globally, matching mobile. Do not add card shadows.
 - Don't add `getStaticPaths()`; all CMS pages are server-rendered.
-- Comments are enabled on posts and rendered on the post detail page (section `id="komentar"`, which the mobile app links to for writing). Configure moderation before publishing the site, or remove `commentsEnabled` and the comments UI together. The app reads comments through `/api/v1/posts/[slug]/comments`, never through `/_emdash/api/comments/…`.
+- Comments are enabled on posts and rendered on the post detail page (section `id="comments"`, which the mobile app links to for writing). Configure moderation before publishing the site, or remove `commentsEnabled` and the comments UI together. The app reads comments through `/api/v1/posts/[slug]/comments`, never through `/_emdash/api/comments/…`.
 
 ## Verified app links (`/.well-known/`)
 

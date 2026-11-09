@@ -6,7 +6,7 @@ import { adRefreshDelay, createAdSnapshot, MAX_AD_LEASE_MS } from "./ad-snapshot
 
 const serverTime = Date.parse("2026-11-08T05:00:00Z");
 const slot = (ttl: number, ad: ApiAdSlot["ad"] = {
-	id: "campaign", title: "Promo pembaca", targetUrl: "https://blog.example.com/pages/promo",
+	id: "campaign", title: "Reader offer", targetUrl: "https://blog.example.com/pages/promo",
 	image: { url: "https://blog.example.com/banner.png", alt: "Promo", width: 1200, height: 400 },
 }): ApiAdSlot => ({
 	ad, serverTime: new Date(serverTime).toISOString(),

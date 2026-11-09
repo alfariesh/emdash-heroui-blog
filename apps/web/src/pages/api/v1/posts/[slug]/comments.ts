@@ -11,12 +11,12 @@ import { handle, isPublished, jsonOk, notFound, toApiComment } from "../../../..
 export const GET: APIRoute = (context) =>
 	handle(async () => {
 		const slug = decodeSlug(context.params.slug);
-		if (!slug) return notFound("Tulisan tidak ditemukan.");
+		if (!slug) return notFound("Post not found.");
 
 		// Comments are keyed by the post's database id, and a draft's comments are never public.
 		const { entry: post, error } = await getEmDashEntry("posts", slug);
 		if (error) throw error;
-		if (!post || !isPublished(post)) return notFound("Tulisan tidak ditemukan.");
+		if (!post || !isPublished(post)) return notFound("Post not found.");
 
 		// getComments() does not check the collection setting; the web's <Comments> does, so match it.
 		const collection = await getCollectionInfo("posts");

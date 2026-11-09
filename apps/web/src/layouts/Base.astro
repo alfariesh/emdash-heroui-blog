@@ -250,7 +250,7 @@ const year = new Date().getFullYear();
 	</head>
 	<body>
 		<EmDashBodyStart page={pageCtx} />
-		<a href="#main" class="skip-link">Langsung ke konten</a>
+		<a href="#main" class="skip-link">Skip to content</a>
 
 		<SiteHeader
 			client:load
@@ -283,7 +283,7 @@ const year = new Date().getFullYear();
 					navItems.length > 0 && (
 						<nav aria-labelledby="footer-nav" class="flex flex-col gap-3">
 							<h2 id="footer-nav" class="typography--body-sm typography--weight-semibold text-foreground">
-								Jelajahi
+								Explore
 							</h2>
 							<ul class="flex flex-col gap-2 typography--body-sm">
 								{navItems.map((item) => (
@@ -304,13 +304,13 @@ const year = new Date().getFullYear();
 				}
 
 				<div class="flex flex-col gap-3">
-					<h2 class="typography--body-sm typography--weight-semibold text-foreground">Ikuti</h2>
+					<h2 class="typography--body-sm typography--weight-semibold text-foreground">Follow</h2>
 					<ul class="flex flex-col gap-2 typography--body-sm">
 						<li>
-							<a href="/rss.xml" class="link-fade text-muted hover:text-foreground">Feed RSS</a>
+							<a href="/rss.xml" class="link-fade text-muted hover:text-foreground">RSS feed</a>
 						</li>
 						<li>
-							<a href="/search" class="link-fade text-muted hover:text-foreground">Cari tulisan</a>
+							<a href="/search" class="link-fade text-muted hover:text-foreground">Search posts</a>
 						</li>
 					</ul>
 				</div>
@@ -319,9 +319,9 @@ const year = new Date().getFullYear();
 			<div class="border-t border-separator/70" data-footer-legal>
 				<div class="container-page flex flex-col-reverse items-start justify-between gap-4 py-6 sm:flex-row sm:items-center">
 					<p class="typography--body-xs text-muted">
-						© {year} {siteTitle}. Dibangun dengan{" "}
+						© {year} {siteTitle}. Built with{" "}
 						<a href="https://emdashcms.com" class="text-foreground hover:underline">EmDash</a>{" "}
-						dan{" "}
+						and{" "}
 						<a href="https://heroui.com" class="text-foreground hover:underline">HeroUI</a>.
 					</p>
 					<ThemeSwitcher client:visible initialPreference={themePreference} />

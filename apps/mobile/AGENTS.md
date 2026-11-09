@@ -20,8 +20,8 @@ API origin: `EXPO_PUBLIC_API_URL` (see `.env.example`). In development it may st
 src/
 ├── app/                    Expo Router routes (files = screens; default export only here)
 │   ├── _layout.tsx         Root: fonts, splash, providers, native stack
-│   ├── (tabs)/             Floating tab bar: index (Beranda), explore, search, saved
-│   ├── posts/[slug].tsx    Article: parallax hero, progressive-blur top bar, back-to-top progress ring, resume offer, #komentar
+│   ├── (tabs)/             Floating tab bar: index (Home), explore, search, saved
+│   ├── posts/[slug].tsx    Article: parallax hero, progressive-blur top bar, back-to-top progress ring, resume offer, #comments
 │   ├── category/[slug].tsx, tag/[slug].tsx, pages/[slug].tsx, settings.tsx, +not-found.tsx
 ├── components/
 │   ├── ui/                 App primitives on top of HeroUI (Icon, Image, StateView, ScreenHeader, GlassIconButton, ProgressiveBlur)
@@ -43,7 +43,7 @@ Put code where its kind lives: data and side effects in `lib/`, presentational p
 - **TypeScript:** `strict` + `noUncheckedIndexedAccess`. No `any`; narrow `unknown` with small guards (`str()`, `isTextBlock()`). No Node globals in app code (`"types": []`); a test opts in with `/// <reference types="node" />`.
 - **Components:** function components with a props `interface` named `<Component>Props` (inline object type only for tiny private helpers). Destructure props with defaults in the signature. Return `null` early for empty data. Conditional JSX as `cond ? <X /> : null`, never `cond && <X />` with a value that may be `0` or `""`.
 - **Comments:** English, explain *why* (a platform quirk, a contract rule, a perf reason), one short doc comment on every exported function/component. Don't narrate what the code does.
-- **Copy:** every visitor-facing string, accessibility label and hint is Indonesian (`id-ID`), matching the web's wording ("Tulisan Terbaru", "Baca Juga", "Coba lagi"). Code, comments and docs are English.
+- **Copy:** every visitor-facing string, accessibility label and hint is English (`en-US`), matching the web's wording ("Latest posts", "Read next", "Try again"). Code, comments and docs are English.
 
 ## HeroUI Native + Uniwind
 
@@ -65,10 +65,10 @@ Put code where its kind lives: data and side effects in `lib/`, presentational p
 - **Only the public API**, through `api` (`lib/api.ts`, `createBlogClient` from `@blog/shared`). Never `fetch` directly from a component and never call `/_emdash/api/…`. A new field or endpoint starts in `packages/shared/src/api/` (contract first), then `apps/web`, then here.
 - **Queries live in `lib/queries.ts`** as `queryOptions` / `infiniteQueryOptions` factories (`postsQuery(filter)`, `postQuery(slug)`, …); screens call `useQuery(postQuery(slug))`. Keys are hierarchical (`["posts", "list", filter]`, `["posts", "detail", slug]`), always pass `signal` to the client, and pick `staleTime` per resource (site/pages 10 min, terms 5 min, posts default 1 min = the API's `max-age`).
 - **Instant navigation:** prefetch on `onPressIn` (`prefetchPost`) and paint detail screens from cached summaries with `placeholderData` (`findCachedSummary`); show a skeleton only for the part still missing.
-- **States:** every query UI handles pending (skeleton with the final layout's footprint), paused-offline (`fetchStatus === "paused"`), error (`ErrorView` with retry; 404 → "Tidak ditemukan"), empty (`StateView`) and end-of-list. Pull-to-refresh shows the spinner only for a manual refresh.
+- **States:** every query UI handles pending (skeleton with the final layout's footprint), paused-offline (`fetchStatus === "paused"`), error (`ErrorView` with retry; 404 → "Not found"), empty (`StateView`) and end-of-list. Pull-to-refresh shows the spinner only for a manual refresh.
 - **Persistence:** the query cache is persisted to SQLite for 24 h (`lib/query-client.ts`) so the app opens offline on the last feed; search and ads are excluded. Bump nothing by hand: the buster is the API prefix + app version.
 - **Local state:** small device-only data (theme, bookmarks) uses `storage` (`lib/storage.ts`: expo-sqlite kv-store with a sync API, localStorage on web) behind a tiny external store + `useSyncExternalStore` (see `lib/theme.ts`, `lib/bookmarks.ts`). No React context for global state, no other storage library. Reading positions (`lib/reading-progress.ts`) have no live subscribers, so they are plain sync reads/writes.
-- **"Lanjutkan membaca":** `useReadingPosition()` (`lib/use-reading-position.ts`) saves the article's scroll offset when the screen closes or the app leaves the foreground (never per scroll frame), as progress through the body only. The rules are pure and unit-tested in `lib/reading-positions.ts`: under 5 % or from 95 % the entry is dropped, at most 50 are kept. Coming back to a half-read article shows the `ResumeReading` glass pill for 10 s.
+- **"Continue reading":** `useReadingPosition()` (`lib/use-reading-position.ts`) saves the article's scroll offset when the screen closes or the app leaves the foreground (never per scroll frame), as progress through the body only. The rules are pure and unit-tested in `lib/reading-positions.ts`: under 5 % or from 95 % the entry is dropped, at most 50 are kept. Coming back to a half-read article shows the `ResumeReading` glass pill for 10 s.
 
 ## Navigation and links
 
@@ -82,7 +82,7 @@ Only compact horizontal post cards (`row`) show avatars and author names without
 
 ## Comments
 
-`components/post/post-comments.tsx` shows approved comments under the article (`postCommentsQuery`, after the body has loaded): threads with one level of replies, a "Penulis" chip for site members, bare URLs made tappable with `splitLinks()` (`lib/text.ts`), the first 5 threads and then "Tampilkan N komentar lainnya". The app does not post comments: "Tulis komentar" opens the web form (`<post url>#komentar`) in the in-app browser. A link to `…/posts/<slug>#komentar` opens the article scrolled to the card: Expo Router passes the fragment as the `"#"` param, and the scroll is retried for 3 s while the content below still loads (it would be clamped otherwise), unless the reader drags first. The card disappears when the API reports `enabled: false`.
+`components/post/post-comments.tsx` shows approved comments under the article (`postCommentsQuery`, after the body has loaded): threads with one level of replies, an "Author" chip for site members, bare URLs made tappable with `splitLinks()` (`lib/text.ts`), the first 5 threads and then "Show N more comments". The app does not post comments: "Write a comment" opens the web form (`<post url>#comments`) in the in-app browser. A link to `…/posts/<slug>#comments` opens the article scrolled to the card: Expo Router passes the fragment as the `"#"` param, and the scroll is retried for 3 s while the content below still loads (it would be clamped otherwise), unless the reader drags first. The card disappears when the API reports `enabled: false`.
 
 ## Internal ads
 
@@ -92,7 +92,7 @@ The server selects published, enabled campaigns using the same CMS schedule/prio
 
 ## Push notifications
 
-`lib/notifications.ts` owns everything device-side: the opt-in preference (`storage` + `useSyncExternalStore`), `pushUnavailableReason()` (web, simulator, or no `EAS_PROJECT_ID` in the build), permission, the Android channel (`NEW_POSTS_CHANNEL_ID`, created before asking, as Android 13 requires), the Expo push token and `api.registerDevice()` / `api.unregisterDevice()`. Nothing prompts until the reader turns on "Tulisan baru" in Pengaturan. `syncPushRegistration()` runs on each launch (root layout): it retries a pending unregister and re-registers when the token changed or after 7 days. `configureNotifications()` shows notifications in the foreground; `useNotificationNavigation()` (root stack) opens `data.url` from a tapped notification through `useOpenLink()`, on cold start too. Push needs a development or store build on a physical device; Expo Go and simulators get no token.
+`lib/notifications.ts` owns everything device-side: the opt-in preference (`storage` + `useSyncExternalStore`), `pushUnavailableReason()` (web, simulator, or no `EAS_PROJECT_ID` in the build), permission, the Android channel (`NEW_POSTS_CHANNEL_ID`, created before asking, as Android 13 requires), the Expo push token and `api.registerDevice()` / `api.unregisterDevice()`. Nothing prompts until the reader turns on "New posts" in Settings. `syncPushRegistration()` runs on each launch (root layout): it retries a pending unregister and re-registers when the token changed or after 7 days. `configureNotifications()` shows notifications in the foreground; `useNotificationNavigation()` (root stack) opens `data.url` from a tapped notification through `useOpenLink()`, on cold start too. Push needs a development or store build on a physical device; Expo Go and simulators get no token.
 
 ## Portable Text
 
@@ -109,12 +109,12 @@ The server selects published, enabled campaigns using the same CMS schedule/prio
 
 ## Accessibility
 
-Pressables get `accessibilityRole` (`link` for navigation, `button`, `tab`, `radio`) and an Indonesian `accessibilityLabel` when the visible text is not enough; selection uses `accessibilityState`. Decorative icons are hidden (the `Icon` wrapper does this). Font scaling stays on (HeroUI provider caps it at 1.6×); avoid fixed heights around text. Never convey state by colour alone.
+Pressables get `accessibilityRole` (`link` for navigation, `button`, `tab`, `radio`) and an English `accessibilityLabel` when the visible text is not enough; selection uses `accessibilityState`. Decorative icons are hidden (the `Icon` wrapper does this). Font scaling stays on (HeroUI provider caps it at 1.6×); avoid fixed heights around text. Never convey state by colour alone.
 
 ## Adding a screen (checklist)
 
 1. Route file in `src/app/…` with a default export; register static options in the nearest `_layout.tsx` if needed.
 2. Data through a factory in `lib/queries.ts`; all states handled (see Data).
-3. HeroUI components + tokens; Indonesian copy; safe-area / tab-bar insets.
+3. HeroUI components + tokens; English copy; safe-area / tab-bar insets.
 4. If the web has the same page, map its URL in `lib/links.ts`.
 5. `pnpm typecheck && pnpm test && pnpm export`. For a quick visual check, `pnpm web` renders a preview, but HeroUI Native targets iOS/Android: confirm on a simulator or device before calling UI work done.

@@ -15,9 +15,9 @@ import { ScreenHeader } from "@/components/ui/screen-header";
 import { SettingsIcon } from "@/lib/icons";
 import { siteQuery } from "@/lib/queries";
 
-const WEEKDAY = new Intl.DateTimeFormat("id-ID", { weekday: "long" });
+const WEEKDAY = new Intl.DateTimeFormat("en-US", { weekday: "long" });
 
-/** "Rabu, 4 November 2026" */
+/** "Wednesday, November 4, 2026" */
 function today(): string {
 	const now = new Date();
 	return `${WEEKDAY.format(now)}, ${formatDate(now, "long")}`;
@@ -54,7 +54,7 @@ function HomeHeader() {
 						isIconOnly
 						variant="ghost"
 						size="sm"
-						accessibilityLabel="Pengaturan"
+						accessibilityLabel="Settings"
 						onPress={() => router.push("/settings")}
 					>
 						<Icon icon={SettingsIcon} size={22} />
@@ -63,7 +63,7 @@ function HomeHeader() {
 			/>
 			<CategoryRail />
 			<Typography.Heading type="h5" className="px-5 pt-7 pb-3">
-				Tulisan Terbaru
+				Latest posts
 			</Typography.Heading>
 		</View>
 	);

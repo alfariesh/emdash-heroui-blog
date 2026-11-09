@@ -106,7 +106,7 @@ export function createBlogClient(baseUrl: string): BlogClient {
 	): Promise<T> {
 		const fetchImpl = (globalThis as { fetch?: FetchLike }).fetch;
 		if (!fetchImpl) {
-			throw new BlogApiError(0, "network_error", "fetch tidak tersedia di lingkungan ini.");
+			throw new BlogApiError(0, "network_error", "fetch is not available in this environment.");
 		}
 
 		let response: FetchResponseLike;
@@ -122,21 +122,21 @@ export function createBlogClient(baseUrl: string): BlogClient {
 			});
 		} catch (error) {
 			if ((error as { name?: unknown })?.name === "AbortError") throw error;
-			throw new BlogApiError(0, "network_error", "Tidak dapat terhubung ke server.");
+			throw new BlogApiError(0, "network_error", "Could not connect to the server.");
 		}
 
 		let body: unknown;
 		try {
 			body = await response.json();
 		} catch {
-			throw new BlogApiError(response.status, "invalid_response", "Respons server tidak valid.");
+			throw new BlogApiError(response.status, "invalid_response", "The server response is invalid.");
 		}
 
 		if (isApiError(body)) {
 			throw new BlogApiError(body.error.status, body.error.code, body.error.message);
 		}
 		if (!response.ok || !isOk(body)) {
-			throw new BlogApiError(response.status, "invalid_response", "Respons server tidak valid.");
+			throw new BlogApiError(response.status, "invalid_response", "The server response is invalid.");
 		}
 		return body as T;
 	}

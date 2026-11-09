@@ -15,8 +15,8 @@ import {
 } from "./toc.ts";
 
 test("slugifyHeading makes readable ids", () => {
-	assert.equal(slugifyHeading("Apa yang bertahan"), "apa-yang-bertahan");
-	assert.equal(slugifyHeading("  Kenapa 5 aturan ini penting?  "), "kenapa-5-aturan-ini-penting");
+	assert.equal(slugifyHeading("What still lasts"), "what-still-lasts");
+	assert.equal(slugifyHeading("  Why do these 5 rules matter?  "), "why-do-these-5-rules-matter");
 	assert.equal(slugifyHeading("Café & Crème brûlée"), "cafe-creme-brulee");
 	assert.equal(slugifyHeading("Tips: HTML/CSS"), "tips-html-css");
 });
@@ -28,7 +28,7 @@ test("slugifyHeading keeps non-latin letters and gives up on pure symbols", () =
 });
 
 test("slugifyHeading caps the length without leaving a trailing dash", () => {
-	const id = slugifyHeading(`${"kata ".repeat(30)}akhir`);
+	const id = slugifyHeading(`${"word ".repeat(30)}end`);
 	assert.ok(id.length <= 80);
 	assert.ok(!id.endsWith("-"));
 });

@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Blog EmDash: web (Astro + HeroUI) dan mobile (React Native + HeroUI Native)",
+  "description": "EmDash blog: web (Astro + HeroUI) and mobile (React Native + HeroUI Native)",
   "scripts": {
     "dev": "pnpm --filter @blog/web dev",
     "dev:stop": "pnpm --filter @blog/web exec astro dev stop",

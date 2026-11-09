@@ -33,7 +33,7 @@ if (process.argv.includes("build") && !process.env.EMDASH_SITE_URL && !process.e
 }
 const siteUrl = process.env.EMDASH_SITE_URL || process.env.SITE_URL || undefined;
 
-// "Tulisan baru" push notifications for the mobile app: a native EmDash plugin
+// "New post" push notifications for the mobile app: a native EmDash plugin
 // that lives in this repo (src/plugins/push-notifications). The entrypoint is a
 // Vite root-relative path; id and version must match its createPlugin().
 const pushNotificationsPlugin = {

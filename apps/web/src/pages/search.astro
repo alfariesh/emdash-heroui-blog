@@ -30,7 +30,7 @@ function escapeHtml(text: string) {
 // title. When it is the whole title, show its highlights in the heading
 // instead of repeating the title underneath.
 const rows = results.map((result) => {
-	const title = result.title ?? "Tanpa judul";
+	const title = result.title ?? "Untitled";
 	const snippetIsTitle =
 		result.snippet?.replaceAll("<mark>", "").replaceAll("</mark>", "") === escapeHtml(title);
 	return {
@@ -41,15 +41,15 @@ const rows = results.map((result) => {
 	};
 });
 
-const countLabel = nextCursor ? `${rows.length} hasil teratas` : `${rows.length} hasil`;
+const countLabel = nextCursor ? `${rows.length} top results` : `${rows.length} results`;
 const card = cardVariants();
 ---
 
-<Base title={query ? `Cari: ${query}` : "Cari"} description="Cari tulisan di blog ini">
+<Base title={query ? `Search: ${query}` : "Search"} description="Search posts on this blog">
 	<PageIntro
-		eyebrow="Pencarian"
-		title={query ? `Hasil untuk “${query}”` : "Cari tulisan"}
-		description={query ? null : "Telusuri judul dan isi seluruh tulisan."}
+		eyebrow="Search"
+		title={query ? `Results for “${query}”` : "Search posts"}
+		description={query ? null : "Search titles and the body of every post."}
 	>
 		<SearchForm
 			client:load
@@ -93,12 +93,12 @@ const card = cardVariants();
 					</>
 				) : (
 					<div class="flex max-w-3xl flex-col items-start gap-3 rounded-3xl bg-surface p-8 shadow-surface">
-						<h2 class="typography--h5">Tidak ada hasil</h2>
+						<h2 class="typography--h5">No results</h2>
 						<p class="typography--body-sm text-muted">
-							Coba kata kunci lain yang lebih umum, atau jelajahi semua tulisan.
+							Try a broader query, or browse every post.
 						</p>
 						<a href="/posts" class={cn(buttonVariants({ variant: "secondary" }), "mt-1")}>
-							Lihat semua tulisan
+							View all posts
 						</a>
 					</div>
 				)}

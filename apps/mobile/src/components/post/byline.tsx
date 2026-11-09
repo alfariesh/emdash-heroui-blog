@@ -11,7 +11,7 @@ interface BylineProps {
 	/** Names spelled out before the rest collapse into "+N". */
 	max?: number;
 	size?: "sm" | "md";
-	/** Show each author's role ("Kontributor tamu") under the names. */
+	/** Show each author's role ("Guest contributor") under the names. */
 	showRole?: boolean;
 	className?: string;
 	/** Optional metadata for full-size cards and article headers. Compact cards omit it. */

@@ -18,7 +18,7 @@ import { NEW_POSTS_CHANNEL_ID } from "../../packages/shared/src/push.ts";
  *   APP_ID               iOS bundle identifier and Android package.
  *   APP_SCHEME           Deep-link scheme, e.g. blog://posts/slug.
  *   EAS_PROJECT_ID       EAS project (`eas init` prints it). Push notifications need it to
- *                        get an Expo push token; without it the switch in Pengaturan is off.
+ *                        get an Expo push token; without it the switch in Settings is off.
  *   GOOGLE_SERVICES_JSON Path to google-services.json (an EAS "file" variable): Firebase
  *                        Cloud Messaging, which Android push goes through.
  */

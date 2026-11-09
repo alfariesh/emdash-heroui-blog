@@ -69,7 +69,7 @@ export function BackToTop({ scrollY, progress, showAfter, suspended = false, onP
 			<PressableFeedback
 				onPress={onPress}
 				accessibilityRole="button"
-				accessibilityLabel="Kembali ke atas"
+				accessibilityLabel="Back to top"
 				hitSlop={6}
 				className="size-12 items-center justify-center overflow-hidden rounded-full"
 			>

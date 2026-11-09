@@ -10,7 +10,7 @@ import { ErrorView } from "@/components/ui/state-view";
 import { API_URL } from "@/lib/config";
 import { pageQuery } from "@/lib/queries";
 
-/** A static EmDash page (e.g. "tentang"), rendered natively. */
+/** A static EmDash page (e.g. "about"), rendered natively. */
 export default function PageScreen() {
 	const { slug } = useLocalSearchParams<{ slug: string }>();
 	const { bottom } = useSafeAreaInsets();

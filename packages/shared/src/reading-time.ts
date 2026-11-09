@@ -71,5 +71,5 @@ export function getReadingTime(content: readonly PortableTextBlock[] | null | un
  * Format reading time for display
  */
 export function formatReadingTime(minutes: number): string {
-	return `${minutes} menit baca`;
+	return `${minutes} min read`;
 }

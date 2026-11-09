@@ -20,7 +20,7 @@ export interface ApiErrorBody {
 	status: number;
 	/** Machine-readable code, e.g. "not_found", "bad_request". */
 	code: ApiErrorCode;
-	/** Human-readable message (Indonesian, safe to show to visitors). */
+	/** Human-readable message in English, safe to show to visitors. */
 	message: string;
 }
 
@@ -84,7 +84,7 @@ export interface ApiByline {
 	name: string;
 	/** Absolute URL, or null when the byline has no avatar. */
 	avatarUrl: string | null;
-	/** Role label such as "Kontributor tamu", or null for a plain author credit. */
+	/** Role label such as "Guest contributor", or null for a plain author credit. */
 	role: string | null;
 }
 
@@ -235,7 +235,7 @@ export interface ApiComment {
 	id: string;
 	/** Name the commenter entered. */
 	authorName: string;
-	/** Written by someone with an account on the site (the web marks it "Penulis"). */
+	/** Written by someone with an account on the site (the web marks it "Author"). */
 	isMember: boolean;
 	/** Plain text as submitted: may contain line breaks and bare URLs, never HTML. */
 	body: string;

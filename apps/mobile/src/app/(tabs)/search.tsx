@@ -35,19 +35,19 @@ export default function SearchScreen() {
 		<View className="flex-1 bg-background" style={{ paddingTop: top }}>
 			<View className="gap-4 px-4 pt-4 pb-3">
 				<Typography.Heading type="h2" className="px-1 text-[32px] leading-10 tracking-tight">
-					Cari
+					Search
 				</Typography.Heading>
 				<SearchField value={text} onChange={setText}>
 					<SearchField.Group>
 						<SearchField.SearchIcon />
 						<SearchField.Input
-							placeholder="Cari tulisan dan halaman…"
+							placeholder="Search posts and pages…"
 							returnKeyType="search"
 							autoCorrect={false}
 							autoCapitalize="none"
 							enterKeyHint="search"
 						/>
-						<SearchField.ClearButton accessibilityLabel="Hapus pencarian" />
+						<SearchField.ClearButton accessibilityLabel="Clear search" />
 					</SearchField.Group>
 				</SearchField>
 			</View>
@@ -69,7 +69,7 @@ export default function SearchScreen() {
 					ListHeaderComponent={
 						query.isSuccess && results.length > 0 ? (
 							<Typography type="body-xs" color="muted" className="px-1 pb-3">
-								{`Hasil untuk “${q}”`}
+								{`Results for “${q}”`}
 							</Typography>
 						) : null
 					}
@@ -83,8 +83,8 @@ export default function SearchScreen() {
 						) : (
 							<StateView
 								icon={SearchRemoveIcon}
-								title="Tidak ada hasil"
-								description={`Tidak ada tulisan atau halaman yang cocok dengan “${q}”. Coba kata lain.`}
+								title="No results"
+								description={`No posts or pages match “${q}”. Try another word.`}
 							/>
 						)
 					}
@@ -123,7 +123,7 @@ function SearchResultItem({ result }: { result: ApiSearchResult }) {
 			<Surface className="flex-row items-center gap-3 p-4">
 				<View className="flex-1 gap-1.5">
 					<Typography type="body-xs" weight="semibold" className={isPost ? "text-accent" : "text-muted"}>
-						{isPost ? "Tulisan" : "Halaman"}
+						{isPost ? "Post" : "Page"}
 					</Typography>
 					<Typography.Heading type="h6" numberOfLines={2}>
 						{result.title}
@@ -148,14 +148,14 @@ function Suggestions({ onPick }: { onPick: (q: string) => void }) {
 		<View className="px-4">
 			<StateView
 				icon={SearchIcon}
-				title="Temukan tulisan"
-				description="Ketik minimal dua huruf untuk mencari judul dan isi tulisan."
+				title="Find a post"
+				description="Type at least two letters to search titles and post text."
 				className="py-10"
 			/>
 			{popular.length > 0 ? (
 				<View className="items-center gap-3">
 					<Typography type="body-xs" color="muted" weight="medium" className="px-1 text-center uppercase tracking-wider">
-						Coba cari
+						Try searching
 					</Typography>
 					<View className="flex-row flex-wrap justify-center gap-2">
 						{popular.map((tag) => (
