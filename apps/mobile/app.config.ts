@@ -45,11 +45,11 @@ function appLinkHost(): string | null {
 }
 const APP_LINK_HOST = appLinkHost();
 
-/** Splash backgrounds: HeroUI `--background` in light (oklch 0.9702 0 0) and dark (oklch 12% …). */
-const SPLASH_LIGHT = "#f5f5f5";
-const SPLASH_DARK = "#060607";
-/** HeroUI default accent, oklch(0.6204 0.195 253.83), as sRGB. */
-const ACCENT = "#0485f7";
+/** Splash backgrounds: the theme's `--background` (warm-taupe in light, near-black in dark), see src/global.css. */
+const SPLASH_LIGHT = "#f5f3f1";
+const SPLASH_DARK = "#0c0b0a";
+/** Theme accent (ember-orange), see src/global.css. */
+const ACCENT = "#ff4704";
 /** Logo red: the adaptive-icon background and the notification tint. */
 const BRAND = "#F14422";
 

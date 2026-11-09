@@ -34,15 +34,76 @@
 /* ---------------------------------------------------------------------------
  * Theme overrides — HeroUI variables
  * ------------------------------------------------------------------------- */
+/*
+ * Palette: warm neutrals plus two sparks. `static` keeps every token in the
+ * output, so they work as utilities too (bg-eggshell, text-graphite…).
+ */
+@theme static {
+	--color-eggshell: #fdfcfc;
+	--color-warm-taupe: #f5f3f1;
+	--color-stone: #ebe8e4;
+	--color-ink: #000000;
+	--color-graphite: #44403b;
+	--color-smoke: #777169;
+	--color-ash: #a59f97;
+	--color-violet-spark: #0447ff;
+	--color-ember-orange: #ff4704;
+}
+
 :root {
 	/* Shared with mobile: content cards are flat in light and dark themes. */
 	--surface-shadow: 0 0 0 0 transparent;
+
 	/*
-	 * HeroUI colours and radii use defaults. Cards are radius-3xl (24px); images inset
-	 * by p-2 use radius-2xl (16px) so corners stay concentric. Change --radius
-	 * or --accent here to restyle the whole site, e.g.:
-	 * --accent: oklch(0.62 0.19 150);
+	 * Accent is the logo's orange; the blue is kept for focus rings, where an
+	 * orange ring would vanish on an orange button. Radii use HeroUI defaults.
+	 * Cards are radius-3xl (24px); images inset by p-2 use radius-2xl (16px) so
+	 * corners stay concentric.
 	 */
+	--accent: var(--color-ember-orange);
+	--accent-foreground: var(--color-eggshell);
+	--focus: var(--color-violet-spark);
+
+	/* Light: taupe page, eggshell cards, stone for fills and lines */
+	--background: var(--color-warm-taupe);
+	--foreground: var(--color-ink);
+	--surface: var(--color-eggshell);
+	--surface-secondary: var(--color-warm-taupe);
+	--surface-tertiary: var(--color-stone);
+	--overlay: var(--color-eggshell);
+	--muted: color-mix(in oklab, var(--color-smoke) 80%, var(--color-graphite));
+	--default: var(--color-stone);
+	--default-foreground: var(--color-graphite);
+	--field-background: var(--color-eggshell);
+	--field-foreground: var(--color-ink);
+	--field-placeholder: var(--color-ash);
+	--segment: var(--color-eggshell);
+	--segment-foreground: var(--color-ink);
+	--border: var(--color-stone);
+	--separator: color-mix(in oklab, var(--color-stone) 70%, var(--color-warm-taupe));
+}
+
+/* Dark: the same warm neutrals, dropped to near-black; graphite and ash carry the lines and text */
+.dark,
+[data-theme="dark"] {
+	--background: #0c0b0a;
+	--foreground: var(--color-eggshell);
+	--surface: #171513;
+	--surface-secondary: #221f1c;
+	--surface-tertiary: #2c2925;
+	--overlay: #171513;
+	--muted: var(--color-ash);
+	--default: #2c2925;
+	--default-foreground: var(--color-eggshell);
+	--field-background: #171513;
+	--field-foreground: var(--color-eggshell);
+	--field-placeholder: var(--color-smoke);
+	--segment: var(--color-graphite);
+	--segment-foreground: var(--color-eggshell);
+	--border: #34302c;
+	--separator: #2a2724;
+	/* The blue ring needs a lift on near-black */
+	--focus: color-mix(in oklab, var(--color-violet-spark) 70%, var(--color-eggshell));
 }
 
 /* ---------------------------------------------------------------------------
