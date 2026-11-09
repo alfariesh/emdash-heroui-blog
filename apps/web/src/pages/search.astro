@@ -64,7 +64,7 @@ const card = cardVariants();
 			<section class="container-page" aria-live="polite">
 				{rows.length > 0 ? (
 					<>
-						<p class="mb-4 text-sm text-muted tabular-nums">{countLabel}</p>
+						<p class="mb-4 typography--body-sm text-muted tabular-nums">{countLabel}</p>
 						<ol class="flex max-w-3xl flex-col gap-3">
 							{rows.map((row) => (
 								<li>
@@ -76,11 +76,11 @@ const card = cardVariants();
 										)}
 									>
 										<div class="flex min-w-0 flex-1 flex-col gap-1.5">
-											<h2 class="search-result text-base font-semibold text-foreground">
+											<h2 class="search-result typography--h6 text-foreground">
 												{row.titleHtml ? <Fragment set:html={row.titleHtml} /> : row.title}
 											</h2>
 											{row.snippet && (
-												<p class="search-result line-clamp-2 text-sm leading-6 text-muted">
+												<p class="search-result line-clamp-2 typography--body-sm text-muted">
 													<Fragment set:html={row.snippet} />
 												</p>
 											)}
@@ -93,8 +93,8 @@ const card = cardVariants();
 					</>
 				) : (
 					<div class="flex max-w-3xl flex-col items-start gap-3 rounded-3xl bg-surface p-8 shadow-surface">
-						<h2 class="text-lg font-semibold">Tidak ada hasil</h2>
-						<p class="text-sm text-muted">
+						<h2 class="typography--h5">Tidak ada hasil</h2>
+						<p class="typography--body-sm text-muted">
 							Coba kata kunci lain yang lebih umum, atau jelajahi semua tulisan.
 						</p>
 						<a href="/posts" class={cn(buttonVariants({ variant: "secondary" }), "mt-1")}>

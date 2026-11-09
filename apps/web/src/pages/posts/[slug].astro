@@ -164,7 +164,7 @@ const commentListLabels = {
 				</nav>
 
 				<h1
-					class="text-4xl leading-[1.1] font-semibold tracking-tight text-balance text-foreground sm:text-5xl"
+					class="typography--display"
 					data-enter="lead"
 					data-post-title
 					{...post.edit.title}
@@ -175,7 +175,7 @@ const commentListLabels = {
 				{
 					post.data.excerpt && (
 						<p
-							class="text-lg leading-8 text-muted text-pretty sm:text-xl sm:leading-9"
+							class="typography--lead"
 							data-enter="support"
 							style={enterDelay(80)}
 							{...post.edit.excerpt}
@@ -188,7 +188,7 @@ const commentListLabels = {
 				<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1" data-enter="support" style={enterDelay(140)}>
 					<Byline bylines={bylines} max={2} size="md" readingTime={readingTime}>
 						{publishedAt && (
-							<p class="text-sm text-muted tabular-nums">
+							<p class="typography--body-sm text-muted tabular-nums">
 								<time datetime={publishedAt.toISOString()}>{formatDate(publishedAt, "long")}</time>
 							</p>
 						)}
@@ -249,7 +249,7 @@ const commentListLabels = {
 						class={cn(card.base(), "post-comments mt-12 scroll-mt-24 gap-4 p-6 sm:p-8")}
 						aria-labelledby="comments-title"
 					>
-						<h2 id="comments-title" class="text-xl font-semibold tracking-tight">
+						<h2 id="comments-title" class="typography--h4">
 							Diskusi
 						</h2>
 						<Comments
@@ -297,7 +297,7 @@ const commentListLabels = {
 		otherPosts.length > 0 && (
 			<section class="container-page mt-24" aria-labelledby="continue-reading">
 				<div class="mb-6 flex items-end justify-between gap-4">
-					<h2 id="continue-reading" class="text-2xl font-semibold tracking-tight">
+					<h2 id="continue-reading" class="typography--h3">
 						Baca Juga
 					</h2>
 					<a href="/posts" class={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted")}>

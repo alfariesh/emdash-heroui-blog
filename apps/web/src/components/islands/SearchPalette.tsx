@@ -50,13 +50,13 @@ function ResultRow({ id, result, isActive, onHover }: ResultRowProps) {
 			className={cn("flex flex-col gap-0.5 rounded-xl px-3 py-2.5", isActive && "bg-default")}
 		>
 			<span className="flex items-baseline justify-between gap-3">
-				<span className="truncate text-sm font-medium text-foreground">
+				<span className="truncate typography--body-sm typography--weight-medium text-foreground">
 					{snippetIsTitle ? <Highlighted segments={segments} /> : result.title}
 				</span>
-				{result.collection === "pages" && <span className="shrink-0 text-xs text-muted">Halaman</span>}
+				{result.collection === "pages" && <span className="shrink-0 typography--body-xs text-muted">Halaman</span>}
 			</span>
 			{!snippetIsTitle && segments.length > 0 && (
-				<span className="line-clamp-2 text-[0.8125rem] leading-5 text-muted">
+				<span className="line-clamp-2 typography--body-sm text-muted">
 					<Highlighted segments={segments} />
 				</span>
 			)}
@@ -152,7 +152,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 						aria-controls={listId}
 						aria-autocomplete="list"
 						aria-activedescendant={hrefs.length > 0 ? optionId(active) : undefined}
-						className="text-base"
+						className="typography--body"
 						onKeyDown={onKeyDown}
 					/>
 					{status === "loading" ? <Spinner size="sm" className="me-2" /> : <SearchField.ClearButton />}
@@ -179,7 +179,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 							tabIndex={-1}
 							onMouseMove={() => setActive(results.length)}
 							className={cn(
-								"flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-foreground",
+								"flex items-center justify-between rounded-xl px-3 py-2.5 typography--body-sm typography--weight-medium text-foreground",
 								active === results.length && "bg-default",
 							)}
 						>
@@ -188,13 +188,13 @@ function Palette({ onClose }: { onClose: () => void }) {
 						</a>
 					)}
 				</div>
-				{message && <p className="px-3 py-8 text-center text-sm text-muted">{message}</p>}
+				{message && <p className="px-3 py-8 text-center typography--body-sm text-muted">{message}</p>}
 				<p role="status" className="sr-only">
 					{status === "done" ? `${results.length} hasil` : ""}
 				</p>
 			</div>
 
-			<div className="hidden items-center gap-4 border-t border-separator px-4 py-2.5 text-xs text-muted sm:flex">
+			<div className="hidden items-center gap-4 border-t border-separator px-4 py-2.5 typography--body-xs text-muted sm:flex">
 				<span className="flex items-center gap-1.5">
 					<Kbd>↑↓</Kbd> pilih
 				</span>
@@ -249,7 +249,7 @@ export default function SearchPalette() {
 				)}
 			>
 				<HugeiconsIcon icon={Search01Icon} size={18} aria-hidden="true" />
-				<span className="hidden text-sm font-normal lg:inline">Cari…</span>
+				<span className="hidden typography--body-sm typography--weight-normal lg:inline">Cari…</span>
 				<Kbd className="ms-auto hidden lg:inline-flex" aria-hidden="true">
 					<Kbd.Content>{isMac ? "⌘" : "Ctrl"}</Kbd.Content>
 					<Kbd.Content>K</Kbd.Content>

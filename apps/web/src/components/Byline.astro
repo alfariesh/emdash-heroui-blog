@@ -57,18 +57,18 @@ const avatar = avatarVariants({ size, variant: "soft", color: "accent" });
 						{person.src ? (
 							<img class={avatar.image()} src={person.src} alt="" loading="lazy" />
 						) : (
-							<span class={cn(avatar.fallback(), "text-xs")}>{person.initials}</span>
+							<span class={cn(avatar.fallback(), "typography--body-xs")}>{person.initials}</span>
 						)}
 					</span>
 				))}
 			</span>
 			<div class="min-w-0 flex-1">
 				<div class="flex items-center justify-between gap-3">
-					<p class="min-w-0 truncate text-sm font-medium text-foreground">
+					<p class="min-w-0 truncate typography--body-sm typography--weight-medium text-foreground">
 						{shown.join(", ")}
 						{hiddenCount > 0 && <span class="text-muted"> +{hiddenCount}</span>}
 					</p>
-					{readingTime && <span class="shrink-0 text-xs text-muted tabular-nums">{readingTime}</span>}
+					{readingTime && <span class="shrink-0 typography--body-xs text-muted tabular-nums">{readingTime}</span>}
 				</div>
 				<slot />
 			</div>
@@ -79,7 +79,7 @@ const avatar = avatarVariants({ size, variant: "soft", color: "accent" });
 {
 	people.length === 0 && (
 		<>
-			{readingTime && <p class="text-xs text-muted tabular-nums">{readingTime}</p>}
+			{readingTime && <p class="typography--body-xs text-muted tabular-nums">{readingTime}</p>}
 			<slot />
 		</>
 	)
@@ -94,12 +94,12 @@ const avatar = avatarVariants({ size, variant: "soft", color: "accent" });
 						{person.src ? (
 							<img class={avatar.image()} src={person.src} alt="" loading="lazy" />
 						) : (
-							<span class={cn(avatar.fallback(), "text-xs")}>{person.initials}</span>
+							<span class={cn(avatar.fallback(), "typography--body-xs")}>{person.initials}</span>
 						)}
 					</span>
 					<span class="flex min-w-0 flex-col">
-						<span class="truncate text-sm font-medium text-foreground">{person.name}</span>
-						{person.role && <span class="truncate text-xs text-muted">{person.role}</span>}
+						<span class="truncate typography--body-sm typography--weight-medium text-foreground">{person.name}</span>
+						{person.role && <span class="truncate typography--body-xs text-muted">{person.role}</span>}
 					</span>
 				</li>
 			))}

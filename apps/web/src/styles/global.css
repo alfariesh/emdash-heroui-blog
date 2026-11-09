@@ -161,10 +161,30 @@
 	}
 
 	/* -------------------------------------------------------------------------
-	 * Article body — extends HeroUI's .typography-prose for long-form reading
+	 * Type scale
+	 * Every size in the markup is a HeroUI Typography class (typography--h1…h6,
+	 * typography--body, -body-sm, -body-xs; weights via typography--weight-*).
+	 * Two steps the library has no class for are added here, built from the same
+	 * Tailwind sizes, so there is still one scale and no literal sizes:
+	 *   display  page and article titles (h1, one step up from HeroUI's h1 on wider screens)
+	 *   lead     the muted standfirst under a title
+	 * ----------------------------------------------------------------------- */
+	.typography--display {
+		@apply text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl;
+	}
+
+	.typography--lead {
+		@apply text-lg leading-relaxed text-pretty text-muted sm:text-xl;
+	}
+
+	/* -------------------------------------------------------------------------
+	 * Article body — extends HeroUI's .typography-prose for long-form reading.
+	 * Running text is one step above UI body (text-lg), headings sit one step
+	 * below HeroUI's prose headings (h2 = text-2xl) so they stay in proportion
+	 * with the display title above them.
 	 * ----------------------------------------------------------------------- */
 	.article-prose {
-		@apply text-[1.0625rem] leading-[1.8];
+		@apply text-lg leading-8;
 	}
 
 	.article-prose > * + * {
@@ -173,7 +193,7 @@
 
 	.article-prose p,
 	.article-prose li {
-		@apply text-[1.0625rem] leading-[1.8] text-foreground/90;
+		@apply text-lg leading-8 text-foreground/90;
 	}
 
 	.article-prose h2 {
@@ -187,7 +207,7 @@
 	}
 
 	.article-prose h4 {
-		@apply mt-8 mb-2 text-lg font-semibold text-foreground;
+		@apply mt-8 mb-2 text-lg font-semibold tracking-tight text-foreground;
 	}
 
 	.article-prose h2 + *,
@@ -223,7 +243,7 @@
 	}
 
 	.article-prose pre code {
-		@apply bg-transparent p-0 text-[0.875rem];
+		@apply bg-transparent p-0 text-sm;
 	}
 
 	.article-prose hr {
@@ -328,7 +348,7 @@
 	.toc__list {
 		@apply flex flex-col;
 		gap: var(--toc-gap);
-		font-size: 0.875rem;
+		@apply text-sm;
 		line-height: var(--toc-line);
 	}
 
@@ -752,28 +772,64 @@
  * EmDash widget areas (WidgetArea from "emdash/ui")
  * Unlayered on purpose: these beat the components' own scoped defaults.
  * ------------------------------------------------------------------------- */
+/*
+ * Widgets sit on the page like the table of contents: no card, a muted icon
+ * before the title (same size and weight as .toc__title). The widgets share
+ * one markup, so the icon is picked by what's inside; it's a mask of the
+ * Hugeicons Folder01 / Tag01 outlines, painted in the muted colour.
+ */
 .widget-area {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
+	gap: 1.5rem;
 }
 
-.widget-area .widget {
-	background: var(--surface);
-	box-shadow: var(--surface-shadow);
-	border-radius: min(32px, var(--radius-3xl));
-	padding: 1.25rem;
+/*
+ * In the article sidebar each section (the table of contents above, then every
+ * widget) is set off by a hairline. The 0.5rem of margin tops the flex gap of
+ * the sidebar up to the same 1.5rem the widgets use between themselves.
+ */
+#main .widget-area {
+	margin-top: 0.5rem;
+}
+
+#main .widget-area .widget {
+	/* --separator is nearly invisible on the taupe page, so tint the foreground instead */
+	border-top: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+	padding-top: 1.5rem;
 }
 
 .widget-area .widget__title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 	margin: 0 0 0.75rem;
-	font-size: 0.875rem;
-	font-weight: 600;
+	@apply text-sm font-medium;
 	color: var(--foreground);
 }
 
+#main .widget-area .widget:has(.widget-categories) .widget__title,
+#main .widget-area .widget:has(.widget-tags) .widget__title {
+	&::before {
+		content: "";
+		flex-shrink: 0;
+		width: 1.125rem;
+		height: 1.125rem;
+		background-color: var(--muted);
+		mask: var(--widget-icon) center / contain no-repeat;
+	}
+}
+
+#main .widget-area .widget:has(.widget-categories) {
+	--widget-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13.6656 6.49446H16C18.8284 6.49446 20.2426 6.49446 21.1213 7.37314C22 8.25182 22 9.66603 22 12.4945V14.5C22 17.3284 22 18.7426 21.1213 19.6213C20.2426 20.5 18.8284 20.5 16 20.5H8C5.17157 20.5 3.75736 20.5 2.87868 19.6213C2 18.7426 2 17.3284 2 14.5V8.99183C2 6.65409 2 5.48521 2.61604 4.67881C2.7778 4.46706 2.96706 4.2778 3.17881 4.11604C3.98521 3.5 5.15409 3.5 7.49183 3.5C8.16633 3.5 8.50358 3.5 8.81392 3.60442C8.8976 3.63257 8.97932 3.66623 9.05854 3.70518C9.35239 3.84965 9.59179 4.08719 10.0706 4.56227L10.8483 5.33389C11.4254 5.9066 11.714 6.19295 12.08 6.3437C12.446 6.49446 12.8525 6.49446 13.6656 6.49446Z'/%3E%3C/svg%3E");
+}
+
+#main .widget-area .widget:has(.widget-tags) {
+	--widget-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2H9.01472C10.241 2 10.8541 2 11.4054 2.22836C11.9567 2.45672 12.3903 2.89027 13.2574 3.75736L21.1262 11.6263C21.6841 12.1867 21.9982 12.9449 22 13.7357L22 13.75L22 13.7643C21.9982 14.5551 21.6841 15.3133 21.1262 15.8737L15.8737 21.1262C15.3133 21.6841 14.5551 21.9982 13.7643 22L13.75 22L13.7357 22C12.9449 21.9982 12.1867 21.6841 11.6263 21.1262L3.75736 13.2574C2.89027 12.3903 2.45672 11.9567 2.22836 11.4054C2 10.8541 2 10.241 2 9.01472V8C2 5.17157 2 3.75736 2.87868 2.87868C3.75736 2 5.17157 2 8 2Z'/%3E%3Cpath d='M7.5 7.25V7.5M8 7.5C8 7.77614 7.77614 8 7.5 8C7.22386 8 7 7.77614 7 7.5C7 7.22386 7.22386 7 7.5 7C7.77614 7 8 7.22386 8 7.5Z'/%3E%3C/svg%3E");
+}
+
 .widget-area .widget__content {
-	font-size: 0.875rem;
+	@apply text-sm;
 	color: var(--muted);
 }
 
@@ -824,7 +880,7 @@
 .widget-area .widget-archives__count,
 .widget-area .widget-tags__count {
 	font-variant-numeric: tabular-nums;
-	font-size: 0.75rem;
+	@apply text-xs;
 	color: var(--muted);
 }
 
@@ -841,13 +897,12 @@
 
 .widget-area .widget-recent-posts__link {
 	color: var(--foreground);
-	font-weight: 500;
-	line-height: 1.4;
+	@apply font-medium leading-snug;
 	text-decoration: none;
 }
 
 .widget-area .widget-recent-posts__date {
-	font-size: 0.75rem;
+	@apply text-xs;
 	color: var(--muted);
 }
 
@@ -873,8 +928,7 @@
 
 .widget-area .widget-tags__link {
 	color: var(--default-foreground);
-	font-size: 0.75rem;
-	font-weight: 500;
+	@apply text-xs font-medium;
 	text-decoration: none;
 }
 
@@ -896,20 +950,13 @@
 	border-radius: var(--field-radius);
 	background: var(--default);
 	padding: 0.5rem 0.875rem;
-	font-weight: 500;
+	@apply font-medium;
 	color: var(--default-foreground);
 	cursor: var(--cursor-interactive);
 }
 
 .widget-area .widget__content p {
-	line-height: 1.6;
-}
-
-/* Footer widget area sits on the page background, not in a card */
-.footer-widgets .widget-area .widget {
-	background: transparent;
-	box-shadow: none;
-	padding: 0;
+	@apply leading-relaxed;
 }
 
 /* ---------------------------------------------------------------------------
@@ -924,8 +971,7 @@
 
 #main .post-comments .ec-comments-heading {
 	margin: 0 0 1rem;
-	font-size: 1rem;
-	font-weight: 600;
+	@apply text-base font-semibold;
 }
 
 #main .post-comments .ec-comment-author {
@@ -939,7 +985,7 @@
 
 #main .post-comments .ec-comment-body {
 	color: color-mix(in oklch, var(--foreground) 90%, transparent);
-	line-height: 1.7;
+	@apply leading-relaxed;
 }
 
 #main .post-comments .ec-comment-form {
@@ -947,8 +993,7 @@
 }
 
 #main .post-comments .ec-comment-form-field span {
-	font-size: 0.875rem;
-	font-weight: 500;
+	@apply text-sm font-medium;
 	color: var(--foreground);
 }
 
@@ -959,7 +1004,7 @@
 	background: var(--surface-secondary);
 	padding: 0.625rem 0.75rem;
 	color: var(--field-foreground);
-	font-size: 0.875rem;
+	@apply text-sm;
 	transition: box-shadow 150ms ease;
 }
 
@@ -990,8 +1035,7 @@
 	border-radius: calc(var(--radius) * 3);
 	background: var(--accent);
 	padding: 0 1rem;
-	font-size: 0.875rem;
-	font-weight: 500;
+	@apply text-sm font-medium;
 	color: var(--accent-foreground);
 	cursor: var(--cursor-interactive);
 	transition:

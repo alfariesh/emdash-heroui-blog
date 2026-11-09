@@ -37,12 +37,12 @@ const chip = chipVariants({ size: "sm", variant: "soft", color: "accent" });
 				</span>
 			)
 		}
-		<h1 class="text-4xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl" data-enter="lead">
+		<h1 class="typography--display" data-enter="lead">
 			{title}
 		</h1>
 		{
 			description && (
-				<p class="max-w-2xl text-lg leading-8 text-muted text-pretty" data-enter="support" style={enterDelay(80)}>
+				<p class="max-w-2xl typography--lead" data-enter="support" style={enterDelay(80)}>
 					{description}
 				</p>
 			)

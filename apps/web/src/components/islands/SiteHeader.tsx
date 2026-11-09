@@ -56,7 +56,7 @@ function Brand({ siteTitle, logo }: Pick<Props, "siteTitle" | "logo">) {
 function navLinkClass(current?: NavItem["current"]) {
 	return cn(
 		buttonVariants({ variant: "ghost", size: "sm" }),
-		"font-medium",
+		"typography--weight-medium",
 		current ? "bg-default text-foreground" : "text-muted hover:text-foreground",
 	);
 }
@@ -71,9 +71,9 @@ function DockedTitle({ title }: { title: string }) {
 	const active = sections.find((section) => section.id === activeId);
 
 	const label = (
-		<span className="flex min-w-0 items-center gap-1.5 text-[0.9375rem] tracking-tight">
+		<span className="flex min-w-0 items-center gap-1.5 typography--h6">
 			{/* On phones the section alone fits; the title returns between sections. */}
-			<span className={cn("min-w-0 shrink-[3] truncate font-semibold text-foreground", active && "max-sm:hidden")}>
+			<span className={cn("min-w-0 shrink-[3] truncate typography--weight-semibold text-foreground", active && "max-sm:hidden")}>
 				{title}
 			</span>
 			{active && (
@@ -84,7 +84,7 @@ function DockedTitle({ title }: { title: string }) {
 						className="shrink-0 text-muted max-sm:hidden"
 						aria-hidden="true"
 					/>
-					<span key={active.id} className="header-section min-w-0 truncate font-medium text-muted max-sm:font-semibold max-sm:text-foreground">
+					<span key={active.id} className="header-section min-w-0 truncate typography--weight-medium text-muted max-sm:font-semibold max-sm:text-foreground">
 						{active.title}
 					</span>
 				</>
@@ -117,7 +117,7 @@ function DockedTitle({ title }: { title: string }) {
 				</Popover.Trigger>
 				<Popover.Content placement="bottom start" className="w-80 max-w-[calc(100vw-2rem)]">
 					<Popover.Dialog className="flex flex-col gap-1 p-2">
-						<Popover.Heading className="px-3 pt-1 pb-1 text-sm font-semibold text-foreground">
+						<Popover.Heading className="px-3 pt-1 pb-1 typography--body-sm typography--weight-semibold text-foreground">
 							Di halaman ini
 						</Popover.Heading>
 						<ol className="flex max-h-[60dvh] flex-col gap-0.5 overflow-y-auto">
@@ -224,7 +224,7 @@ export default function SiteHeader({
 																}
 																aria-current={item.current}
 																className={cn(
-																	"pressable flex h-11 items-center rounded-xl px-3 text-[0.9375rem] font-medium [--press-scale:0.98]",
+																	"pressable flex h-11 items-center rounded-xl px-3 typography--body typography--weight-medium [--press-scale:0.98]",
 																	item.current
 																		? "bg-surface-secondary text-foreground"
 																		: "text-muted hover:bg-default hover:text-foreground",
@@ -241,7 +241,7 @@ export default function SiteHeader({
 									<Drawer.Footer className="flex flex-col items-stretch gap-4">
 										<Separator />
 										<div className="flex items-center justify-between gap-3">
-											<span className="text-sm text-muted">Tema</span>
+											<span className="typography--body-sm text-muted">Tema</span>
 											<ThemeSwitcher initialPreference={themePreference} />
 										</div>
 										{isLoggedIn && (
