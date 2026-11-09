@@ -31,6 +31,7 @@ const TOKENS = [
 	"arti" + "kel",
 	"jelaja" + "hi",
 	"kem" + "bali",
+	"sam" + "pul",
 	"ten" + "tang",
 	"id-" + "ID",
 	"Ba" + "hasa",

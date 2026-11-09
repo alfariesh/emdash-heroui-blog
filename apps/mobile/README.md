@@ -10,7 +10,7 @@ A blog reader for iOS and Android: [Expo](https://expo.dev) SDK 58 (React Native
 | Explore | Category cards (icon, post count) and a tag cloud |
 | Search | Debounced search across posts and pages, highlighted matches, tag suggestions |
 | Saved | Bookmarked posts, stored on the device (readable offline) |
-| Post | Parallax hero image, a glass top bar with reading progress, native Portable Text, tags, discussion (read comments; write through the web form), "Read next", save and share, and a "Continue reading" offer when an unfinished post is opened again |
+| Post | Parallax hero image, a progressive-blur top bar, a back-to-top button with a reading-progress ring, native Portable Text, tags, discussion (read comments; write through the web form), "Read next", save and share, and a "Continue reading" offer when an unfinished post is opened again |
 | Category / Tag / Page | An archive for one term, and static pages (for example About) |
 | Settings | Theme (system/light/dark), new-post notifications (opt-in), pages from the site menu, open the website, clear the cache |
 
@@ -18,7 +18,7 @@ A link inside content that points at this site opens as an app screen; other lin
 
 ## Internal ads
 
-The app reads CMS-managed ads from `GET /api/v1/ads?placement=home|post_bottom`, without an admin token. Deploy the updated web API before releasing the mobile build; no additional CMS fields are needed if the `ads` collection is already installed.
+The app reads CMS-managed ads from `GET /api/v1/ads?placement=home|post_bottom`, without an admin token. Deploy the updated web API before releasing the mobile build; no additional CMS fields are needed if the `ads` collection is already installed (a database set up from the Indonesian seed keeps its original placement options, which are still accepted).
 
 Both placements use a **3:1** frame (recommended asset: **1200 × 400 px**). Home shows a banner after the last feed page; articles show at most one banner after the content and tags, before comments. Sidebar campaigns remain web-only. Images are contained without cropping, labeled "Ad", and links use the usual app/browser routing.
 

@@ -147,7 +147,7 @@ const TITLES: Record<string, string> = {
 	iframe: "Embedded content",
 	htmlBlock: "Interactive content",
 	table: "Table",
-	cover: "Sampul",
+	cover: "Cover",
 };
 
 function Figure({ image }: { image: ApiImage & { caption?: string } }) {

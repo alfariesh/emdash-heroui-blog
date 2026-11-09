@@ -8,8 +8,9 @@
  * Colours, radii and shadows are HeroUI theme tokens (bg-background,
  * bg-surface, text-muted, bg-accent, border-separator, shadow-surface…).
  * The web app (apps/web/src/styles/global.css) uses the same palette and
- * overrides: change the palette in both places or in neither. Values here are
- * plain hex (no color-mix), since native has no CSS colour mixing.
+ * overrides, except --separator, which is tuned per platform: change the
+ * palette in both places or in neither. Values here are plain hex (no
+ * color-mix), since native has no CSS colour mixing.
  */
 @import "tailwindcss";
 @import "uniwind";

@@ -24,11 +24,11 @@ src/
 │   ├── posts/[slug].tsx    Article: parallax hero, progressive-blur top bar, back-to-top progress ring, resume offer, #comments
 │   ├── category/[slug].tsx, tag/[slug].tsx, pages/[slug].tsx, settings.tsx, +not-found.tsx
 ├── components/
-│   ├── ui/                 App primitives on top of HeroUI (Icon, Image, StateView, ScreenHeader, GlassIconButton, ProgressiveBlur)
-│   ├── post/               Post cards, list, byline, meta, chips, article top bar
+│   ├── ui/                 App primitives on top of HeroUI (Icon, Image, StateView, ScreenHeader, GlassIconButton, ProgressiveBlur, BrandLogo)
+│   ├── post/               Post cards, list, byline, meta, chips, article top bar, back-to-top
 │   ├── portable-text/      Native Portable Text renderer (no WebView, no HTML)
-│   └── …                   Screen-level pieces (tab-bar, category-rail, term-header, navigation theme)
-├── lib/                    No JSX: config, api client, queries, query client, storage, theme, links, icons, bookmarks, reading progress, notifications
+│   └── …                   Screen-level pieces (tab-bar, ad-slot, category-rail, term-header, navigation theme)
+├── lib/                    No JSX: config, api client, queries, query client, storage, theme, links, icons, bookmarks, reading progress, ads, notifications
 └── global.css              Tailwind + Uniwind + HeroUI Native imports, font tokens
 ```
 
@@ -58,7 +58,7 @@ Put code where its kind lives: data and side effects in `lib/`, presentational p
 - **Typography:** `Typography` / `Typography.Heading` / `Typography.Paragraph` with `type`, `color`, `weight`. Google Sans is loaded per face and mapped by `--font-normal|medium|semibold|bold` in `global.css`, so `font-semibold` selects `GoogleSans_600SemiBold`. Italic and monospace are font families, not weights: set them with `style={{ fontFamily }}` (see `portable-text/text-block.tsx`). Article body is 17/30 px; titles use `tracking-tight`; numbers in metadata use `tabular-nums`.
 - **Third-party components** don't take `className` unless wrapped: wrap once at module level with `withUniwind` (see `ui/image.tsx`, `ui/icon.tsx`) or pass `style` (e.g. `LinearGradient`).
 - **Icons:** Hugeicons free set only, rendered with `<Icon icon={…} tone="muted" />` (`components/ui/icon.tsx`). Import icon data from `@/lib/icons`, which deep-imports one file per icon (`@hugeicons/core-free-icons/<Name>`); never import the package root (~12k modules). Category icons come from `categoryIcon(slug, apiKey)`; the key map must match `CATEGORY_ICON_KEYS` (the `satisfies` check enforces it).
-- **Glass:** floating chrome (tab bar, article top bar, buttons over photos) uses HeroUI `GlassView` (blur on iOS, opaque surface on Android). Content layered above an absolute background goes inside a `View` so it stays on top on every renderer.
+- **Glass:** floating chrome (tab bar, buttons over photos, the article top bar's buttons) uses HeroUI `GlassView` (blur on iOS, opaque surface on Android); the article top bar's own backdrop is `ProgressiveBlur`. Content layered above an absolute background goes inside a `View` so it stays on top on every renderer.
 
 ## Data
 

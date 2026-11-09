@@ -396,7 +396,7 @@
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop",
 							"alt": "Code on a monitor in a dark room",
-							"filename": "membangun-jangka-panjang.jpg"
+							"filename": "building-for-the-long-term.jpg"
 						}
 					},
 					"content": [
@@ -569,7 +569,7 @@
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=800&fit=crop",
 							"alt": "A laptop and a cup of coffee on a wooden desk",
-							"filename": "situs-statis.jpg"
+							"filename": "static-site.jpg"
 						}
 					},
 					"content": [
@@ -673,7 +673,7 @@
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1575026615908-666710ae5e47?w=1200&h=800&fit=crop",
 							"alt": "Wrenches and hand tools hanging on a workshop wall",
-							"filename": "perkakas-kecil.jpg"
+							"filename": "small-tools.jpg"
 						}
 					},
 					"content": [
@@ -764,7 +764,7 @@
 						"$media": {
 							"url": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=1200&h=800&fit=crop",
 							"alt": "Pencils and design tools on a desk",
-							"filename": "mendesain-dengan-batasan.jpg"
+							"filename": "designing-with-constraints.jpg"
 						}
 					},
 					"content": [

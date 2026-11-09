@@ -48,8 +48,6 @@ const APP_LINK_HOST = appLinkHost();
 /** Splash backgrounds: the theme's `--background` (warm-taupe in light, near-black in dark), see src/global.css. */
 const SPLASH_LIGHT = "#f5f3f1";
 const SPLASH_DARK = "#0c0b0a";
-/** Theme accent (ember-orange), see src/global.css. */
-const ACCENT = "#ff4704";
 /** Logo red: the adaptive-icon background and the notification tint. */
 const BRAND = "#F14422";
 
