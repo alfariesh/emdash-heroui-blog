@@ -23,6 +23,8 @@ interface PostListProps {
 	filter?: PostFilter;
 	/** Rendered above the posts (title, chips…); scrolls with the list. */
 	header?: ReactElement;
+	/** Optional content after the last page, so pagination never moves it between posts. */
+	footer?: ReactElement;
 	/** Show the newest post that has an image as a large feature card. */
 	featureFirst?: boolean;
 	hideCategory?: boolean;
@@ -41,6 +43,7 @@ interface PostListProps {
 export function PostList({
 	filter,
 	header,
+	footer,
 	featureFirst = false,
 	hideCategory = false,
 	bottomInset,
@@ -105,12 +108,15 @@ export function PostList({
 			}
 			ListFooterComponent={
 				rows.length > 0 ? (
-					<ListFooter
-						loading={query.isFetchingNextPage}
-						failed={query.isFetchNextPageError}
-						done={!query.hasNextPage}
-						onRetry={() => void query.fetchNextPage()}
-					/>
+					<View>
+						{!query.hasNextPage ? footer : null}
+						<ListFooter
+							loading={query.isFetchingNextPage}
+							failed={query.isFetchNextPageError}
+							done={!query.hasNextPage}
+							onRetry={() => void query.fetchNextPage()}
+						/>
+					</View>
 				) : null
 			}
 			onEndReached={onEndReached}

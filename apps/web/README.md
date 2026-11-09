@@ -23,6 +23,7 @@ JSON baca-saja untuk aplikasi mobile. Hanya konten yang sudah terbit; draf selal
 
 | Endpoint | Isi |
 |---|---|
+| `GET /api/v1/ads?placement=home\|post_bottom` | One eligible banner or null, with a short-lived schedule lease (`no-store`) |
 | `GET /api/v1/site` | Judul, tagline, logo, item menu `primary` |
 | `GET /api/v1/posts?cursor=&limit=&category=&tag=` | Ringkasan tulisan (terbaru dulu) + `nextCursor` |
 | `GET /api/v1/posts/:slug` | Detail tulisan + konten Portable Text |
@@ -66,7 +67,7 @@ Langkah di sisi aplikasi (proyek EAS, Firebase) ada di `apps/mobile/README.md`.
 
 ## Iklan internal
 
-Collection **Iklan** (`ads`) mengelola banner web melalui CMS. Instalasi baru mendapat schema dari seed. Untuk database yang sudah berjalan, jalankan sekali setelah `pnpm dev`:
+The **Iklan** collection (`ads`) manages web and native app banners through CMS. New installations get the schema from seed. For an existing database, run once after `pnpm dev`:
 
 ```bash
 pnpm --filter @blog/web setup:ads
@@ -90,7 +91,7 @@ Maksimal **satu iklan terlihat per artikel** pada setiap ukuran layar. Desktop m
 
 Frame gambar beranda/bawah artikel memakai rasio **3:1** (siapkan aset **1200 × 400 px**); sidebar memakai **6:5** (siapkan aset **600 × 500 px**). Frame sudah mendapat ruang sejak halaman dirender agar gambar yang dimuat belakangan tidak menggeser tulisan. Gambar dengan rasio berbeda tetap ditampilkan utuh di dalam frame dengan ruang kosong seperlunya. CMS tetap menerima gambar dengan dimensi lain.
 
-Angka **Prioritas** terbesar menang dalam satu posisi; jika sama, ID terkecil dipilih agar hasil konsisten. Iklan nonaktif, draf, kedaluwarsa, jadwal tidak valid, atau banner/URL tidak lengkap dilewati. Tanpa kandidat, slot dan ruangnya hilang. Versi ini belum menayangkan iklan di aplikasi native atau menghitung tayangan/klik.
+The highest **Prioritas** wins within a placement; ID ascending breaks ties. Disabled, draft, expired, malformed or incomplete ads are skipped. Empty slots leave no space. The native app uses Beranda and Bawah artikel only, both 3:1; it refreshes through the public API within 60 seconds or at the next schedule boundary and does not persist ads offline. There is no impression or click tracking.
 
 ## Struktur `src/`
 

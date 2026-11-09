@@ -35,8 +35,10 @@
  * Theme overrides — HeroUI variables
  * ------------------------------------------------------------------------- */
 :root {
+	/* Shared with mobile: content cards are flat in light and dark themes. */
+	--surface-shadow: 0 0 0 0 transparent;
 	/*
-	 * HeroUI defaults are used as-is. Cards are radius-3xl (24px); images inset
+	 * HeroUI colours and radii use defaults. Cards are radius-3xl (24px); images inset
 	 * by p-2 use radius-2xl (16px) so corners stay concentric. Change --radius
 	 * or --accent here to restyle the whole site, e.g.:
 	 * --accent: oklch(0.62 0.19 150);

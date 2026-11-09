@@ -1,5 +1,5 @@
 import { getEmDashCollection } from "emdash";
-import { selectAd, type AdPlacement } from "./ad-selection";
+import { nextAdChangeAt, selectAd, type AdPlacement } from "./ad-selection";
 
 /** Fetch every matching candidate so expired high-priority ads cannot hide an active one. */
 export async function getAds(placements: AdPlacement[]) {
@@ -11,7 +11,11 @@ export async function getAds(placements: AdPlacement[]) {
 	const candidates = error ? [] : entries.map((entry) => entry.data);
 	const now = Date.now();
 	return {
+		error,
+		now,
 		forPlacement: (placement: AdPlacement) => selectAd(candidates, placement, now),
+		validUntil: (placement: AdPlacement) =>
+			Math.min(now + 60_000, nextAdChangeAt(candidates, placement, now) ?? Infinity),
 		// Date boundaries change without a CMS write. Render on each request,
 		// including when no ad is active yet; purge tags alone are insufficient.
 		cacheHint: { ...cacheHint, maxAge: 0, swr: 0 },

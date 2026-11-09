@@ -153,11 +153,11 @@ function Suggestions({ onPick }: { onPick: (q: string) => void }) {
 				className="py-10"
 			/>
 			{popular.length > 0 ? (
-				<View className="gap-3">
-					<Typography type="body-xs" color="muted" weight="medium" className="px-1 uppercase tracking-wider">
+				<View className="items-center gap-3">
+					<Typography type="body-xs" color="muted" weight="medium" className="px-1 text-center uppercase tracking-wider">
 						Coba cari
 					</Typography>
-					<View className="flex-row flex-wrap gap-2">
+					<View className="flex-row flex-wrap justify-center gap-2">
 						{popular.map((tag) => (
 							<Chip key={tag.slug} size="lg" variant="secondary" color="default" onPress={() => onPick(tag.label)}>
 								<Chip.Label>{tag.label}</Chip.Label>

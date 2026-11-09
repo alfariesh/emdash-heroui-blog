@@ -1,5 +1,7 @@
 import {
 	API_BASE_PATH,
+	type ApiAdPlacement,
+	type ApiAdSlot,
 	type ApiDeviceRegistration,
 	type ApiDeviceStatus,
 	type ApiError,
@@ -54,6 +56,7 @@ export interface BlogClient {
 	/** Base URL the client was created with, without a trailing slash. */
 	readonly baseUrl: string;
 	getSite(options?: RequestOptions): Promise<ApiSite>;
+	getAd(placement: ApiAdPlacement, options?: RequestOptions): Promise<ApiAdSlot>;
 	getPosts(query?: PostListQuery, options?: RequestOptions): Promise<ApiPage<ApiPostSummary>>;
 	getPost(slug: string, options?: RequestOptions): Promise<ApiPost>;
 	getPostComments(slug: string, options?: RequestOptions): Promise<ApiPostComments>;
@@ -144,6 +147,8 @@ export function createBlogClient(baseUrl: string): BlogClient {
 	return {
 		baseUrl: root,
 		getSite: (options) => data<ApiSite>("/site", options),
+		getAd: (placement, options) =>
+			data<ApiAdSlot>(`/ads${toQueryString({ placement })}`, options),
 		getPosts: (query = {}, options) =>
 			request<ApiPage<ApiPostSummary>>(
 				`/posts${toQueryString({

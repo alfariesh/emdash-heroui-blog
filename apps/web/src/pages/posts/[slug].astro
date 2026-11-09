@@ -20,9 +20,9 @@ import PostCard from "../../components/PostCard.astro";
 import AdSlot from "../../components/AdSlot.astro";
 import { getAds } from "../../lib/ads";
 import { AD_PLACEMENTS } from "../../lib/ad-selection";
-import { formatDate, getLocale } from "../../lib/locale";
+import { getLocale } from "../../lib/locale";
 import { enterDelay } from "../../lib/motion";
-import { formatReadingTime, getReadingTime, resolveBlogSiteIdentity } from "@blog/shared";
+import { resolveBlogSiteIdentity } from "@blog/shared";
 
 const origin = publicOrigin(Astro);
 const slug = decodeSlug(Astro.params.slug);
@@ -71,7 +71,6 @@ const seo = getSeoMeta(post, {
 const bylines = post.data.bylines ?? [];
 const tags = post.data.terms?.tag ?? [];
 const categories = post.data.terms?.category ?? [];
-const readingTime = formatReadingTime(getReadingTime(post.data.content));
 
 // Fetch a few extra recent posts in case the current post is among them.
 const [{ entries: recentPosts, cacheHint: recentPostsCacheHint }, ads] = await Promise.all([
@@ -88,9 +87,6 @@ const bottomAd = ads.forPlacement(AD_PLACEMENTS.postBottom);
 
 // Tags + category for the related posts in two batched queries
 const otherTermsFor = await getPostTerms(otherPosts.map((p) => p.data.id));
-
-const publishedAt = post.data.publishedAt ?? null;
-const publishDate = publishedAt ? formatDate(publishedAt, "long") : null;
 
 // The script below builds the table of contents and has the final say; this
 // guess keeps the sidebar from shifting when the page loads.
@@ -184,11 +180,6 @@ const commentListLabels = {
 
 				<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1" data-enter="support" style={enterDelay(140)}>
 					<Byline bylines={bylines} max={2} size="md" />
-					<p class="flex items-center gap-2 text-sm text-muted tabular-nums">
-						{publishedAt && <time datetime={publishedAt.toISOString()}>{publishDate}</time>}
-						{publishedAt && <span aria-hidden="true">·</span>}
-						<span>{readingTime}</span>
-					</p>
 				</div>
 			</div>
 		</header>

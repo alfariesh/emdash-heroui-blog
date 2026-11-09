@@ -60,6 +60,26 @@ export interface ApiImage {
 	height: number | null;
 }
 
+/** Native placements use a 3:1 image frame; sidebar campaigns stay on the web. */
+export type ApiAdPlacement = "home" | "post_bottom";
+
+export interface ApiAd {
+	id: string;
+	title: string;
+	image: ApiImage;
+	/** Validated absolute HTTP(S) destination. */
+	targetUrl: string;
+}
+
+/** A short-lived selection, including when no campaign is currently eligible. */
+export interface ApiAdSlot {
+	ad: ApiAd | null;
+	/** Selection time, used to avoid relying on the device's clock matching the server. */
+	serverTime: string;
+	/** Revalidate by this time (at most 60 seconds, or the next schedule boundary). */
+	validUntil: string;
+}
+
 export interface ApiByline {
 	name: string;
 	/** Absolute URL, or null when the byline has no avatar. */

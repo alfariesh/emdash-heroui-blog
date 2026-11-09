@@ -5,6 +5,7 @@ import { Button } from "heroui-native/button";
 import { Typography } from "heroui-native/text";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AdSlot } from "@/components/ad-slot";
 import { CategoryRail } from "@/components/category-rail";
 import { PostList } from "@/components/post/post-list";
 import { useTabBarInset } from "@/components/tab-bar";
@@ -27,7 +28,12 @@ export default function HomeScreen() {
 
 	return (
 		<View className="flex-1 bg-background" style={{ paddingTop: top }}>
-			<PostList featureFirst bottomInset={bottomInset} header={<HomeHeader />} />
+			<PostList
+				featureFirst
+				bottomInset={bottomInset}
+				header={<HomeHeader />}
+				footer={<AdSlot placement="home" className="mt-6" />}
+			/>
 		</View>
 	);
 }

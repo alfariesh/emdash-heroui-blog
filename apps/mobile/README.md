@@ -16,6 +16,14 @@ Aplikasi pembaca blog untuk iOS dan Android: [Expo](https://expo.dev) SDK 58 (Re
 
 Tautan di dalam konten yang mengarah ke situs sendiri dibuka sebagai layar aplikasi; tautan lain dibuka di browser dalam aplikasi. Tautan tulisan dari luar (chat, email, media sosial) bisa langsung membuka aplikasi, dan tautan yang berakhir `#komentar` langsung menuju diskusi; lihat [Tautan aplikasi](#tautan-aplikasi-universal-links--app-links). Feed dan tulisan terakhir disimpan 24 jam sehingga aplikasi tetap bisa dibaca saat offline.
 
+## Internal ads
+
+The app reads CMS-managed ads from `GET /api/v1/ads?placement=home|post_bottom`, without an admin token. Deploy the updated web API before releasing the mobile build; no additional CMS fields are needed if the `ads` collection is already installed.
+
+Both placements use a **3:1** frame (recommended asset: **1200 × 400 px**). Home shows a banner after the last feed page; articles show at most one banner after the content and tags, before comments. Sidebar campaigns remain web-only. Images are contained without cropping, labeled “Iklan”, and links use the usual app/browser routing.
+
+Schedules, priority and the enabled switch remain in CMS. Selections refresh within 60 seconds or at the next schedule boundary. Expired, unavailable and failed-image banners leave no empty space. Ads are excluded from the offline cache; there is no impression or click tracking.
+
 ## Menjalankan
 
 ```bash

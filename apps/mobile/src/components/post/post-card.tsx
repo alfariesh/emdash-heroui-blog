@@ -11,7 +11,6 @@ import { Image } from "@/components/ui/image";
 import { categoryIcon } from "@/lib/icons";
 import { prefetchPost } from "@/lib/queries";
 import { Byline } from "./byline";
-import { PostMeta } from "./post-meta";
 import { TermChips } from "./term-chips";
 
 export type PostCardVariant = "feature" | "row";
@@ -81,9 +80,8 @@ function FeatureCard({ post, categories }: CardBodyProps) {
 					</Typography.Paragraph>
 				) : null}
 			</Card.Body>
-			<Card.Footer className="flex-row items-center justify-between gap-3 px-3 pb-2">
-				<Byline bylines={post.bylines} className="flex-1" />
-				<PostMeta publishedAt={post.publishedAt} readingTime={post.readingTime} />
+			<Card.Footer className="px-3 pb-2">
+				<Byline bylines={post.bylines} />
 			</Card.Footer>
 		</Card>
 	);
@@ -102,7 +100,7 @@ function RowCard({ post, categories }: CardBodyProps) {
 				<Typography.Heading type="h6" className="text-[17px] leading-6" numberOfLines={3}>
 					{post.title}
 				</Typography.Heading>
-				<PostMeta publishedAt={post.publishedAt} readingTime={post.readingTime} />
+				<Byline bylines={post.bylines} className="mt-1" />
 			</View>
 			<View className="size-24 overflow-hidden rounded-2xl bg-surface-secondary">
 				{post.featuredImage ? (

@@ -22,11 +22,11 @@ import Animated, {
 	useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AdSlot } from "@/components/ad-slot";
 import { ArticleTopBar, TOP_BAR_HEIGHT } from "@/components/post/article-top-bar";
 import { Byline } from "@/components/post/byline";
 import { PostCard } from "@/components/post/post-card";
 import { PostComments } from "@/components/post/post-comments";
-import { PostMeta } from "@/components/post/post-meta";
 import { ResumeReading } from "@/components/post/resume-reading";
 import { TermChips } from "@/components/post/term-chips";
 import { PortableText } from "@/components/portable-text/portable-text";
@@ -201,6 +201,10 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 					) : null}
 				</View>
 
+				{contentLoading || bodyFailed ? null : (
+					<AdSlot placement="post_bottom" className="mx-4 mt-10" />
+				)}
+
 				{/* After the body has loaded, so the comments request never competes with it. */}
 				{contentLoading || bodyFailed ? null : (
 					<View className="mx-4 mt-12" onLayout={onCommentsLayout}>
@@ -247,8 +251,7 @@ function ArticleHeader({ post }: { post: ApiPost }) {
 				</Typography>
 			) : null}
 			<View className="gap-3 pt-1">
-				<Byline bylines={post.bylines} max={2} size="md" showRole />
-				<PostMeta publishedAt={post.publishedAt} readingTime={post.readingTime} dateStyle="long" />
+				<Byline bylines={post.bylines} max={2} size="md" />
 			</View>
 		</View>
 	);

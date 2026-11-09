@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AD_PLACEMENTS, isAdUrl, selectAd, type AdCandidate } from "./ad-selection.ts";
+import { AD_PLACEMENTS, isAdUrl, nextAdChangeAt, selectAd, type AdCandidate } from "./ad-selection.ts";
 
 const now = Date.parse("2026-11-08T05:00:00Z");
 const ad = (changes: Partial<AdCandidate> = {}): AdCandidate => ({
@@ -79,4 +79,22 @@ test("missing and non-finite priorities use zero, including alongside negative p
 	for (const priority of [undefined, null, NaN, Infinity, -Infinity]) {
 		assert.equal(select([ad({ priority }), ad({ id: "negative", priority: -1 })])?.id, "ad-a");
 	}
+});
+
+test("refresh includes future starts even when another campaign is already selected", () => {
+	const candidates = [ad({ ends_at: new Date(now + 30_000) }),
+		ad({ id: "future", priority: 10, starts_at: new Date(now + 5000) })];
+	assert.equal(nextAdChangeAt(candidates, AD_PLACEMENTS.home, now), now + 5000);
+	assert.equal(selectAd(candidates, AD_PLACEMENTS.home, now + 5000)?.id, "future");
+	assert.equal(nextAdChangeAt([ad({ starts_at: new Date(now + 1000) })], AD_PLACEMENTS.home, now), now + 1000);
+});
+
+test("refresh ignores ineligible, expired, unbounded and malformed schedules", () => {
+	const candidates = [ad(), ad({ enabled: false, ends_at: new Date(now + 1) }),
+		ad({ placement: AD_PLACEMENTS.postSidebar, ends_at: new Date(now + 1) }),
+		ad({ starts_at: "invalid", ends_at: new Date(now + 1) }),
+		ad({ starts_at: new Date(now + 2), ends_at: new Date(now + 1) }),
+		ad({ ends_at: new Date(now) }), ad({ status: "draft", ends_at: new Date(now + 1) })];
+	assert.equal(nextAdChangeAt(candidates, AD_PLACEMENTS.home, now), undefined);
+	assert.equal(nextAdChangeAt([ad({ ends_at: new Date(now + 1) })], AD_PLACEMENTS.home, now), now + 1);
 });

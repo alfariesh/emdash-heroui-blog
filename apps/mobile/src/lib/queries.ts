@@ -4,19 +4,38 @@
  * typed key + fetcher. Keys are hierarchical: invalidating ["posts"] covers
  * every list and detail.
  */
-import type { ApiPage, ApiPostSummary, ApiSearchResult } from "@blog/shared";
+import type { ApiAdPlacement, ApiPage, ApiPostSummary, ApiSearchResult } from "@blog/shared";
 import {
 	infiniteQueryOptions,
 	queryOptions,
 	type InfiniteData,
 	type QueryClient,
 } from "@tanstack/react-query";
+import { adRefreshDelay, createAdSnapshot, MAX_AD_LEASE_MS } from "./ad-snapshot";
 import { api } from "./api";
 
 const MINUTE = 60_000;
 
 export const POSTS_PAGE_SIZE = 10;
 export const SEARCH_MIN_LENGTH = 2;
+
+/** Optional banners refresh at schedule boundaries and fail quietly without retries. */
+export const adQuery = (placement: ApiAdPlacement) =>
+	queryOptions({
+		queryKey: ["ads", placement],
+		queryFn: async ({ signal }) => {
+			const requestedAt = Date.now();
+			const slot = await api.getAd(placement, { signal });
+			return createAdSnapshot(slot, requestedAt, Date.now());
+		},
+		staleTime: 0,
+		gcTime: 0,
+		retry: false,
+		refetchInterval: (query) =>
+			query.state.status === "error"
+				? MAX_AD_LEASE_MS
+				: adRefreshDelay(query.state.data, Date.now()),
+	});
 
 export interface PostFilter {
 	category?: string;

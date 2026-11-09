@@ -50,7 +50,7 @@ Tanpa konfigurasi, aplikasi memakai API dari komputer yang menjalankan Metro (po
 
 - `apps/web/.env`, data lokal (`.wrangler/`) dan build tidak ikut di-commit. Di produksi kunci enkripsi disimpan sebagai secret Worker.
 - Aplikasi mobile mengambil konten lewat API publik baca-saja `/api/v1/*` dari `apps/web`, bukan dari API admin EmDash (yang wajib login). Daftar endpoint ada di `apps/web/README.md`.
-- Iklan internal web dikelola melalui collection **Iklan** di CMS. Database yang sudah berjalan memerlukan `setup:ads` sebelum memakai fitur ini; panduan posisi, jadwal, format banner, dan penerapan schema ada di [panduan web](apps/web/README.md#iklan-internal).
+- Web and native app ads share the **Iklan** collection in CMS. Existing databases need `setup:ads`; see the [web guide](apps/web/README.md#iklan-internal) for schema, placements and schedules, and the [mobile guide](apps/mobile/README.md#internal-ads) for the 3:1 app banners.
 
 ## API publik
 

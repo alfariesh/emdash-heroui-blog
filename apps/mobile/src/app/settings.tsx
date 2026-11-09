@@ -130,9 +130,6 @@ export default function SettingsScreen() {
 				<Typography type="body-xs" color="muted">
 					{`${site?.title ?? Constants.expoConfig?.name ?? "Blog"} · versi ${Constants.expoConfig?.version ?? "1.0.0"}`}
 				</Typography>
-				<Typography type="body-xs" color="muted">
-					Konten dikelola dengan EmDash
-				</Typography>
 			</View>
 		</ScrollView>
 	);

@@ -33,7 +33,7 @@ const INTERNAL_MEDIA_PREFIX = "/_emdash/api/media/file/";
 
 const CACHE_OK = "public, max-age=60, stale-while-revalidate=300";
 const CACHE_ERROR = "no-store";
-/** For responses to writes (device registration): never cached. */
+/** For writes and schedule-sensitive selections: never cached. */
 export const NO_STORE = "no-store";
 
 const BASE_HEADERS = {

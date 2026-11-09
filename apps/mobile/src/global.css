@@ -14,6 +14,18 @@
 @import "uniwind";
 @import "heroui-native/styles";
 
+/* Keep content cards flat in both themes; overlays retain their own elevation. */
+@layer theme {
+	:root {
+		@variant light {
+			--surface-shadow: 0 0 0 0 transparent;
+		}
+		@variant dark {
+			--surface-shadow: 0 0 0 0 transparent;
+		}
+	}
+}
+
 /*
  * Inter, loaded in src/app/_layout.tsx with expo-font. HeroUI Native maps
  * font-normal/medium/semibold/bold to these families, so all four must be
