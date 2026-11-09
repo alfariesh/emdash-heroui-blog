@@ -27,13 +27,13 @@
 }
 
 /*
- * Inter, loaded in src/app/_layout.tsx with expo-font. HeroUI Native maps
+ * Google Sans, loaded in src/app/_layout.tsx with expo-font. HeroUI Native maps
  * font-normal/medium/semibold/bold to these families, so all four must be
  * defined together (see HeroUI Native "Theming → Custom Fonts").
  */
 @theme {
-	--font-normal: "Inter_400Regular";
-	--font-medium: "Inter_500Medium";
-	--font-semibold: "Inter_600SemiBold";
-	--font-bold: "Inter_700Bold";
+	--font-normal: "GoogleSans_400Regular";
+	--font-medium: "GoogleSans_500Medium";
+	--font-semibold: "GoogleSans_600SemiBold";
+	--font-bold: "GoogleSans_700Bold";
 }

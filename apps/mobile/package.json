@@ -18,7 +18,7 @@
 	},
 	"dependencies": {
 		"@blog/shared": "workspace:*",
-		"@expo-google-fonts/inter": "^0.4.2",
+		"@expo-google-fonts/google-sans": "^0.4.4",
 		"@hugeicons/core-free-icons": "^4.4.0",
 		"@hugeicons/react-native": "^1.0.16",
 		"@react-native-masked-view/masked-view": "0.3.2",

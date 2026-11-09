@@ -234,7 +234,7 @@ function Pullquote({ text, citation }: { text: string; citation?: string }) {
 			<Typography
 				align="center"
 				className="text-[21px] leading-8 text-foreground"
-				style={{ fontFamily: "Inter_400Regular_Italic", fontStyle: "italic" }}
+				style={{ fontFamily: "GoogleSans_400Regular_Italic", fontStyle: "italic" }}
 			>
 				{text}
 			</Typography>

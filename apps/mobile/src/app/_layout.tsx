@@ -1,11 +1,11 @@
 import "@/global.css";
 
-// One subpath per face: the package root requires all 18 Inter files (~6 MB).
-import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
-import { Inter_400Regular_Italic } from "@expo-google-fonts/inter/400Regular_Italic";
-import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
-import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
-import { Inter_700Bold } from "@expo-google-fonts/inter/700Bold";
+// One subpath per face: the package root requires every Google Sans file.
+import { GoogleSans_400Regular } from "@expo-google-fonts/google-sans/400Regular";
+import { GoogleSans_400Regular_Italic } from "@expo-google-fonts/google-sans/400Regular_Italic";
+import { GoogleSans_500Medium } from "@expo-google-fonts/google-sans/500Medium";
+import { GoogleSans_600SemiBold } from "@expo-google-fonts/google-sans/600SemiBold";
+import { GoogleSans_700Bold } from "@expo-google-fonts/google-sans/700Bold";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -46,11 +46,11 @@ export const unstable_settings = {
 
 export default function RootLayout() {
 	const [fontsLoaded, fontError] = useFonts({
-		Inter_400Regular,
-		Inter_400Regular_Italic,
-		Inter_500Medium,
-		Inter_600SemiBold,
-		Inter_700Bold,
+		GoogleSans_400Regular,
+		GoogleSans_400Regular_Italic,
+		GoogleSans_500Medium,
+		GoogleSans_600SemiBold,
+		GoogleSans_700Bold,
 	});
 	// A font that fails to load falls back to the system font; never block the app on it.
 	const ready = fontsLoaded || fontError !== null;

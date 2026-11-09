@@ -56,7 +56,6 @@
 
 	body {
 		@apply min-h-dvh bg-background font-sans text-foreground antialiased;
-		font-feature-settings: "cv11", "ss01";
 	}
 
 	::selection {

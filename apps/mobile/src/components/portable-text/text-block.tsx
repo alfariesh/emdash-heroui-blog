@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { Platform, Text, View, type TextStyle } from "react-native";
 
 export const MONOSPACE = Platform.select({ ios: "Menlo", default: "monospace" });
-const ITALIC: TextStyle = { fontFamily: "Inter_400Regular_Italic", fontStyle: "italic" };
+const ITALIC: TextStyle = { fontFamily: "GoogleSans_400Regular_Italic", fontStyle: "italic" };
 
 /** Article typography, tuned for long reading (the web uses 17px / 1.8). */
 const STYLE_CLASS: Record<string, string> = {
@@ -89,7 +89,7 @@ function Span({
 		if (decorator) classes.push(decorator);
 	}
 
-	// Inter is loaded per face: italic and monospace are font families, not weights.
+	// Google Sans is loaded per face: italic and monospace are font families, not weights.
 	const isStrong = marks.includes("strong");
 	const style: TextStyle | undefined = marks.includes("code")
 		? { fontFamily: MONOSPACE }
