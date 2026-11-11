@@ -27,6 +27,8 @@ The admin UI is at `http://localhost:4321/_emdash/admin`.
 | `src/live.config.ts`     | EmDash loader registration (boilerplate -- don't modify)                           |
 | `src/lib/app-links.ts`   | Builds `/.well-known/apple-app-site-association` and `assetlinks.json` from the `APP_LINKS_*` vars |
 | `src/plugins/push-notifications/` | Native EmDash plugin: device storage, public register/unregister routes, `content:afterPublish` → Expo push (`expo.ts` is pure and unit-tested) |
+| `src/lib/article-audio.ts` | "Listen to this article": reads narration from the `article-audio` plugin's public route in-process and maps it to the `/api/v1` audio types |
+| `src/lib/read-along.ts` | Read-along highlighting: matches narration blocks to rendered elements by text, paints words with the CSS Custom Highlight API |
 | `src/lib/push-devices.ts` | `/api/v1/devices` helpers: body validation, `DEVICES_RATE_LIMIT`, in-process call to the plugin's public routes |
 | `seed/seed.json`         | Schema definition + demo content (collections, fields, taxonomies, menus, widgets) |
 | `emdash-env.d.ts`        | Generated types for collections (auto-regenerated on dev server start)             |
@@ -104,6 +106,7 @@ Read-only endpoints for the mobile app and other clients. The EmDash admin API (
 | `GET /api/v1/posts/[slug]` | `ApiPost` (summary + `updatedAt` + Portable Text `content`) |
 | `POST /api/v1/devices` | Body `ApiDeviceRegistration` → `ApiDeviceStatus`; registers an Expo push token for new-post notifications. `no-store`, rate-limited (429 `too_many_requests`) |
 | `DELETE /api/v1/devices/[token]` | `ApiDeviceStatus` with `registered: false`; fine for unknown tokens |
+| `GET /api/v1/posts/[slug]/audio` | `ApiPostAudio`: narration MP3 URL + per-word timings (article-audio plugin); 404 when the post has none |
 | `GET /api/v1/posts/[slug]/comments` | `ApiPostComments`: approved comments, threaded (`getComments`), `enabled: false` when comments are off; 404 for drafts |
 | `GET /api/v1/pages/[slug]` | `ApiPageEntry` |
 | `GET /api/v1/categories`, `GET /api/v1/tags` | `ApiTerm[]` with published-post `count` |
@@ -166,3 +169,12 @@ A native EmDash plugin (this site has no sandbox runner), registered in `astro.c
 - **Sending** happens in `content:afterPublish` (manual and scheduled publishes) for the `posts` collection: one Expo request per 100 tokens via `ctx.http` (`allowedHosts: ["exp.host"]`). A KV claim `notified:<content id>` makes it once per post; it is released only when no request reached Expo. Tokens Expo reports as `DeviceNotRegistered` are deleted. The log line `New-post notification` carries the URL and counts.
 - **Settings** (admin → Plugins → push-notifications): `enabled` (default on) and `expoAccessToken` (secret, only for Expo's enhanced push security; encrypted with `EMDASH_ENCRYPTION_KEY`).
 - Each batch is a subrequest: the Workers subrequest limit per invocation caps the device count (about 100 × the limit). Receipts are not fetched; tokens are pruned from the tickets only.
+
+## Article audio (`emdash-plugin-article-audio`)
+
+Native EmDash plugin from its own repository, installed from `vendor/emdash-plugin-article-audio-<version>.tgz` (a `file:` dependency) until it is on npm; registered in `astro.config.mjs` with `articleAudio()`. Rebuild and repack the plugin, then `pnpm install`, to update it here.
+
+- The plugin stores narration in its own storage and the MP3 in the media library. `src/lib/article-audio.ts` calls its public `narration` route in-process (`handlePublicPluginApiRoute`), like `push-devices.ts`, and rewrites the audio URL onto `publicOrigin()`. `ApiPost.audio` (summary) and `GET /api/v1/posts/[slug]/audio` (`ApiPostAudio`, with timings) come from it; both types are in `packages/shared/src/api/types.ts`. `audio` is optional on `ApiPost` because cached app data predates it.
+- `ArticleAudio.tsx` renders the player from the summary (SSR, no request), and loads timings only on first play, keyed by the MP3 file name (`?file=`), so a cached response from before a regeneration is never paired with new audio.
+- Highlighting: narration blocks carry the rendered text of each Portable Text block (and `title` for `[data-post-title]`); `read-along.ts` matches them to `p, h1–h6, li, blockquote` inside `[data-post-content]` in order, and paints `::highlight(article-audio-block)` / `::highlight(article-audio-word)` (styles at the end of `global.css`). Word `i` is the i-th whitespace-separated token of the element's text on both sides. `timing: "estimated"` highlights blocks only.
+- Visitor-facing copy stays English like the rest of the site.

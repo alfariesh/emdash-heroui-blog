@@ -1,6 +1,7 @@
 import type { ApiPost } from "@blog/shared";
 import type { APIRoute } from "astro";
 import { decodeSlug, getEmDashEntry } from "emdash";
+import { getNarration, toApiAudioSummary } from "../../../../lib/article-audio";
 import {
 	handle,
 	isPublished,
@@ -21,10 +22,12 @@ export const GET: APIRoute = (context) =>
 		// getEmDashEntry can serve drafts in preview/edit mode; the API never does.
 		if (!post || !isPublished(post)) return notFound("Post not found.");
 
+		const narration = await getNarration(context, "posts", post.data.id);
 		const data: ApiPost = {
 			...toApiPostSummary(context, post),
 			updatedAt: post.data.updatedAt.toISOString(),
 			content: toApiPortableText(context, post.data.content),
+			audio: narration ? toApiAudioSummary(narration, context) : null,
 		};
 		return jsonOk(data);
 	});

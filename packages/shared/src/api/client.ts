@@ -9,6 +9,7 @@ import {
 	type ApiPage,
 	type ApiPageEntry,
 	type ApiPost,
+	type ApiPostAudio,
 	type ApiPostComments,
 	type ApiPostSummary,
 	type ApiSearchResult,
@@ -60,6 +61,8 @@ export interface BlogClient {
 	getPosts(query?: PostListQuery, options?: RequestOptions): Promise<ApiPage<ApiPostSummary>>;
 	getPost(slug: string, options?: RequestOptions): Promise<ApiPost>;
 	getPostComments(slug: string, options?: RequestOptions): Promise<ApiPostComments>;
+	/** Narration with read-along timings; rejects with a 404 BlogApiError when the post has no audio. */
+	getPostAudio(slug: string, options?: RequestOptions): Promise<ApiPostAudio>;
 	getPage(slug: string, options?: RequestOptions): Promise<ApiPageEntry>;
 	getCategories(options?: RequestOptions): Promise<ApiTerm[]>;
 	getTags(options?: RequestOptions): Promise<ApiTerm[]>;
@@ -162,6 +165,7 @@ export function createBlogClient(baseUrl: string): BlogClient {
 		getPost: (slug, options) => data<ApiPost>(`/posts/${encodeURIComponent(slug)}`, options),
 		getPostComments: (slug, options) =>
 			data<ApiPostComments>(`/posts/${encodeURIComponent(slug)}/comments`, options),
+		getPostAudio: (slug, options) => data<ApiPostAudio>(`/posts/${encodeURIComponent(slug)}/audio`, options),
 		getPage: (slug, options) => data<ApiPageEntry>(`/pages/${encodeURIComponent(slug)}`, options),
 		getCategories: (options) => data<ApiTerm[]>("/categories", options),
 		getTags: (options) => data<ApiTerm[]>("/tags", options),

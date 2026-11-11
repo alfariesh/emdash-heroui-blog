@@ -4,6 +4,7 @@ import { d1, r2 } from "@emdash-cms/cloudflare";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import emdash from "emdash/astro";
+import { articleAudio } from "emdash-plugin-article-audio";
 import { readFileSync } from "node:fs";
 
 /** `vars.EMDASH_SITE_URL` from wrangler.jsonc (JSONC: comments, trailing commas). */
@@ -43,6 +44,11 @@ const pushNotificationsPlugin = {
 	entrypoint: "/src/plugins/push-notifications/index.ts",
 };
 
+// "Listen to this article": text-to-speech narration with read-along timing
+// (emdash-plugin-article-audio). Engine, keys and collections are set in
+// admin → Plugins → article-audio; the player is ArticleAudio.tsx.
+const articleAudioPlugin = articleAudio();
+
 const adsEditorPlugin = {
 	id: "ads-editor",
 	version: "1.1.0",
@@ -65,7 +71,7 @@ export default defineConfig({
 		emdash({
 			database: d1({ binding: "DB", session: "auto", coalesce: true }),
 			storage: r2({ binding: "MEDIA" }),
-			plugins: [pushNotificationsPlugin, adsEditorPlugin],
+			plugins: [pushNotificationsPlugin, adsEditorPlugin, articleAudioPlugin],
 		}),
 	],
 	vite: {

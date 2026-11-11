@@ -26,7 +26,8 @@ Read-only JSON for the mobile app. Only published content is returned; drafts ar
 | `GET /api/v1/ads?placement=home\|post_bottom` | One eligible banner or null, with a short-lived schedule lease (`no-store`) |
 | `GET /api/v1/site` | Title, tagline, logo, and `primary` menu items |
 | `GET /api/v1/posts?cursor=&limit=&category=&tag=` | Post summaries (newest first) + `nextCursor` |
-| `GET /api/v1/posts/:slug` | Post detail + Portable Text content |
+| `GET /api/v1/posts/:slug` | Post detail + Portable Text content, and `audio` (MP3 URL, length, narrator) when the post has narration |
+| `GET /api/v1/posts/:slug/audio` | "Listen to this article": MP3 URL plus per-word timings for read-along highlighting; 404 when the post has no audio |
 | `GET /api/v1/posts/:slug/comments` | Approved comments (threaded), for reading in the app |
 | `POST /api/v1/devices`, `DELETE /api/v1/devices/:token` | Register or remove an app push token for new-post notifications (limited to 20 requests per minute per IP) |
 | `GET /api/v1/pages/:slug` | A static page, for example `about` |
@@ -53,6 +54,16 @@ So that `https://your-domain/posts/…` (and `/pages/…`, `/category/…`, `/ta
 | `APP_LINKS_IOS_STORE_ID` | Numeric App Store ID (App Store Connect → App Information → Apple ID). Shows Safari's Smart App Banner on every page; the Open button opens the same page in the app |
 
 After `pnpm run deploy`, check `https://your-domain/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json`: both must be 200 with JSON. The app-side steps are in `apps/mobile/README.md`.
+
+## Article audio ("Listen to this article")
+
+The `emdash-plugin-article-audio` plugin turns posts into narrated MP3s with ElevenLabs or Google Cloud text-to-speech, with word timestamps and `[expression tags]`. It is registered in `astro.config.mjs` and installed from `vendor/` until it is published to npm.
+
+- Admin → **Plugins** → article-audio: engine, API keys (stored encrypted), default voice and model, which collections get audio, and *Generate on publish*. **Silent test audio** needs no key and is meant for local testing.
+- In the post editor, the **Audio** panel (Editor role and up) generates, previews, replaces and deletes the audio. **Voice & script** picks the voice per post, skips blocks, rewords what is read and adds tags such as `[excited]` or `[pause]` without changing the page.
+- Posts with audio show a player under the byline (`src/components/islands/ArticleAudio.tsx`). *Follow along* highlights the word being read and scrolls with it (`src/lib/read-along.ts`, CSS Custom Highlight API); a compact player floats in when the card scrolls away.
+- The mobile app reads `/api/v1/posts/:slug/audio`.
+- Each generation is billed by the engine. ElevenLabs costs about $0.08 per 1,000 characters on v4/v3/Multilingual v2 and half that on Flash.
 
 ## Push notifications
 
