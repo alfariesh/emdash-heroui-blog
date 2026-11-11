@@ -8,12 +8,13 @@ import { Skeleton } from "heroui-native/skeleton";
 import { Typography } from "heroui-native/text";
 import { useToast } from "heroui-native/toast";
 import { cn } from "heroui-native/utils";
-import { useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { Platform, Share, useWindowDimensions, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
 	clamp,
 	Extrapolation,
 	interpolate,
+	useAnimatedReaction,
 	useAnimatedRef,
 	useAnimatedStyle,
 	useDerivedValue,
@@ -22,7 +23,15 @@ import Animated, {
 	useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { scheduleOnRN } from "react-native-worklets";
 import { AdSlot } from "@/components/ad-slot";
+import {
+	AudioDock,
+	audioTrack,
+	DOCK_BOTTOM_GAP,
+	ListenButton,
+	MINI_PLAYER_HEIGHT,
+} from "@/components/post/article-audio";
 import { ArticleTopBar, TOP_BAR_HEIGHT } from "@/components/post/article-top-bar";
 import { BackToTop } from "@/components/post/back-to-top";
 import { Byline } from "@/components/post/byline";
@@ -32,13 +41,21 @@ import { PostMeta } from "@/components/post/post-meta";
 import { ResumeReading } from "@/components/post/resume-reading";
 import { TermChips } from "@/components/post/term-chips";
 import { PortableText } from "@/components/portable-text/portable-text";
+import {
+	READ_ALONG_BLOCK_CLASS,
+	usePlayFromHere,
+	WordRuns,
+	type ReadAlong,
+} from "@/components/portable-text/text-block";
 import { GlassIconButton } from "@/components/ui/glass-icon-button";
 import { Image } from "@/components/ui/image";
 import { ErrorView } from "@/components/ui/state-view";
+import { attachNarration, useActiveTrack, useLoadAttempt, useReadAlongWord } from "@/lib/article-audio";
 import { toggleBookmark, useIsBookmarked } from "@/lib/bookmarks";
 import { BookmarkIcon, ShareIcon } from "@/lib/icons";
 import { postWebUrl } from "@/lib/links";
-import { findCachedSummary, flattenPages, postQuery, postsQuery } from "@/lib/queries";
+import { findCachedSummary, flattenPages, postAudioQuery, postQuery, postsQuery } from "@/lib/queries";
+import { followScrollTarget, mayFollowScroll, splitWords } from "@/lib/read-along";
 import { useReadingPosition } from "@/lib/use-reading-position";
 
 const MAX_HERO_HEIGHT = 520;
@@ -106,6 +123,8 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 	const reduceMotion = useReducedMotion();
 	const commentsTarget = useRef<number | null>(null);
 	const commentsDeadline = useRef(0);
+	/** When the reader last dragged the article: follow-along waits a few seconds after that. */
+	const lastUserScroll = useRef(-Infinity);
 
 	const hasHero = post.featuredImage !== null;
 	const heroHeight = Math.min(Math.round(width * 1.1), MAX_HERO_HEIGHT);
@@ -122,6 +141,72 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 	});
 	const resume = reading.resume;
 	const bodyEnd = reading.bodyEnd;
+
+	// "Listen to this article": the Listen pill beside the byline starts the narration and
+	// opens the full player docked at the bottom; scrolling shrinks it into the mini player.
+	const track = audioTrack(post);
+	const activeTrack = useActiveTrack();
+	const isPlayingHere = track !== null && activeTrack?.url === track.url;
+	const {
+		data: narration,
+		isError: timingsFailed,
+		refetch: refetchTimings,
+	} = useQuery({
+		...postAudioQuery(post.slug, track?.url ?? ""),
+		// Timings are fetched only once this post's narration has started.
+		enabled: isPlayingHere,
+	});
+	useEffect(() => {
+		if (narration) attachNarration(narration);
+	}, [narration]);
+	// Timings that failed with the file (offline) are fetched again when the reader retries.
+	const loadAttempt = useLoadAttempt();
+	const retryTimings = useEffectEvent(() => {
+		if (isPlayingHere && timingsFailed) void refetchTimings();
+	});
+	useEffect(() => {
+		retryTimings();
+	}, [loadAttempt]);
+
+	const [audioExpanded, setAudioExpanded] = useState(false);
+	const dockOpen = activeTrack !== null;
+	const expanded = dockOpen && audioExpanded;
+	// Space the collapsed dock takes at the bottom (content padding, pills above it).
+	const dockOffset = dockOpen ? MINI_PLAYER_HEIGHT + 12 : 0;
+
+	// The mini player shares a row with back-to-top, so it needs to know when that
+	// button is on screen (the same threshold BackToTop uses).
+	const showBackToTopAfter = windowHeight / 2;
+	const [pastBackToTop, setPastBackToTop] = useState(false);
+	useAnimatedReaction(
+		() => scrollY.get() >= showBackToTopAfter,
+		(past, wasPast) => {
+			if (past !== wasPast) scheduleOnRN(setPastBackToTop, past);
+		},
+	);
+	// The full card spans the width, so back-to-top steps aside while it is open.
+	const backToTopSuspended = resume !== null || expanded;
+	// Gutter, or gutter + the 48 pt back-to-top button + an 8 pt gap.
+	const dockEndInset = pastBackToTop && !backToTopSuspended ? 16 + 48 + 8 : 16;
+
+	// Follow along: when a new block starts, bring it into the reading band unless the
+	// reader has been scrolling on their own in the last few seconds.
+	const readAlong: ReadAlong = {
+		slug: post.slug,
+		onActiveBlock: (view) => {
+			if (!mayFollowScroll(Date.now(), lastUserScroll.current)) return;
+			view.measureInWindow((_x, y, _width, height) => {
+				const target = followScrollTarget({
+					scrollY: scrollY.get(),
+					blockTop: y,
+					blockHeight: height,
+					viewportTop: barHeight,
+					viewportHeight: windowHeight - barHeight - bottom - dockOffset - DOCK_BOTTOM_GAP,
+				});
+				if (target !== null) scrollRef.current?.scrollTo({ y: target, animated: !reduceMotion });
+			});
+		},
+	};
 
 	// Where the H1 ends, from nested layouts: the bar's title takes over once it has slid under.
 	const titleLayout = useRef({ body: 0, header: 0, title: 0 });
@@ -184,8 +269,17 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 				onContentSizeChange={scrollToComments}
 				onScrollBeginDrag={() => {
 					commentsDeadline.current = 0;
+					lastUserScroll.current = Date.now();
+					// Reading on: the full player shrinks into the mini player.
+					setAudioExpanded(false);
 				}}
-				contentContainerStyle={{ paddingBottom: bottom + 32, paddingTop: hasHero ? 0 : barHeight }}
+				onScrollEndDrag={() => {
+					lastUserScroll.current = Date.now();
+				}}
+				contentContainerStyle={{
+					paddingBottom: bottom + 32 + dockOffset,
+					paddingTop: hasHero ? 0 : barHeight,
+				}}
 				showsVerticalScrollIndicator={false}
 			>
 				{hasHero ? (
@@ -213,6 +307,7 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 						onTitleLayout={(event) =>
 							placeTitle("title", event.nativeEvent.layout.y + event.nativeEvent.layout.height)
 						}
+						listen={track ? <ListenButton track={track} onOpen={() => setAudioExpanded(true)} /> : null}
 					/>
 					<Separator />
 					{contentLoading ? (
@@ -220,7 +315,7 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 					) : bodyFailed ? (
 						<ErrorView error={contentError} onRetry={onRetry} className="py-8" />
 					) : (
-						<PortableText value={post.content} webUrl={webUrl} />
+						<PortableText value={post.content} webUrl={webUrl} readAlong={track ? readAlong : undefined} />
 					)}
 					{post.tags.length > 0 ? (
 						<TermChips categories={[]} tags={post.tags} max={post.tags.length} interactive size="md" className="pt-4" />
@@ -254,12 +349,12 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 			<BackToTop
 				scrollY={scrollY}
 				progress={progress}
-				showAfter={windowHeight / 2}
-				suspended={resume !== null}
+				showAfter={showBackToTopAfter}
+				suspended={backToTopSuspended}
 				onPress={scrollToTop}
 			/>
 
-			{resume ? (
+			{resume && !expanded ? (
 				<ResumeReading
 					progress={resume.progress}
 					onResume={() => {
@@ -267,8 +362,17 @@ function Article({ post, contentLoading, contentError, onRetry, openAtComments =
 						reading.dismiss();
 					}}
 					onDismiss={reading.dismiss}
+					bottomOffset={dockOffset}
 				/>
 			) : null}
+
+			<AudioDock
+				slug={post.slug}
+				expanded={expanded}
+				onExpand={() => setAudioExpanded(true)}
+				onCollapse={() => setAudioExpanded(false)}
+				endInset={dockEndInset}
+			/>
 		</View>
 	);
 }
@@ -277,27 +381,50 @@ interface ArticleHeaderProps {
 	post: ApiPost;
 	onLayout: (event: LayoutChangeEvent) => void;
 	onTitleLayout: (event: LayoutChangeEvent) => void;
+	/** "Listen" pill beside the byline, when the post has narration. */
+	listen?: ReactNode;
 }
 
-function ArticleHeader({ post, onLayout, onTitleLayout }: ArticleHeaderProps) {
+function ArticleHeader({ post, onLayout, onTitleLayout, listen }: ArticleHeaderProps) {
 	return (
 		<View className="gap-4" onLayout={onLayout}>
 			<TermChips categories={post.categories} tags={[]} interactive size="md" />
 			<View onLayout={onTitleLayout}>
-				<Typography.Heading type="h1" selectable className="text-[30px] leading-[38px] tracking-tight">
-					{post.title}
-				</Typography.Heading>
+				<ArticleTitle post={post} />
 			</View>
 			{post.excerpt ? (
 				<Typography selectable color="muted" className="text-[18px] leading-7">
 					{post.excerpt}
 				</Typography>
 			) : null}
-			<View className="gap-3 pt-1">
-				<Byline bylines={post.bylines} max={2} size="md" showRole readingTime={post.readingTime}>
+			<View className="flex-row items-center gap-3 pt-1">
+				{/* The Listen pill already gives a length; reading time beside it would crowd the row. */}
+				<Byline
+					bylines={post.bylines}
+					max={2}
+					size="md"
+					showRole
+					readingTime={listen ? undefined : post.readingTime}
+					className="flex-1"
+				>
 					<PostMeta publishedAt={post.publishedAt} dateStyle="long" />
 				</Byline>
+				{listen}
 			</View>
+		</View>
+	);
+}
+
+/** The H1, tinted like a body block while the narration reads the title. */
+function ArticleTitle({ post }: { post: ApiPost }) {
+	const word = useReadAlongWord(post.slug, post.audio ? "title" : undefined);
+	const playFromHere = usePlayFromHere(post.slug, post.audio ? "title" : undefined);
+	const segments = word !== null && word >= 0 ? splitWords([post.title])[0] : undefined;
+	return (
+		<View className={cn("-mx-2 rounded-lg px-2", word !== null && READ_ALONG_BLOCK_CLASS)}>
+			<Typography.Heading type="h1" {...playFromHere} className="text-[30px] leading-[38px] tracking-tight">
+				{segments && word !== null ? <WordRuns segments={segments} word={word} /> : post.title}
+			</Typography.Heading>
 		</View>
 	);
 }

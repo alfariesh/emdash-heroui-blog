@@ -12,6 +12,8 @@ interface ResumeReadingProps {
 	progress: number;
 	onResume: () => void;
 	onDismiss: () => void;
+	/** Extra distance from the bottom safe area, e.g. above the audio mini player. */
+	bottomOffset?: number;
 }
 
 /**
@@ -19,7 +21,7 @@ interface ResumeReadingProps {
  * to where the last visit ended. Glass like the top bar's buttons; the
  * layout animations follow the system's reduced-motion setting.
  */
-export function ResumeReading({ progress, onResume, onDismiss }: ResumeReadingProps) {
+export function ResumeReading({ progress, onResume, onDismiss, bottomOffset = 0 }: ResumeReadingProps) {
 	const { bottom } = useSafeAreaInsets();
 	const percent = Math.round(progress * 100);
 
@@ -28,7 +30,7 @@ export function ResumeReading({ progress, onResume, onDismiss }: ResumeReadingPr
 			entering={FadeInDown.duration(250)}
 			exiting={FadeOutDown.duration(200)}
 			pointerEvents="box-none"
-			style={{ position: "absolute", left: 0, right: 0, bottom: bottom + 16, alignItems: "center" }}
+			style={{ position: "absolute", left: 0, right: 0, bottom: bottom + 16 + bottomOffset, alignItems: "center" }}
 		>
 			<View className="flex-row items-center overflow-hidden rounded-full border border-border">
 				<GlassView intensity={80} className="rounded-full" />
