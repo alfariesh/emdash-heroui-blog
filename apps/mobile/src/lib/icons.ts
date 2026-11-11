@@ -25,10 +25,16 @@ import type { IconSvgElement } from "@hugeicons/react-native";
 export type { IconSvgElement };
 
 export { default as AlertIcon } from "@hugeicons/core-free-icons/Alert02Icon";
+export { default as ArrowDownIcon } from "@hugeicons/core-free-icons/ArrowDown01Icon";
 export { default as ArrowLeftIcon } from "@hugeicons/core-free-icons/ArrowLeft01Icon";
 export { default as ArrowRightIcon } from "@hugeicons/core-free-icons/ArrowRight01Icon";
 export { default as ArrowUpIcon } from "@hugeicons/core-free-icons/ArrowUp01Icon";
 export { default as ArrowUpRightIcon } from "@hugeicons/core-free-icons/ArrowUpRight01Icon";
+export { default as AudioPauseIcon } from "@hugeicons/core-free-icons/PauseIcon";
+export { default as AudioPlayIcon } from "@hugeicons/core-free-icons/PlayIcon";
+export { default as AudioSeekBackIcon } from "@hugeicons/core-free-icons/GoBackward10SecIcon";
+export { default as AudioSeekForwardIcon } from "@hugeicons/core-free-icons/GoForward10SecIcon";
+export { default as AudioWaveIcon } from "@hugeicons/core-free-icons/AudioWave01Icon";
 export { default as BookmarkIcon } from "@hugeicons/core-free-icons/Bookmark02Icon";
 export { default as BookOpenIcon } from "@hugeicons/core-free-icons/BookOpen01Icon";
 export { default as CalendarIcon } from "@hugeicons/core-free-icons/Calendar03Icon";
@@ -42,6 +48,7 @@ export { default as DatabaseIcon } from "@hugeicons/core-free-icons/Database01Ic
 export { default as FileNotFoundIcon } from "@hugeicons/core-free-icons/FileNotFoundIcon";
 export { default as GlobeIcon } from "@hugeicons/core-free-icons/Globe02Icon";
 export { default as HashtagIcon } from "@hugeicons/core-free-icons/HashtagIcon";
+export { default as HeadphonesIcon } from "@hugeicons/core-free-icons/HeadphonesIcon";
 export { default as HomeIcon } from "@hugeicons/core-free-icons/Home11Icon";
 export { default as InformationIcon } from "@hugeicons/core-free-icons/InformationCircleIcon";
 export { default as LinkIcon } from "@hugeicons/core-free-icons/LinkSquare02Icon";

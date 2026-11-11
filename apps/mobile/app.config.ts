@@ -101,6 +101,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		"expo-sqlite",
 		"expo-web-browser",
 		[
+			"expo-audio",
+			{
+				// "Listen to this article" only plays: no microphone permission or prompt.
+				microphonePermission: false,
+				recordAudioAndroid: false,
+				// iOS UIBackgroundModes "audio"; Android media playback service for the lock screen.
+				enableBackgroundPlayback: true,
+			},
+		],
+		[
 			"expo-notifications",
 			{
 				// Android draws the small icon as a white silhouette: the monochrome launcher layer fits.

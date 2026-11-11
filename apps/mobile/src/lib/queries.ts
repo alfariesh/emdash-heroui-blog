@@ -64,6 +64,19 @@ export const postQuery = (slug: string) =>
 		queryFn: ({ signal }) => api.getPost(slug, { signal }),
 	});
 
+/**
+ * Read-along timings for a post's narration, fetched only when playback
+ * starts. Keyed by the audio file's URL so timings from before a
+ * regeneration are never paired with the new file. Not persisted offline
+ * (see query-client.ts): word timings run to tens of kilobytes per post.
+ */
+export const postAudioQuery = (slug: string, url: string) =>
+	queryOptions({
+		queryKey: ["posts", "audio", slug, url],
+		queryFn: ({ signal }) => api.getPostAudio(slug, { signal }),
+		staleTime: 10 * MINUTE,
+	});
+
 /** Approved comments on a post. Same freshness as the post (the API's max-age). */
 export const postCommentsQuery = (slug: string) =>
 	queryOptions({

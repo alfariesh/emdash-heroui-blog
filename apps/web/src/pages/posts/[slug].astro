@@ -20,6 +20,8 @@ import PostCard from "../../components/PostCard.astro";
 import AdSlot from "../../components/AdSlot.astro";
 import BackToTop from "../../components/BackToTop.astro";
 import TableOfContents from "../../components/TableOfContents.astro";
+import ArticleAudio from "../../components/islands/ArticleAudio";
+import { getNarration, toApiAudioSummary } from "../../lib/article-audio";
 import { getAds } from "../../lib/ads";
 import { AD_PLACEMENTS } from "../../lib/ad-selection";
 import { getLocale } from "../../lib/locale";
@@ -77,10 +79,13 @@ const tags = post.data.terms?.tag ?? [];
 const categories = post.data.terms?.category ?? [];
 
 // Fetch a few extra recent posts in case the current post is among them.
-const [{ entries: recentPosts, cacheHint: recentPostsCacheHint }, ads] = await Promise.all([
+const [{ entries: recentPosts, cacheHint: recentPostsCacheHint }, ads, narration] = await Promise.all([
 	getEmDashCollection("posts", { orderBy: { published_at: "desc" }, limit: 4 }),
 	getAds([AD_PLACEMENTS.postSidebar, AD_PLACEMENTS.postBottom]),
+	// "Listen to this article" (article-audio plugin); only published posts have public audio.
+	post.data.status === "published" ? getNarration(Astro, "posts", post.data.id) : Promise.resolve(null),
 ]);
+const audio = narration ? toApiAudioSummary(narration, Astro) : null;
 if (Astro.cache?.enabled) {
 	Astro.cache.set(recentPostsCacheHint);
 	Astro.cache.set(ads.cacheHint);
@@ -194,6 +199,22 @@ const commentListLabels = {
 						)}
 					</Byline>
 				</div>
+
+				{
+					audio && (
+						<div class="w-full" data-enter="support" style={enterDelay(200)}>
+							<ArticleAudio
+								client:idle
+								slug={slug}
+								title={post.data.title}
+								url={audio.url}
+								durationMs={audio.durationMs}
+								voice={audio.voice}
+								image={featuredImageUrl ?? null}
+							/>
+						</div>
+					)
+				}
 			</div>
 		</header>
 

@@ -29,7 +29,8 @@ export const queryClient = new QueryClient({
 
 /**
  * Persist successful queries so the last-read feed and posts open instantly
- * on the next launch and work offline. Search and short-lived ads are excluded.
+ * on the next launch and work offline. Search, short-lived ads and narration
+ * timings (large, and useless without the network audio file) are excluded.
  * Bumping the app version or the API prefix drops the old cache.
  */
 export const persistOptions: PersistQueryClientProviderProps["persistOptions"] = {
@@ -44,7 +45,8 @@ export const persistOptions: PersistQueryClientProviderProps["persistOptions"] =
 		shouldDehydrateQuery: (query) =>
 			query.state.status === "success" &&
 			query.queryKey[0] !== "search" &&
-			query.queryKey[0] !== "ads",
+			query.queryKey[0] !== "ads" &&
+			query.queryKey[1] !== "audio",
 	},
 };
 

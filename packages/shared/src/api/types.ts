@@ -204,6 +204,48 @@ export interface ApiPost extends ApiPostSummary {
 	/** ISO 8601. */
 	updatedAt: string;
 	content: ApiPortableTextBlock[];
+	/**
+	 * "Listen to this article", when the post has narration (null when it has
+	 * none); fetch the read-along timings from /audio. Optional because data
+	 * cached from older servers does not carry it.
+	 */
+	audio?: ApiAudioSummary | null;
+}
+
+/** Enough to show a play button: the file and its length. */
+export interface ApiAudioSummary {
+	/** Absolute URL of an MP3 file; supports HTTP range requests. */
+	url: string;
+	durationMs: number;
+	/** Narrator, e.g. "ElevenLabs · Rachel". */
+	voice: string;
+}
+
+/**
+ * A narrated block of the post, in reading order. `key` is the Portable Text
+ * block's `_key` (or "title" for the post title), so a reader can find the
+ * block it renders and highlight the word being read.
+ */
+export interface ApiAudioBlock {
+	key: string;
+	kind: "title" | "heading" | "paragraph" | "quote" | "list-item";
+	/** The block's text as rendered; its words are the whitespace-separated tokens. */
+	text: string;
+	startMs: number;
+	endMs: number;
+	/** `[start0, end0, start1, end1, …]` in ms from the start of the audio, one pair per word of `text`. */
+	words: number[];
+}
+
+/** GET /api/v1/posts/[slug]/audio: the narration with read-along timings. 404 when the post has none. */
+export interface ApiPostAudio extends ApiAudioSummary {
+	mimeType: "audio/mpeg";
+	bytes: number;
+	/** "word": the engine reported each word's time. "estimated": spread by text length; highlight blocks, not words. */
+	timing: "word" | "estimated";
+	/** ISO 8601. */
+	generatedAt: string;
+	blocks: ApiAudioBlock[];
 }
 
 /** GET /api/v1/pages/[slug] */
